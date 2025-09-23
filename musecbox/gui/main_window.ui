@@ -1,0 +1,876 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>886</width>
+    <height>579</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MusecBox</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>musecbox-icon.png</normaloff>musecbox-icon.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>2</number>
+    </property>
+    <property name="leftMargin">
+     <number>3</number>
+    </property>
+    <property name="topMargin">
+     <number>3</number>
+    </property>
+    <property name="rightMargin">
+     <number>3</number>
+    </property>
+    <property name="bottomMargin">
+     <number>2</number>
+    </property>
+    <item>
+     <widget class="QScrollArea" name="scrl_ports">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>100</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QFrame" name="frm_ports">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>878</width>
+         <height>384</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="frm_balance">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>26</height>
+       </size>
+      </property>
+      <layout class="QHBoxLayout" name="lo_balance">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QScrollArea" name="scr_shared_plugins">
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOn</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="frm_shared_plugins">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>878</width>
+         <height>54</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="frm_statusbar">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QFrame * { color: #888 }</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <property name="leftMargin">
+        <number>6</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>6</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Buffer Size:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lbl_buffer_size">
+         <property name="text">
+          <string>512</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="Line" name="line_1">
+         <property name="lineWidth">
+          <number>0</number>
+         </property>
+         <property name="midLineWidth">
+          <number>1</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Sample Rate:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lbl_sample_rate">
+         <property name="text">
+          <string>44100</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="Line" name="line_2">
+         <property name="lineWidth">
+          <number>0</number>
+         </property>
+         <property name="midLineWidth">
+          <number>1</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="b_xruns">
+         <property name="text">
+          <string>? Xruns</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="Line" name="line_4">
+         <property name="lineWidth">
+          <number>0</number>
+         </property>
+         <property name="midLineWidth">
+          <number>1</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QProgressBar" name="pb_dsp_load_placeholder">
+         <property name="value">
+          <number>0</number>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <property name="format">
+          <string>DSP Load: %p%</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>886</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_file">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <widget class="QMenu" name="menu_open_recent">
+     <property name="title">
+      <string>&amp;Recent Projects ...</string>
+     </property>
+    </widget>
+    <addaction name="action_new"/>
+    <addaction name="action_open"/>
+    <addaction name="menu_open_recent"/>
+    <addaction name="separator"/>
+    <addaction name="action_save"/>
+    <addaction name="action_save_as"/>
+    <addaction name="action_revert"/>
+    <addaction name="separator"/>
+    <addaction name="action_auto_start"/>
+    <addaction name="action_open_project_folder"/>
+    <addaction name="action_apply_to_score"/>
+    <addaction name="separator"/>
+    <addaction name="action_close"/>
+    <addaction name="action_quit"/>
+   </widget>
+   <widget class="QMenu" name="menu_edit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="action_add_port"/>
+    <addaction name="action_add_track"/>
+    <addaction name="action_add_shared_plugin"/>
+    <addaction name="action_clear_shared_plugins"/>
+    <addaction name="separator"/>
+    <addaction name="action_connect_all_tracks"/>
+    <addaction name="action_auto_connect_tracks"/>
+    <addaction name="separator"/>
+    <addaction name="action_mute_all_tracks"/>
+    <addaction name="action_unmute_all_tracks"/>
+    <addaction name="separator"/>
+    <addaction name="action_clear_track_plugins"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menu_view">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <widget class="QMenu" name="menu_style">
+     <property name="title">
+      <string>St&amp;yle</string>
+     </property>
+    </widget>
+    <addaction name="action_show_toolbar"/>
+    <addaction name="action_show_port_inputs"/>
+    <addaction name="action_show_channels"/>
+    <addaction name="action_show_indicators"/>
+    <addaction name="action_show_balance"/>
+    <addaction name="action_show_shared_plugins"/>
+    <addaction name="action_show_statusbar"/>
+    <addaction name="action_show_track_volume"/>
+    <addaction name="action_show_plugin_volume"/>
+    <addaction name="separator"/>
+    <addaction name="action_rollup_all_plugins"/>
+    <addaction name="action_unroll_all_plugins"/>
+    <addaction name="separator"/>
+    <addaction name="action_collapse_all_ports"/>
+    <addaction name="action_expand_all_ports"/>
+    <addaction name="separator"/>
+    <addaction name="action_show_connections"/>
+    <addaction name="action_show_project_info"/>
+    <addaction name="action_show_score_info"/>
+    <addaction name="separator"/>
+    <addaction name="menu_style"/>
+    <addaction name="action_reload_style"/>
+    <addaction name="action_vertical_layout"/>
+   </widget>
+   <widget class="QMenu" name="menuSF_Z">
+    <property name="title">
+     <string>SF&amp;Zs</string>
+    </property>
+    <addaction name="action_watch_files"/>
+    <addaction name="action_copy_sfzs"/>
+    <addaction name="action_copy_sfz_paths"/>
+    <addaction name="separator"/>
+    <addaction name="action_show_sfzdb"/>
+   </widget>
+   <addaction name="menu_file"/>
+   <addaction name="menu_edit"/>
+   <addaction name="menu_view"/>
+   <addaction name="menuSF_Z"/>
+  </widget>
+  <widget class="QToolBar" name="toolbar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_open"/>
+   <addaction name="action_save"/>
+   <addaction name="action_new"/>
+   <addaction name="separator"/>
+   <addaction name="action_add_track"/>
+   <addaction name="separator"/>
+   <addaction name="action_transport_rewind"/>
+   <addaction name="action_transport_start"/>
+   <addaction name="action_transport_stop"/>
+   <addaction name="separator"/>
+   <addaction name="action_record"/>
+  </widget>
+  <action name="action_open">
+   <property name="icon">
+    <iconset theme="document-open"/>
+   </property>
+   <property name="text">
+    <string>&amp;Open  ...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open project, track definition, or MuseScore score</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_quit">
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+   <property name="toolTip">
+    <string>Shutdown CarlaQt engine and quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="action_show_preferences">
+   <property name="text">
+    <string>&amp;Preferences</string>
+   </property>
+   <property name="toolTip">
+    <string>Show the preferences window (Unimplemented)</string>
+   </property>
+  </action>
+  <action name="action_show_toolbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Toolbar</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide the toolbar</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
+   </property>
+  </action>
+  <action name="action_show_balance">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Balance Control</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide the balance control</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+B</string>
+   </property>
+  </action>
+  <action name="action_show_shared_plugins">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Shared &amp;Plugins</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide the shared plugins area</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+P</string>
+   </property>
+  </action>
+  <action name="action_show_statusbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Statusbar</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide the status bar</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="action_show_channels">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Channels</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide track channels</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+C</string>
+   </property>
+  </action>
+  <action name="action_expand_all_ports">
+   <property name="text">
+    <string>E&amp;xpand all ports</string>
+   </property>
+  </action>
+  <action name="action_add_shared_plugin">
+   <property name="text">
+    <string>Add &amp;shared Plugin</string>
+   </property>
+   <property name="toolTip">
+    <string>Add a shared Plugin</string>
+   </property>
+  </action>
+  <action name="action_clear_shared_plugins">
+   <property name="text">
+    <string>&amp;Clear shared Plugins</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove all shared Plugins</string>
+   </property>
+  </action>
+  <action name="action_collapse_all_ports">
+   <property name="text">
+    <string>Collapse all ports</string>
+   </property>
+   <property name="toolTip">
+    <string>Collapse (hide) all ports</string>
+   </property>
+  </action>
+  <action name="action_unroll_all_plugins">
+   <property name="text">
+    <string>&amp;Unroll all plugins</string>
+   </property>
+  </action>
+  <action name="action_rollup_all_plugins">
+   <property name="text">
+    <string>Ro&amp;llup all plugins</string>
+   </property>
+   <property name="toolTip">
+    <string>Rollup (shrink) all plugins</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+R</string>
+   </property>
+  </action>
+  <action name="action_unmute_all_tracks">
+   <property name="text">
+    <string>&amp;Unmute all tracks</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+U</string>
+   </property>
+  </action>
+  <action name="action_mute_all_tracks">
+   <property name="text">
+    <string>&amp;Mute all tracks</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="action_new">
+   <property name="icon">
+    <iconset theme="document-new"/>
+   </property>
+   <property name="text">
+    <string>&amp;New</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="action_save">
+   <property name="icon">
+    <iconset theme="document-save"/>
+   </property>
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save the current project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_show_port_inputs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Port i&amp;nputs</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide port inputs</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+N</string>
+   </property>
+  </action>
+  <action name="action_reload_style">
+   <property name="text">
+    <string>Reload style</string>
+   </property>
+   <property name="toolTip">
+    <string>Reload the current style, reflecting changes</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
+  </action>
+  <action name="action_clear_track_plugins">
+   <property name="text">
+    <string>Clear all track plugins</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove all plugins in all track tracks</string>
+   </property>
+  </action>
+  <action name="action_add_port">
+   <property name="text">
+    <string>Add port</string>
+   </property>
+   <property name="toolTip">
+    <string>Add a new port</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="action_add_track">
+   <property name="icon">
+    <iconset theme="list-add"/>
+   </property>
+   <property name="text">
+    <string>Add track</string>
+   </property>
+   <property name="toolTip">
+    <string>Add a new track widget</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="action_show_score_info">
+   <property name="text">
+    <string>Score info</string>
+   </property>
+   <property name="toolTip">
+    <string>Show port, channels, instrument name and voice for the score from which the project was imported</string>
+   </property>
+  </action>
+  <action name="action_connect_all_tracks">
+   <property name="text">
+    <string>Connect all tracks</string>
+   </property>
+   <property name="toolTip">
+    <string>Connect all tracks' audio output to a selected client</string>
+   </property>
+  </action>
+  <action name="action_show_sfzdb">
+   <property name="text">
+    <string>Edit SF&amp;Z Database</string>
+   </property>
+   <property name="toolTip">
+    <string>Manages the internal SFZ database</string>
+   </property>
+  </action>
+  <action name="action_auto_connect_tracks">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Auto connect tracks</string>
+   </property>
+   <property name="toolTip">
+    <string>Automatically connect new ports and tracks to the first system client</string>
+   </property>
+  </action>
+  <action name="action_vertical_layout">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Vertical layout</string>
+   </property>
+   <property name="toolTip">
+    <string>Show interface in a vertical layout (requires restart)</string>
+   </property>
+  </action>
+  <action name="action_save_as">
+   <property name="text">
+    <string>Save &amp;as</string>
+   </property>
+   <property name="toolTip">
+    <string>Save the current project with a different file name</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+A</string>
+   </property>
+  </action>
+  <action name="action_show_indicators">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Indicators</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide the MIDI and audio input indicators</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+I</string>
+   </property>
+  </action>
+  <action name="action_auto_start">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Open on start</string>
+   </property>
+   <property name="toolTip">
+    <string>When checked, will open this project at startup</string>
+   </property>
+  </action>
+  <action name="action_revert">
+   <property name="text">
+    <string>Re&amp;vert</string>
+   </property>
+   <property name="toolTip">
+    <string>Discard changes and reload the last saved copy</string>
+   </property>
+  </action>
+  <action name="action_show_project_info">
+   <property name="text">
+    <string>Project &amp;info</string>
+   </property>
+   <property name="toolTip">
+    <string>Show port/channel list, with option to copy to clipboard</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Return</string>
+   </property>
+  </action>
+  <action name="action_show_track_volume">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Track Volume</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide the volume indicators for each track</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+V</string>
+   </property>
+  </action>
+  <action name="action_show_plugin_volume">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Plugin Volume</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide the volume indicators for track plugins</string>
+   </property>
+  </action>
+  <action name="action_show_connections">
+   <property name="text">
+    <string>Connections</string>
+   </property>
+   <property name="toolTip">
+    <string>Show current connections</string>
+   </property>
+   <property name="shortcut">
+    <string>F4</string>
+   </property>
+  </action>
+  <action name="action_watch_files">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Watch SFZs for changes</string>
+   </property>
+   <property name="toolTip">
+    <string>Watch for changes in loaded .sfz files and reload when changed</string>
+   </property>
+  </action>
+  <action name="action_close">
+   <property name="text">
+    <string>C&amp;lose</string>
+   </property>
+   <property name="toolTip">
+    <string>Close the current project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="action_open_project_folder">
+   <property name="text">
+    <string>Open project folder</string>
+   </property>
+  </action>
+  <action name="action_apply_to_score">
+   <property name="text">
+    <string>Apply project to MuseScore3 score</string>
+   </property>
+  </action>
+  <action name="action_copy_sfzs">
+   <property name="text">
+    <string>Copy SFZs to &amp;project folder</string>
+   </property>
+  </action>
+  <action name="action_copy_sfz_paths">
+   <property name="text">
+    <string>&amp;Copy SFZ paths to clipboard</string>
+   </property>
+  </action>
+  <action name="action_transport_start">
+   <property name="icon">
+    <iconset theme="media-playback-start"/>
+   </property>
+   <property name="text">
+    <string>Start transport</string>
+   </property>
+   <property name="toolTip">
+    <string>Start the JACK transport. Other applications will begin playing.</string>
+   </property>
+  </action>
+  <action name="action_transport_stop">
+   <property name="icon">
+    <iconset theme="media-playback-stop"/>
+   </property>
+   <property name="text">
+    <string>Transport stop</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop the JACK transport</string>
+   </property>
+  </action>
+  <action name="action_record">
+   <property name="icon">
+    <iconset theme="media-record"/>
+   </property>
+   <property name="text">
+    <string>Start recording</string>
+   </property>
+   <property name="toolTip">
+    <string>Rewind the transport to 0 and start recording</string>
+   </property>
+  </action>
+  <action name="action_transport_rewind">
+   <property name="icon">
+    <iconset theme="media-seek-backward"/>
+   </property>
+   <property name="text">
+    <string>Rewind</string>
+   </property>
+   <property name="toolTip">
+    <string>Rewind the JACK transport to position 0</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>action_quit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>482</x>
+     <y>227</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

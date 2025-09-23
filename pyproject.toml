@@ -1,0 +1,44 @@
+[project]
+name = "musecbox"
+authors = [{name = "Leon Dionne", email = "ldionne@dridesign.sh.cn"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"]
+dynamic = ["version", "description"]
+dependencies = [
+	"PyQt5",
+	"simple_carla >= 2.0.0",
+	"JACK-Client",
+	"mido",
+	"mscore3 >= 1.11.1",
+	"sfzen >= 1.2.0",
+	"appdirs",
+	"recent_items_list",
+	"soso_qt_extras >= 1.2.0"
+]
+
+[project.urls]
+Home = "https://github.com/Zen-Master-SoSo/musecbox"
+
+[project.scripts]
+musecbox = "musecbox.__main__:main"
+mbx-apply = "musecbox.scripts.mbx_apply:main"
+mbx-project-info = "musecbox.scripts.mbx_project_info:main"
+mbx-track-setup = "musecbox.scripts.mbx_track_setup:main"
+
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[bumpver]
+current_version = "0.0.0"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "Bump version {old_version} -> {new_version}"
+commit = true
+tag = false
+push = false
+
+[bumpver.file_patterns]
+"musecbox/__init__.py" = [
+    '^__version__ = "{version}"$',
+]

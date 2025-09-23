@@ -1,0 +1,181 @@
+QWidget {
+}
+
+QPushButton {
+}
+
+QScrollBar:horizontal::groove {
+}
+
+QScrollBar:handle {
+}
+
+QScrollBar:add-line,
+QScrollBar:sub-line {
+}
+
+QToolBar {
+	border: none;
+}
+
+
+QMainWindow #qt_list_button {
+	font-size: 11px;
+}
+
+QMainWindow #qt_list_button_menu::item {
+	font-size: 12px;
+	padding: 2px 4px 2px 4px;
+}
+
+QMainWindow #qt_list_button_menu::item:selected {
+	color: #FFF;
+	background: #F18559;
+}
+
+
+
+QFrame#frm_port_widget_top QLabel {
+	background: #444;
+	color: #FFF;
+	font-weight: bold;
+}
+
+QFrame#port0 #frm_port_widget_top QLabel {
+	background: #AD6900;
+}
+
+QFrame#port1 #frm_port_widget_top QLabel {
+	background: #AD0000;
+}
+
+QFrame#port2 #frm_port_widget_top QLabel {
+	background: #0004B3;
+}
+
+QFrame#port3 #frm_port_widget_top QLabel {
+	background: #00B34D;
+}
+
+QFrame#port4 #frm_port_widget_top QLabel {
+	background: #B3A700;
+}
+
+QFrame#port5 #frm_port_widget_top QLabel {
+	background: #9900B3;
+}
+
+QFrame#port6 #frm_port_widget_top QLabel {
+	background: #0082B3;
+}
+
+QFrame#port7 #frm_port_widget_top QLabel {
+	background: #B30000;
+}
+
+QFrame#port8 #frm_port_widget_top QLabel {
+	background: #B30000;
+}
+
+QFrame#port9 #frm_port_widget_top QLabel {
+	background: #B30000;
+}
+
+
+
+QPushButton#b_mute:checked {
+	background: #5AD5FA;
+}
+
+QPushButton#b_solo:checked {
+	color: #FFFFFF;
+	background: #FC3232;
+}
+
+
+
+QFrame#frm_channels QPushButton {
+	font-size: 8pt;
+}
+
+QFrame#frm_channels QPushButton:checked {
+	background: #92F20C;
+}
+
+
+#b_name {
+	font-size: 11px;
+	padding: 2px 4px;
+}
+
+#frm_volume QLabel,
+#frm_wet QLabel {
+	font-size: 10px;
+}
+
+
+SmallSlider, SmallBalanceControl {
+	background-color: #C6C8CF;
+}
+
+
+SmallSlider {
+	font-size: 11px;
+}
+
+
+SmallBalanceControl {
+	color: #858585;
+	border: 1px solid #A3A3A3;
+	border-radius: 3px;
+}
+
+SmallBalanceControl QLabel {
+	font-size: 11px;
+	color: #FFFFFF;
+	margin: 4px;
+}
+
+SmallBalanceControl #inner_bar {
+	background: qlineargradient(
+		x1:0,
+		y1:0,
+		x2:0,
+		y2:1,
+		stop:0 #38A4E8,
+		stop:1 #318FCA
+	);
+}
+
+
+BalanceControlWidget {
+	font-size: 9pt;
+}
+
+
+
+QFrame#frm_shared_plugins {
+	background: #B5B5B5;
+}
+
+
+#frm_statusbar QLabel,
+#frm_statusbar QPushButton {
+}
+
+
+
+#sfz_file_dialog QListWidget::item {
+}
+
+#lst_sfzs::item {
+	padding: 2px;
+}
+
+
+#sfz_paths_dialog QLabel {
+	background: #FFF;
+	padding: 4px;
+}
+
+
