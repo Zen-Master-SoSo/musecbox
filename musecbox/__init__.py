@@ -18,8 +18,8 @@
 #  MA 02110-1301, USA.
 #
 """
-"MusecBox" is a GUI application which hosts .sfz -based synthesizers, designed
-to be tightly integrated with MuseScore.
+"MusecBox" is A GUI application designed to be an SFZ -based synth replacement
+for MuseScore3.
 
 MusecBox utilizes the Carla plugin host application as its back-end. The
 front-end is writted entirely in python, using PyQt.
