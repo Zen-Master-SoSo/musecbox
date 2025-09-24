@@ -24,7 +24,9 @@ import sys, logging, argparse
 from os import environ, unlink
 from os.path import abspath, expanduser
 from socket import socket, AF_UNIX, SOCK_DGRAM, error as sock_error
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QGuiApplication, QIcon
 from qt_extras import DevilBox
 from musecbox import (
 	SOCKET_PATH,
@@ -113,6 +115,7 @@ def main():
 		nice(-10)
 
 	application = QApplication([])
+	QGuiApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 	try:
 		main_window = MainWindow(options)
 	except EngineInitFailure as e:
