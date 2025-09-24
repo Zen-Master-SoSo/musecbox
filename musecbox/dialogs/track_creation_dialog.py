@@ -30,7 +30,7 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QApplication, QDialog, QDialogButtonBox
 
 from mscore import VoiceName
-from musecbox import set_application_style
+from musecbox import set_application_style, LOG_FORMAT
 from musecbox.sfzdb import SFZDatabase
 from musecbox.dialogs.sfz_file_dialog import SFZFileDialog
 
@@ -73,7 +73,6 @@ class TrackCreationDialog(QDialog):
 
 
 if __name__ == "__main__":
-	LOG_FORMAT = "[%(filename)24s:%(lineno)-4d] %(levelname)-8s %(message)s"
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()

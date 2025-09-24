@@ -41,8 +41,8 @@ from qt_extras.list_layout import VListLayout
 from qt_extras.menu_button import QtMenuButton
 from mscore import Score, Part, Instrument, VoiceName
 
-from musecbox import set_application_style, APP_PATH, TEXT_NO_GROUP, TEXT_NEW_GROUP
-from musecbox.gui import LAYOUT_COMPLETE_DELAY
+from musecbox import	set_application_style, APP_PATH, TEXT_NO_GROUP, TEXT_NEW_GROUP, \
+						LAYOUT_COMPLETE_DELAY, LOG_FORMAT
 from musecbox.dialogs.sfz_file_dialog import SFZFileDialog
 from musecbox.dialogs.instrument_selection_dialog import InstrumentSelectionDialog
 from musecbox.sfzdb import SFZDatabase
@@ -745,7 +745,6 @@ class EncodingInstrument(Instrument):
 
 
 if __name__ == "__main__":
-	LOG_FORMAT = "[%(filename)24s:%(lineno)-4d] %(levelname)-8s %(message)s"
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()

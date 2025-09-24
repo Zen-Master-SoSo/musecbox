@@ -24,10 +24,8 @@ import logging
 from os.path import join
 from glob import glob
 from shutil import move
-from time import sleep
 from simple_carla.qt import QtPlugin
 from PyQt5.QtCore import QDir
-from musecbox import carla, main_window
 
 
 class AudioRecorder(QtPlugin):

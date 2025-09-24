@@ -33,9 +33,9 @@ from PyQt5.QtWidgets import QApplication, QDialog, QFileSystemModel, QAbstractIt
 	QDialogButtonBox, QListWidgetItem, QMenu
 
 # musecbox imports
-from musecbox import setting, set_setting, set_application_style, KEY_SFZ_DIR
+from musecbox import	setting, set_setting, set_application_style, KEY_SFZ_DIR, \
+						LAYOUT_COMPLETE_DELAY, LOG_FORMAT
 from musecbox.sfzdb import SFZDatabase
-from musecbox.gui import LAYOUT_COMPLETE_DELAY
 
 KEY_DIRECTORY			= 'AddGroupDialog/directory'
 
@@ -250,7 +250,6 @@ class AddGroupDialog(QDialog):
 
 if __name__ == "__main__":
 	from rich.pretty import pprint
-	LOG_FORMAT = "[%(filename)24s:%(lineno)-4d] %(levelname)-8s %(message)s"
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()

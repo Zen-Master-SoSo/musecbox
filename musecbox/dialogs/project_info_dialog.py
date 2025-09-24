@@ -30,8 +30,8 @@ from PyQt5 import			uic
 from PyQt5.QtCore import	Qt, pyqtSlot, QTimer, QDir
 from PyQt5.QtWidgets import QFileDialog, QDialog, QTableWidgetItem
 
-from musecbox import		setting, set_setting, KEY_RECENT_EXPORT_DIR, TRACK_DEF_FILE_TYPE
-from musecbox.gui import LAYOUT_COMPLETE_DELAY
+from musecbox import		setting, set_setting, KEY_RECENT_EXPORT_DIR, TRACK_DEF_FILE_TYPE, \
+							LAYOUT_COMPLETE_DELAY
 
 
 class ProjectInfoDialog(QDialog):

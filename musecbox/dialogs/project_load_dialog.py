@@ -33,7 +33,7 @@ from PyQt5 import uic
 from PyQt5.QtCore import Qt, pyqtSlot, QTimer
 from PyQt5.QtWidgets import QApplication, QDialog
 
-from musecbox.gui import LAYOUT_COMPLETE_DELAY
+from musecbox import LAYOUT_COMPLETE_DELAY
 
 PLUGIN_READY_DELAY = 20
 PROGRESS_LABEL_PERIOD = 333

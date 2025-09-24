@@ -26,14 +26,9 @@ from os.path import abspath, expanduser
 from socket import socket, AF_UNIX, SOCK_DGRAM, error as sock_error
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QGuiApplication, QIcon
+from PyQt5.QtGui import QGuiApplication
 from qt_extras import DevilBox
-from musecbox import (
-	SOCKET_PATH,
-	CARRIAGE_RETURN,
-	carla,
-	EngineInitFailure
-)
+from musecbox import SOCKET_PATH, CARRIAGE_RETURN, carla, EngineInitFailure, LOG_FORMAT
 from musecbox.gui.main_window import MainWindow
 
 
@@ -61,12 +56,11 @@ def main():
 	else:
 		log_level = logging.DEBUG
 		log_file = expanduser('~/musecbox.log')
-	log_format = "[%(filename)24s:%(lineno)4d] %(levelname)-8s %(message)s"
 	if log_file:
 		logging.basicConfig(filename = log_file, filemode = 'w',
-			level = log_level, format = log_format)
+			level = log_level, format = LOG_FORMAT)
 	else:
-		logging.basicConfig(level = log_level, format = log_format)
+		logging.basicConfig(level = log_level, format = LOG_FORMAT)
 
 	#-----------------------------------------------------------------------
 	# Annoyance fix per:

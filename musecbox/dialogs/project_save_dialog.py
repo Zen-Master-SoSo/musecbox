@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QRadioButton, QCheckBox, 
 from sfzen import	SAMPLES_ABSPATH, SAMPLES_RESOLVE, SAMPLES_COPY, \
 					SAMPLES_SYMLINK, SAMPLES_HARDLINK
 
-from musecbox import setting, set_application_style, PROJECT_FILE_TYPE, \
+from musecbox import setting, set_application_style, LOG_FORMAT, PROJECT_FILE_TYPE, \
 					KEY_COPY_SFZS, KEY_SAMPLES_MODE, KEY_CLEAN_SFZS, KEY_RECENT_PROJECT_DIR, \
 					T_SAMPLEMODE_ABSPATH, T_SAMPLEMODE_RELPATH, T_SAMPLEMODE_COPY, \
 					T_SAMPLEMODE_SYMLINK, T_SAMPLEMODE_HARDLINK, \
@@ -148,7 +148,6 @@ class ProjectSaveDialog(QFileDialog):
 
 
 if __name__ == "__main__":
-	LOG_FORMAT = "[%(filename)24s:%(lineno)-4d] %(levelname)-8s %(message)s"
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()

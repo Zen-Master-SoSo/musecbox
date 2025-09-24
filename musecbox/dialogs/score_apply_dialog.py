@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import QApplication, QDialog, QTableWidgetItem, QStyle
 
 from qt_extras import ShutUpQT
 from musecbox.score_fixer import ScoreFixer
-from musecbox.gui import LAYOUT_COMPLETE_DELAY
+from musecbox import LAYOUT_COMPLETE_DELAY
 
 CHAR_OK = '😊'
 CHAR_HAS_MISSING = '😕'

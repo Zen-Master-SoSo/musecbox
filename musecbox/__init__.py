@@ -48,10 +48,11 @@ except ImportError:
 from platform import system
 from subprocess import Popen
 from tempfile import gettempdir as tempdir
+from traceback import print_tb
 
 # PyQt5 imports
-from PyQt5.QtCore import QSettings
-from PyQt5.QtWidgets import QApplication, QWidget, QSplitter
+from PyQt5.QtCore import Qt, QSettings
+from PyQt5.QtWidgets import QApplication, QWidget, QSplitter, QErrorMessage
 from PyQt5.QtGui import QFont
 
 from recent_items_list import RecentItemsList
@@ -74,6 +75,7 @@ from simple_carla import (
 )
 from simple_carla.qt import CarlaQt
 from qt_extras import DevilBox
+from log_soso import StreamToLogger
 
 __version__ = "0.0.2"
 
@@ -82,6 +84,8 @@ APP_PATH				= dirname(realpath(__file__))
 SOCKET_PATH				= join(tempdir(), 'musecbox.socket')
 CARRIAGE_RETURN			= linesep.encode()
 DEFAULT_STYLE			= 'system'
+LAYOUT_COMPLETE_DELAY	= 50
+LOG_FORMAT				= "[%(filename)24s:%(lineno)4d] %(levelname)-8s %(message)s"
 
 # -------------------------------------------------------------------
 # Plugin type lookup dict (see str
@@ -374,10 +378,31 @@ def unbold(widget):
 # -------------------------------------------------------------------
 # Custom exceptions:
 
-class EngineInitFailure(Exception):
+class EngineInitFailure(RuntimeError):
 	"""
-	Raised if carla.engine_init fails
+	Raised if carla fails to initialize.
 	"""
+	def __init__(self):
+		audio_error = carla().get_last_error()
+		if audio_error:
+			super().__init__(f'Could not start carla; possible reasons:\n{audio_error}')
+		else:
+			super().__init__('Could not start carla')
 
+# -------------------------------------------------------------------
+# Exception hook
+
+def exceptions_hook(exception_type, value, traceback):
+	if not QApplication.instance() is None:
+		msg = QErrorMessage.qtHandler()
+		msg.setWindowModality(Qt.ApplicationModal)
+		msg.showMessage(
+			f'{exception_type.__name__}: "{value}"',
+			exception_type.__name__)
+	logging.error('Exception "%s": %s', exception_type.__name__, value)
+	with StreamToLogger() as log:
+		print_tb(traceback, file = log)
+
+sys.excepthook = exceptions_hook
 
 #  end musecbox/__init__.py

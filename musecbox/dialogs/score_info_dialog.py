@@ -31,8 +31,7 @@ from PyQt5 import uic
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QDialog, QTableWidgetItem
 
-from musecbox import APP_PATH, set_application_style
-from musecbox.gui import LAYOUT_COMPLETE_DELAY
+from musecbox import APP_PATH, set_application_style, LAYOUT_COMPLETE_DELAY, LOG_FORMAT
 
 
 class ScoreInfoDialog(QDialog):
@@ -86,7 +85,6 @@ class ScoreInfoDialog(QDialog):
 
 if __name__ == "__main__":
 	from PyQt5.QtWidgets import QApplication
-	LOG_FORMAT = "[%(filename)24s:%(lineno)-4d] %(levelname)-8s %(message)s"
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()

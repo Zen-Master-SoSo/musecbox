@@ -27,10 +27,10 @@ from simple_carla import Plugin
 
 # PyQt5 imports
 from PyQt5 import uic
-from PyQt5.QtCore import pyqtSlot, QTimer
+from PyQt5.QtCore import Qt, pyqtSlot, QTimer
 from PyQt5.QtWidgets import QApplication, QDialog
 
-from musecbox import set_application_style, carla, main_window
+from musecbox import set_application_style, carla, main_window, LOG_FORMAT
 from musecbox.audio_recorder import AudioRecorder
 
 
@@ -59,17 +59,17 @@ class RecordDialog(QDialog):
 
 	@pyqtSlot(Plugin)
 	def slot_recorder_ready(self, _):
-		mw = main_window()
-		musecbox_clients = list(track_widget.last_plugin() \
-			for track_widget in mw.iterate_track_widgets())
-		musecbox_clients.extend(mw.iterate_shared_plugin_widgets())
-		for client in set(
-			source_client \
-			for patchbay_client in carla().system_audio_in_clients() \
-			for source_client in patchbay_client.audio_input_clients() \
-			if source_client in musecbox_clients):
-			client.connect_audio_outputs_to(self.recorder)
-		QTimer.singleShot(CONNECT_DELAY, self.slot_ready)
+		if mw := main_window():
+			musecbox_clients = list(track_widget.last_plugin() \
+				for track_widget in mw.iterate_track_widgets())
+			musecbox_clients.extend(mw.iterate_shared_plugin_widgets())
+			for client in set(
+				source_client \
+				for patchbay_client in carla().system_audio_in_clients() \
+				for source_client in patchbay_client.audio_input_clients() \
+				if source_client in musecbox_clients):
+				client.connect_audio_outputs_to(self.recorder)
+			QTimer.singleShot(CONNECT_DELAY, self.slot_ready)
 
 	@pyqtSlot()
 	def slot_ready(self):
@@ -108,13 +108,30 @@ class RecordDialog(QDialog):
 		self.accept()
 
 
-if __name__ == "__main__":
-	LOG_FORMAT = "[%(filename)24s:%(lineno)-4d] %(levelname)-8s %(message)s"
+class TestApp(QApplication):
+
+	def __init__(self):
+		super().__init__([])
+		set_application_style()
+		carla().sig_engine_started.connect(self.slot_engine_started, type = Qt.QueuedConnection)
+		if not carla().engine_init():
+			raise EngineInitFailure()
+
+	@pyqtSlot(int, int, int, int, float, str)
+	def slot_engine_started(*_):
+		logging.debug('======= Engine started ======== ')
+		dialog = RecordDialog(None, '/save/to/filename.wav')
+		dialog.exec()
+		carla().delete()
+
+
+def main():
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
-	app = QApplication([])
-	set_application_style()
-	dialog = RecordDialog(None, '/save/to/filename.wav')
-	dialog.exec_()
+	TestApp().exec()
+
+
+if __name__ == "__main__":
+	main()
 
 
 #  end musecbox/dialogs/record_dialog.py

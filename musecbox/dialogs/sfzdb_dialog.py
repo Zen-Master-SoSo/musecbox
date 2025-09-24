@@ -28,7 +28,7 @@ from PyQt5 import uic
 from PyQt5.QtCore import Qt, pyqtSlot, QEvent
 from PyQt5.QtWidgets import QApplication, QDialog, QMenu, QListWidgetItem
 
-from musecbox import bold, unbold, TEXT_NO_GROUP
+from musecbox import bold, unbold, TEXT_NO_GROUP, LOG_FORMAT
 from musecbox.sfzdb import SFZDatabase
 from musecbox.dialogs.add_group_dialog import AddGroupDialog
 
@@ -278,7 +278,6 @@ class SFZMaintDialog(QDialog):
 
 
 if __name__ == "__main__":
-	LOG_FORMAT = "[%(filename)24s:%(lineno)-4d] %(levelname)-8s %(message)s"
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	window = SFZMaintDialog()

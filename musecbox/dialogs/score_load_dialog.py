@@ -29,7 +29,7 @@ from PyQt5 import			uic
 from PyQt5.QtCore import	pyqtSlot, QTimer
 from PyQt5.QtWidgets import QDialog
 
-from musecbox.gui import LAYOUT_COMPLETE_DELAY
+from musecbox import LAYOUT_COMPLETE_DELAY
 
 STEP_DELAY = 50
 WATCHDOG_TIMEOUT = 2500

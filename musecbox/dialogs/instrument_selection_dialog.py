@@ -35,8 +35,7 @@ from mscore import Score, Part
 from mscore.instruments import Instruments
 from mscore.fuzzy import FuzzyCandidate, FuzzyName
 from musecbox import	setting, set_setting, set_application_style, \
-						KEY_SCORES_DIR, KEY_RECENT_SCORE_DIR
-from musecbox.gui import LAYOUT_COMPLETE_DELAY
+						KEY_SCORES_DIR, KEY_RECENT_SCORE_DIR, LAYOUT_COMPLETE_DELAY, LOG_FORMAT
 
 TEXT_ANY = '[Any]'
 TEXT_NOTHING = '-'
@@ -178,7 +177,6 @@ class InstrumentSelectionDialog(QDialog):
 
 
 if __name__ == "__main__":
-	LOG_FORMAT = "[%(filename)24s:%(lineno)-4d] %(levelname)-8s %(message)s"
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()

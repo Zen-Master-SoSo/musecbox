@@ -61,8 +61,8 @@ from musecbox import 		carla, set_main_window, EngineInitFailure, \
 							KEY_SHOW_TRACK_VOLUME, KEY_SHOW_PLUGIN_VOLUME, KEY_SHOW_BALANCE, \
 							KEY_SHOW_SHARED_PLUGINS, KEY_SHOW_TOOLBAR, KEY_SHOW_STATUSBAR, \
 							KEY_AUTO_CONNECT, KEY_AUTO_START, KEY_WATCH_FILES, KEY_VERTICAL_LAYOUT, \
-							KEY_BCWIDGET_LINES, KEY_COPY_SFZS, KEY_SAMPLES_MODE, KEY_CLEAN_SFZS
-from musecbox.gui import LAYOUT_COMPLETE_DELAY
+							KEY_BCWIDGET_LINES, KEY_COPY_SFZS, KEY_SAMPLES_MODE, KEY_CLEAN_SFZS, \
+							LAYOUT_COMPLETE_DELAY
 from musecbox.gui.port_widget import PortWidget, HorizontalPortWidget, VerticalPortWidget
 from musecbox.gui.track_widget import TrackWidget
 from musecbox.gui.plugin_widgets import SharedPluginWidget
@@ -132,7 +132,7 @@ class MainWindow(QMainWindow):
 
 		self.restore_geometry()
 		if not carla().engine_init():
-			raise EngineInitFailure(carla().get_last_error())
+			raise EngineInitFailure()
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.update_ui)
 
 	def _connect_host_callbacks(self):

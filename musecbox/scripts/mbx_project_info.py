@@ -21,7 +21,7 @@
 Displays information about a saved MusecBox project.
 """
 import logging, argparse, sys, json
-from musecbox import PROJECT_OPTION_KEYS
+from musecbox import PROJECT_OPTION_KEYS, LOG_FORMAT
 
 def main():
 	p = argparse.ArgumentParser()
@@ -34,7 +34,6 @@ def main():
 	p.epilog = __doc__
 	options = p.parse_args()
 	log_level = logging.DEBUG if options.verbose else logging.ERROR
-	LOG_FORMAT = "[%(filename)24s:%(lineno)4d] %(levelname)-8s %(message)s"
 	logging.basicConfig(level = log_level, format = LOG_FORMAT)
 
 	try:

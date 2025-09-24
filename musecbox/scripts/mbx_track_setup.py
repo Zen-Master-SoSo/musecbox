@@ -24,7 +24,7 @@ MusecBox application.
 """
 import logging, argparse, sys, json
 from PyQt5.QtWidgets import QApplication
-from musecbox import set_application_style
+from musecbox import set_application_style, LOG_FORMAT
 from musecbox.dialogs.score_import_dialog import ScoreImportDialog
 
 def main():
@@ -34,7 +34,6 @@ def main():
 	p.epilog = __doc__
 	options = p.parse_args()
 	log_level = logging.DEBUG if options.verbose else logging.ERROR
-	LOG_FORMAT = "[%(filename)24s:%(lineno)4d] %(levelname)-8s %(message)s"
 	logging.basicConfig(level = log_level, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()

@@ -36,7 +36,7 @@ from sfzen import	SAMPLES_ABSPATH, SAMPLES_RESOLVE, SAMPLES_COPY, \
 
 from musecbox import setting, set_application_style, KEY_CLEAN_SFZS, KEY_SAMPLES_MODE, \
 					T_SAMPLEMODE_ABSPATH, T_SAMPLEMODE_RELPATH, T_SAMPLEMODE_COPY, \
-					T_SAMPLEMODE_SYMLINK, T_SAMPLEMODE_HARDLINK #, T_CLEAN_SFZ
+					T_SAMPLEMODE_SYMLINK, T_SAMPLEMODE_HARDLINK, LOG_FORMAT
 
 
 class CopySFZsDialog(QDialog):
@@ -104,7 +104,6 @@ class CopySFZsDialog(QDialog):
 
 
 if __name__ == "__main__":
-	LOG_FORMAT = "[%(filename)24s:%(lineno)-4d] %(levelname)-8s %(message)s"
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()

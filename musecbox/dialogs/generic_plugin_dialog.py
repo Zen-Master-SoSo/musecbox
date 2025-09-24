@@ -31,8 +31,7 @@ from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import QDialog, QWidget, QSizePolicy, QHBoxLayout, QVBoxLayout, QFormLayout, \
 							QFrame, QLabel, QCheckBox, QSlider, QShortcut
 
-from musecbox import main_window, set_application_style
-from musecbox.gui import LAYOUT_COMPLETE_DELAY
+from musecbox import main_window, set_application_style, LAYOUT_COMPLETE_DELAY
 
 
 class PluginDialog(QDialog):

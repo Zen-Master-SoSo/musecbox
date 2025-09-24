@@ -7,14 +7,14 @@ classifiers = ["License :: OSI Approved :: GNU General Public License v3 or late
 dynamic = ["version", "description"]
 dependencies = [
 	"PyQt5",
+	"appdirs",
 	"simple_carla >= 2.0.0",
-	"JACK-Client",
-	"mido",
+	"JACK-Client >= 0.5.0",
 	"mscore3 >= 1.11.1",
 	"sfzen >= 1.2.0",
-	"appdirs",
-	"recent_items_list",
-	"soso_qt_extras >= 1.2.0"
+	"recent_items_list >= 1.1.0",
+	"soso_qt_extras >= 1.2.0",
+	"log_soso"
 ]
 
 [project.urls]

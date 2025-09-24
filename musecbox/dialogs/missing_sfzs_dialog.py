@@ -27,7 +27,7 @@ from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, \
 							QLabel, QFrame, QPushButton, QSizePolicy
 from qt_extras.list_layout import VListLayout
-from musecbox import main_window, set_application_style, xdg_open
+from musecbox import main_window, set_application_style, xdg_open, LOG_FORMAT
 from musecbox.dialogs.sfz_file_dialog import SFZFileDialog
 
 CHAR_OKAY = '✅'
@@ -41,17 +41,17 @@ class MissingSFZsDialog(QDialog):
 	def __init__(self, parent, tracks_missing_sfzs):
 		super().__init__(parent)
 		self.tracks_missing_sfzs = tracks_missing_sfzs
-		dir_parted = defaultdict(list)
+		dirs_parted = defaultdict(list)
 		for track_widget in tracks_missing_sfzs:
 			path = track_widget.synth.sfz_filename
-			dir_parted[dirname(path)].append(track_widget)
+			dirs_parted[dirname(path)].append(track_widget)
 		lo = QVBoxLayout()
 		lo.setContentsMargins(18,12,18,20)
 		lo.setSpacing(10)
 		lbl = QLabel('<h3>Some SFZ files were not found:</h3>', self)
 		lo.addWidget(lbl)
 		self.dirs = VListLayout()
-		for dirpath, tracks in dir_parted.items():
+		for dirpath, tracks in dirs_parted.items():
 			self.dirs.append(MissingDir(self, dirpath, tracks))
 		lo.addItem(self.dirs)
 		hlo = QHBoxLayout()
@@ -135,25 +135,27 @@ class MissingSFZ(QFrame):
 
 
 if __name__ == "__main__":
-	LOG_FORMAT = "[%(filename)24s:%(lineno)-4d] %(levelname)-8s %(message)s"
+	from collections import namedtuple
+	FakeSynth = namedtuple('Synth', ['sfz_filename'])
+	FakeTrack = namedtuple('Track', ['synth'])
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()
 	dialog = MissingSFZsDialog(None, [
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Brass-Notation/Trumpets-Sustain.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Cello-Solo-Looped.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Piccolo-Solo-Sustain.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Violas-Staccato.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Flute-Solo-2-Sustain-Non-Vibrato.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Clarinet-Solo.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Celli-Staccato.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/All-Strings-Col-Legno.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Organ/Great-Principal-4Ft.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Viola-Solo-Sustain.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Flute-Solo-1-Looped.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Violin-Solo-2-Harmonics-Non-Vibrato.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Brass-Notation/Bass-Trombone-Solo-Staccato.sfz'),
-		(None, '/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Contrabassoon-Solo-Looped.sfz'),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Brass-Notation/Trumpets-Sustain.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Cello-Solo-Looped.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Piccolo-Solo-Sustain.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Violas-Staccato.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Flute-Solo-2-Sustain-Non-Vibrato.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Clarinet-Solo.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Celli-Staccato.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/All-Strings-Col-Legno.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Organ/Great-Principal-4Ft.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Viola-Solo-Sustain.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Flute-Solo-1-Looped.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Violin-Solo-2-Harmonics-Non-Vibrato.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Brass-Notation/Bass-Trombone-Solo-Staccato.sfz')),
+		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Contrabassoon-Solo-Looped.sfz')),
 	])
 	dialog.exec_()
 

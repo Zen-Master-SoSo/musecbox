@@ -22,7 +22,7 @@ from PyQt5.QtCore import	Qt, pyqtSlot, QSize
 from PyQt5.QtWidgets import	QApplication, QDialog, QHBoxLayout, QVBoxLayout, QSizePolicy, \
 							QLabel, QPushButton, QSpacerItem
 from PyQt5.QtGui import		QIcon
-from musecbox import set_application_style
+from musecbox import set_application_style, LOG_FORMAT
 
 
 class CopySFZPathsDialog(QDialog):
@@ -59,7 +59,6 @@ class CopySFZPathsDialog(QDialog):
 
 
 if __name__ == "__main__":
-	LOG_FORMAT = "[%(filename)24s:%(lineno)-4d] %(levelname)-8s %(message)s"
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()

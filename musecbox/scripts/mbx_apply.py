@@ -21,6 +21,7 @@
 Applies the port/channel assignments in a MusecBox project to a MuseScore3 score.
 """
 import logging, argparse, sys, json
+from musecbox import LOG_FORMAT
 from musecbox.score_fixer import ScoreFixer
 
 
@@ -39,7 +40,6 @@ def main():
 	"""
 	options = p.parse_args()
 	log_level = logging.DEBUG if options.verbose else logging.ERROR
-	LOG_FORMAT = "[%(filename)24s:%(lineno)4d] %(levelname)-8s %(message)s"
 	logging.basicConfig(level = log_level, format = LOG_FORMAT)
 
 	try:

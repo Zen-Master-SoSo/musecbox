@@ -24,7 +24,6 @@ integrated database.
 import logging, glob
 from os.path import join, dirname, basename, realpath
 from functools import partial
-from threading import Event
 from qt_extras import ShutUpQT
 from qt_extras.list_button import QtListButton
 
@@ -39,8 +38,8 @@ from PyQt5.QtWidgets import	QApplication, QDialog, QFileSystemModel, QAbstractIt
 from mscore import VoiceName
 from musecbox import 	carla, previewer, setting, set_setting, set_application_style, bold, \
 						TEXT_NO_CONN, TEXT_NO_GROUP, TEXT_NEW_GROUP, KEY_SFZ_DIR, \
-						KEY_PREVIEW_FILES, KEY_PREVIEWER_MIDI_SRC, KEY_PREVIEWER_AUDIO_TGT
-from musecbox.gui import LAYOUT_COMPLETE_DELAY
+						KEY_PREVIEW_FILES, KEY_PREVIEWER_MIDI_SRC, KEY_PREVIEWER_AUDIO_TGT, \
+						LAYOUT_COMPLETE_DELAY, LOG_FORMAT, EngineInitFailure
 from musecbox.dialogs.add_group_dialog import AddGroupDialog
 from musecbox.sfz_previewer import SFZPreviewer
 from musecbox.sfzdb import SFZDatabase
@@ -50,8 +49,6 @@ SOURCE_TYPE_GROUP	= 2
 KEY_SELECT_SOURCE	= 'SFZFileDialog/sel_source'
 KEY_DIRECTORY		= 'SFZFileDialog/directory'
 KEY_GROUP			= 'SFZFileDialog/group'
-
-TEST_ENGINE_READY	= Event()
 
 
 class SFZFileDialog(QDialog):
@@ -382,26 +379,27 @@ class SFZFileDialog(QDialog):
 		logging.debug('closeEvent')
 
 
-@pyqtSlot(int, int, int, int, float, str)
-def slot_engine_started(*_):
-	logging.debug('======= Engine started ======== ')
-	TEST_ENGINE_READY.set()
+class TestApp(QApplication):
 
-def main():
-	LOG_FORMAT = "[%(filename)24s:%(lineno)-4d] %(levelname)-8s %(message)s"
-	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
-	carla().sig_engine_started.connect(slot_engine_started, type = Qt.QueuedConnection)
-	if carla().engine_init():
-		TEST_ENGINE_READY.wait()
-		app = QApplication([])
+	def __init__(self):
+		super().__init__([])
 		set_application_style()
+		carla().sig_engine_started.connect(self.slot_engine_started, type = Qt.QueuedConnection)
+		if not carla().engine_init():
+			raise EngineInitFailure()
+
+	@pyqtSlot(int, int, int, int, float, str)
+	def slot_engine_started(*_):
+		logging.debug('======= Engine started ======== ')
 		dialog = SFZFileDialog(VoiceName('Violins II', None))
 		if dialog.exec():
 			print(dialog.sfz_filename)
 		carla().delete()
-		app.quit()
-	else:
-		print('Failed to start Carla engine')
+
+
+def main():
+	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
+	TestApp().exec()
 
 
 if __name__ == "__main__":
