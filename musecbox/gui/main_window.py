@@ -469,11 +469,11 @@ class MainWindow(QMainWindow):
 
 	def load_project(self, filename):
 		from musecbox.dialogs.project_load_dialog import ProjectLoadDialog
-		filename = realpath(filename)
+		project_realpath = realpath(filename)
 		logging.debug('Load project "%s"', filename)
-		if exists(filename):
+		if exists(project_realpath):
 			try:
-				with open(filename, 'r') as fh:
+				with open(project_realpath, 'r') as fh:
 					self.project_definition = json.load(fh)
 			except json.JSONDecodeError as e:
 				DevilBox(
@@ -482,7 +482,7 @@ class MainWindow(QMainWindow):
 				self.setWindowTitle(APPLICATION_NAME)
 			else:
 				self.enter_loading_state()
-				self.project_filename = filename
+				self.project_filename = project_realpath
 				self.source_score = self.project_definition['source_score']
 				self.balance_control_widget.slot_set_lines(setting(KEY_BCWIDGET_LINES, int, 3))
 				if 'exported_wav_file' in self.project_definition:
@@ -987,15 +987,14 @@ class MainWindow(QMainWindow):
 				if clicked_plugin_widget.has_custom_ui:
 					action = QAction('Prefer generic interface', self)
 					action.setCheckable(True)
+					action.setChecked(clicked_plugin_widget.prefer_generic_dialog)
 					action.triggered.connect(clicked_plugin_widget.slot_prefer_generic)
 					menu.addAction(action)
 					if not clicked_plugin_widget.prefer_generic_dialog:
 						action = QAction('Open generic interface', self)
 						action.triggered.connect(clicked_plugin_widget.slot_show_generic_dialog)
 						menu.addAction(action)
-				action = QAction(f'Remove "{clicked_plugin_widget.moniker}"', self)
-				action.triggered.connect(partial(self.remove_shared_plugin, clicked_plugin_widget))
-				menu.addAction(action)
+					menu.addSeparator()	# ---------------------
 				action = QAction('Spread balance full stereo', self)
 				action.triggered.connect(clicked_plugin_widget.go_full_stereo)
 				action.setEnabled(clicked_plugin_widget.can_balance)
@@ -1005,6 +1004,16 @@ class MainWindow(QMainWindow):
 				action.setEnabled(clicked_plugin_widget.can_pan)
 				menu.addAction(action)
 				menu.addSeparator()	# ---------------------
+				action = QAction(f'Show "{clicked_plugin_widget.original_plugin_name}" info', self)
+				action.triggered.connect(clicked_plugin_widget.slot_show_info_dialog)
+				menu.addAction(action)
+				action = QAction(f'Rename "{clicked_plugin_widget.moniker}"', self)
+				action.triggered.connect(clicked_plugin_widget.slot_rename)
+				menu.addAction(action)
+				menu.addSeparator()	# ---------------------
+				action = QAction(f'Remove "{clicked_plugin_widget.moniker}"', self)
+				action.triggered.connect(partial(self.remove_shared_plugin, clicked_plugin_widget))
+				menu.addAction(action)
 		menu.addAction(self.action_add_shared_plugin)
 		if len(self.shared_plugin_layout) > 0:
 			menu.addAction(self.action_clear_shared_plugins)
