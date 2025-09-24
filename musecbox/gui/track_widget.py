@@ -325,25 +325,27 @@ class TrackWidget(QFrame):
 				and clicked_plugin_widget.parent() is not None:
 				clicked_plugin_widget = clicked_plugin_widget.parent()
 			if isinstance(clicked_plugin_widget, TrackPluginWidget):
-				menu.setTitle(clicked_plugin_widget.original_plugin_name)
-				action = QAction(f'{clicked_plugin_widget.moniker} info', self)
+				if clicked_plugin_widget.has_custom_ui:
+					action = QAction('Prefer generic interface', self)
+					action.setCheckable(True)
+					action.setChecked(clicked_plugin_widget.prefer_generic_dialog)
+					action.triggered.connect(clicked_plugin_widget.slot_prefer_generic)
+					menu.addAction(action)
+					if not clicked_plugin_widget.prefer_generic_dialog:
+						action = QAction('Open generic interface', self)
+						action.triggered.connect(clicked_plugin_widget.slot_show_generic_dialog)
+						menu.addAction(action)
+					menu.addSeparator()	# ---------------------
+				action = QAction(f'Show "{clicked_plugin_widget.original_plugin_name}" info', self)
 				action.triggered.connect(clicked_plugin_widget.slot_show_info_dialog)
-				menu.addAction(action)
-				action = QAction(f'Remove {clicked_plugin_widget.moniker}', self)
-				action.triggered.connect(partial(self.slot_remove_plugin, clicked_plugin_widget))
 				menu.addAction(action)
 				action = QAction(f'Rename "{clicked_plugin_widget.moniker}"', self)
 				action.triggered.connect(clicked_plugin_widget.slot_rename)
 				menu.addAction(action)
-				if clicked_plugin_widget.has_custom_ui:
-					action = QAction('Prefer generic interface', self)
-					action.setCheckable(True)
-					action.triggered.connect(clicked_plugin_widget.slot_prefer_generic)
-					if not clicked_plugin_widget.prefer_generic_dialog:
-						action = QAction('Open generic interface', self)
-						action.triggered.connect(clicked_plugin_widget.slot_show_generic_dialog)
-				menu.addAction(action)
 				menu.addSeparator()	# ---------------------
+				action = QAction(f'Remove {clicked_plugin_widget.moniker}', self)
+				action.triggered.connect(partial(self.slot_remove_plugin, clicked_plugin_widget))
+				menu.addAction(action)
 		action = QAction('Add plugin', self)
 		action.triggered.connect(self.slot_add_plugin_dialog)
 		menu.addAction(action)
