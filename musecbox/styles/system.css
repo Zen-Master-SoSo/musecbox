@@ -1,4 +1,7 @@
 QWidget {
+/*
+	font-family: "Densia Sans", "DejaVu Sans", "Nimbus Sans", "Ubuntu Condensed";
+*/
 }
 
 QPushButton {
@@ -19,16 +22,18 @@ QToolBar {
 }
 
 
-QMainWindow #qt_list_button {
-	font-size: 11px;
+QtListButton, #b_name {
+	font-family: "Nimbus Sans Narrow", "Liberation Sans Narrow", "Ubuntu Condensed", "sans serif";
+	font-size: 9pt;
+	padding: 2px 4px;
 }
 
-QMainWindow #qt_list_button_menu::item {
+QtListButtonMenu::item {
 	font-size: 12px;
 	padding: 2px 4px 2px 4px;
 }
 
-QMainWindow #qt_list_button_menu::item:selected {
+QtListButtonMenu::item:selected {
 	color: #FFF;
 	background: #F18559;
 }
@@ -103,10 +108,6 @@ QFrame#frm_channels QPushButton:checked {
 }
 
 
-#b_name {
-	font-size: 11px;
-	padding: 2px 4px;
-}
 
 #frm_volume QLabel,
 #frm_wet QLabel {

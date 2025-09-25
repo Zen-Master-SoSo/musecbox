@@ -114,13 +114,17 @@ QTableView::item {
 
 
 
-QMainWindow #qt_list_button {
-	font-size: 11px;
+QtListButton, #b_name {
+	font-family: "Liberation Sans Narrow", "Nimbus Sans Narrow", "Ubuntu Condensed", "sans serif";
+	font-size: 10pt;
+	font-weight: bold;
+	padding: 2px 4px;
+	color: #757575;
 }
 
-QMainWindow #qt_list_button_menu::item {
-	font-size: 12px;
-	padding: 2px 4px 2px 4px;
+QtListButtonMenu::item {
+	font-size: 10pt;
+	padding: 3px 4px 3px 4px;
 }
 
 
@@ -220,11 +224,6 @@ QFrame#frm_channels QPushButton:checked {
 	border: 1px solid red;
 }
 
-
-#b_name {
-	font-size: 11px;
-	padding: 2px 4px;
-}
 
 #b_rollup {
 	margin: 1px;

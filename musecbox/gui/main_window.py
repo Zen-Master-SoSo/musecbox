@@ -470,7 +470,7 @@ class MainWindow(QMainWindow):
 	def load_project(self, filename):
 		from musecbox.dialogs.project_load_dialog import ProjectLoadDialog
 		project_realpath = realpath(filename)
-		logging.debug('Load project "%s"', filename)
+		logging.debug('Load project "%s"', project_realpath)
 		if exists(project_realpath):
 			try:
 				with open(project_realpath, 'r') as fh:
@@ -482,6 +482,7 @@ class MainWindow(QMainWindow):
 				self.setWindowTitle(APPLICATION_NAME)
 			else:
 				self.enter_loading_state()
+				set_application_style()
 				self.project_filename = project_realpath
 				self.source_score = self.project_definition['source_score']
 				self.balance_control_widget.slot_set_lines(setting(KEY_BCWIDGET_LINES, int, 3))

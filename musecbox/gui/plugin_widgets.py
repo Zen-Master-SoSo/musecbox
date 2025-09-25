@@ -24,6 +24,7 @@ import logging
 from os.path import join, dirname
 from math import floor
 from operator import attrgetter
+from itertools import chain
 from qt_extras import ShutUpQT, SigBlock
 from qt_extras.list_button import QtListButton
 from qt_extras.autofit import abbreviated_text
@@ -378,13 +379,10 @@ class SharedPluginWidget(PluginWidget):
 				self._update_audio_led = self._update_audio_led_mono
 
 	def available_out_clients(self):
-		return [
-			(abbreviated_text(self.b_output, client.moniker, fixed_width = 130), client) \
-			for client in carla().clients() \
-			if isinstance(client, (SystemPatchbayClient, SharedPluginWidget)) \
-			and client.audio_in_count > 0 \
-			and client is not self
-		]
+		return [ (client.moniker, client) for client in chain(
+					main_window().iterate_shared_plugin_widgets(),
+					carla().system_audio_in_clients()
+				) if client is not self ]
 
 	def encode_saved_state(self):
 		saved_state = super().encode_saved_state()
@@ -663,14 +661,19 @@ class GrabEvent:
 
 
 # -----------------------------------------------------------------
-# Audio peak meters for plugin widgets:
+# Volume & dry/wet controls
 
 class SmallSlider(QProgressBar):
+	"""
+	A control which is used for volume and dry/wet adjustment, inheriting from
+	QProgressBar in order to make styleing with CSS easier.
+	"""
 
 	def __init__(self, parent):
 		super().__init__(parent)
 		self.setMinimum(0)
 		self.setMaximum(100)
+		self.mouse_down = False
 
 	def wheelEvent(self, event):
 		ctrl = bool(event.modifiers() & Qt.ControlModifier)
@@ -679,18 +682,26 @@ class SmallSlider(QProgressBar):
 		event.accept()
 
 	def mousePressEvent(self, event):
-		value = int(100 * event.x() / self.width())
-		self.setValue(max(0, min(100, value)))
+		self._set_value(event)
+		self.mouse_down = True
+
+	def mouseReleaseEvent(self, _):
+		self.mouse_down = False
 
 	def mouseMoveEvent(self, event):
-		value = int(100 * event.x() / self.width())
-		self.setValue(max(0, min(100, value)))
+		if self.mouse_down:
+			self._set_value(event)
 
+	def _set_value(self, event):
+		self.setValue(max(0, min(100, int(100 * event.x() / self.width()))))
 
 # -----------------------------------------------------------------
 # Audio peak meters for plugin widgets:
 
 class PeakMeter(QWidget):
+	"""
+	Abstract peak meter class. (See MonoPeakMeter and StereoPeakMeter)
+	"""
 
 	fixed_height	= 125
 	fixed_width		= 30
@@ -709,6 +720,9 @@ class PeakMeter(QWidget):
 
 
 class MonoPeakMeter(PeakMeter):
+	"""
+	Animated peak meter for monophonic plugins / tracks.
+	"""
 
 	def __init__(self, parent):
 		super().__init__(parent)
@@ -749,6 +763,9 @@ class MonoPeakMeter(PeakMeter):
 
 
 class StereoPeakMeter(PeakMeter):
+	"""
+	Animated peak meter for stereophonic plugins / tracks.
+	"""
 
 	def __init__(self, parent):
 		super().__init__(parent)
