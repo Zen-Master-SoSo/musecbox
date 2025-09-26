@@ -270,11 +270,15 @@ def setting(key, type_ = None, default = None):
 		value = __settings().value(key, default)
 	if value is None and not type_ is None:
 		return type_()	# Defaults to "False" for bool, "0" for int, etc.
+	if type_ is bool:
+		return value == '1'
 	return type_(value) if type_ else value
 
 def set_setting(key, value):
 	# TODO(?): Save per-project window geometry
 	# MainWindow project_definition takes the setting if possible:
+	if isinstance(value, bool):
+		value = '1' if value else '0'
 	mw = main_window()
 	if mw and main_window().set_option(key, value):
 		return

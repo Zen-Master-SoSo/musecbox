@@ -122,7 +122,7 @@ class MainWindow(QMainWindow):
 		self.setWindowIcon(QIcon(join(APP_PATH, 'res', 'musecbox-icon.png')))
 
 		self._setup_window_elements()
-		self._show_hide_window_elements()
+		self.show_hide_window_elements()
 		self._connect_actions()
 		self._setup_timers()
 		self._setup_socket_listener()
@@ -191,32 +191,32 @@ class MainWindow(QMainWindow):
 		self.pb_dsp_load_placeholder.deleteLater()
 		del self.pb_dsp_load_placeholder
 
-	def _show_hide_window_elements(self):
-		show_toolbar = setting(KEY_SHOW_TOOLBAR, bool, True)
-		show_port_inputs = setting(KEY_SHOW_PORT_INPUTS, bool, True)
-		show_channels = setting(KEY_SHOW_CHANNELS, bool, True)
-		show_indicators = setting(KEY_SHOW_INDICATORS, bool, True)
-		show_balance_control = setting(KEY_SHOW_BALANCE, bool, True)
-		show_shared_plugins = setting(KEY_SHOW_SHARED_PLUGINS, bool, True)
-		show_statusbar = setting(KEY_SHOW_STATUSBAR, bool, True)
-		show_track_volume = setting(KEY_SHOW_TRACK_VOLUME, bool, True)
-		show_plugin_volume = setting(KEY_SHOW_PLUGIN_VOLUME, bool, True)
+	def _connect_actions(self):
+		# File menu
+		self.action_new.triggered.connect(self.slot_new)
+		self.action_open.triggered.connect(self.slot_open_file)
+		self.menu_open_recent.aboutToShow.connect(self.slot_recent_menu_show)
+		self.action_save.triggered.connect(self.slot_save_project)
+		self.action_save_as.triggered.connect(self.slot_save_project_as)
+		self.action_revert.triggered.connect(self.slot_revert)
+		self.action_auto_start.toggled.connect(self.slot_set_autostart)
+		self.action_open_project_folder.triggered.connect(self.slot_open_project_folder)
+		self.action_apply_to_score.triggered.connect(self.slot_apply_to_score)
+		self.action_close.triggered.connect(self.slot_close)
 
-		self.toolbar.setVisible(show_toolbar)
-		self.frm_balance.setVisible(show_balance_control)
-		self.scr_shared_plugins.setVisible(show_shared_plugins)
-		self.frm_statusbar.setVisible(show_statusbar)
+		# Edit menu
+		self.action_add_port.triggered.connect(self.slot_add_port)
+		self.action_add_track.triggered.connect(self.slot_add_track)
+		self.action_add_shared_plugin.triggered.connect(self.slot_add_shared_plugin)
+		self.action_clear_shared_plugins.triggered.connect(self.slot_clear_shared_plugins)
+		self.action_connect_all_tracks.triggered.connect(self.slot_connect_all_tracks)
+		self.action_auto_connect_tracks.triggered.connect(self.slot_auto_connect_tracks)
+		self.action_mute_all_tracks.triggered.connect(self.slot_mute_all_tracks)
+		self.action_unmute_all_tracks.triggered.connect(self.slot_unmute_all_tracks)
+		self.action_clear_track_plugins.triggered.connect(self.slot_clear_track_plugins)
 
-		self.action_show_toolbar.setChecked(show_toolbar)
-		self.action_show_port_inputs.setChecked(show_port_inputs)
-		self.action_show_channels.setChecked(show_channels)
-		self.action_show_indicators.setChecked(show_indicators)
-		self.action_show_balance.setChecked(show_balance_control)
-		self.action_show_shared_plugins.setChecked(show_shared_plugins)
-		self.action_show_statusbar.setChecked(show_statusbar)
-		self.action_show_track_volume.setChecked(show_track_volume)
-		self.action_show_plugin_volume.setChecked(show_plugin_volume)
-
+		# View menu
+		self.menu_view.aboutToShow.connect(self.slot_view_menu_show)
 		self.action_show_toolbar.toggled.connect(self.slot_show_toolbar)
 		self.action_show_port_inputs.toggled.connect(self.slot_show_port_inputs)
 		self.action_show_channels.toggled.connect(self.slot_show_channels)
@@ -226,49 +226,13 @@ class MainWindow(QMainWindow):
 		self.action_show_statusbar.toggled.connect(self.slot_show_statusbar)
 		self.action_show_track_volume.toggled.connect(self.slot_show_track_volume)
 		self.action_show_plugin_volume.toggled.connect(self.slot_show_plugin_volume)
-
-		self.action_vertical_layout.toggled.connect(self.slot_vertical_layout)
-
-	def _connect_actions(self):
-		# Menu actions
-		self.action_new.triggered.connect(self.slot_new)
-		self.action_open.triggered.connect(self.slot_open_file)
-		self.action_save.triggered.connect(self.slot_save_project)
-		self.action_save_as.triggered.connect(self.slot_save_project_as)
-		self.action_revert.triggered.connect(self.slot_revert)
-		self.action_close.triggered.connect(self.slot_close)
-		self.action_watch_files.toggled.connect(self.slot_watch_files)
-		self.action_copy_sfzs.triggered.connect(self.slot_copy_sfzs)
-		self.action_copy_sfz_paths.triggered.connect(self.slot_copy_sfz_paths)
-		self.action_auto_start.toggled.connect(self.slot_set_autostart)
-		self.action_open_project_folder.triggered.connect(self.slot_open_project_folder)
-		self.action_apply_to_score.triggered.connect(self.slot_apply_to_score)
-		self.action_add_port.triggered.connect(self.slot_add_port)
-		self.action_add_track.triggered.connect(self.slot_add_track)
-		self.action_connect_all_tracks.triggered.connect(self.slot_connect_all_tracks)
-		self.action_auto_connect_tracks.triggered.connect(self.slot_auto_connect_tracks)
-		self.action_collapse_all_ports.triggered.connect(self.slot_collapse_all_ports)
-		self.action_expand_all_ports.triggered.connect(self.slot_expand_all_ports)
 		self.action_rollup_all_plugins.triggered.connect(self.slot_rollup_all_plugins)
 		self.action_unroll_all_plugins.triggered.connect(self.slot_unroll_all_plugins)
-		self.action_reload_style.triggered.connect(self.slot_reload_style)
-		self.action_add_shared_plugin.triggered.connect(self.slot_add_shared_plugin)
-		self.action_clear_shared_plugins.triggered.connect(self.slot_clear_shared_plugins)
-		self.action_mute_all_tracks.triggered.connect(self.slot_mute_all_tracks)
-		self.action_unmute_all_tracks.triggered.connect(self.slot_unmute_all_tracks)
-		self.action_clear_track_plugins.triggered.connect(self.slot_clear_track_plugins)
+		self.action_collapse_all_ports.triggered.connect(self.slot_collapse_all_ports)
+		self.action_expand_all_ports.triggered.connect(self.slot_expand_all_ports)
 		self.action_show_connections.triggered.connect(self.slot_show_connections)
 		self.action_show_project_info.triggered.connect(self.slot_show_project_info)
 		self.action_show_score_info.triggered.connect(self.slot_show_score_info)
-		self.action_show_sfzdb.triggered.connect(self.slot_show_sfzdb)
-
-		self.action_record.triggered.connect(self.slot_record)
-		self.action_transport_start.triggered.connect(self.slot_transport_start)
-		self.action_transport_stop.triggered.connect(self.slot_transport_stop)
-		self.action_transport_rewind.triggered.connect(self.slot_transport_rewind)
-
-		# Pushbutton events
-		self.b_xruns.clicked.connect(self.slot_clear_xruns)
 		current_style = setting(KEY_STYLE, str, DEFAULT_STYLE)
 		actions = QActionGroup(self)
 		actions.setExclusive(True)
@@ -276,11 +240,26 @@ class MainWindow(QMainWindow):
 			action = QAction(style_name, self)
 			action.triggered.connect(partial(self.select_style, style_name))
 			action.setCheckable(True)
-			action.setChecked(style_name == current_style)
 			actions.addAction(action)
 			self.menu_style.addAction(action)
-		self.menu_open_recent.aboutToShow.connect(self.slot_recent_menu_show)
-		self.menu_view.aboutToShow.connect(self.slot_view_menu_show)
+		self.menu_style.aboutToShow.connect(self.slot_style_menu_show)
+		self.action_reload_style.triggered.connect(self.slot_reload_style)
+		self.action_vertical_layout.toggled.connect(self.slot_vertical_layout)
+
+		# SFZ menu
+		self.action_watch_files.toggled.connect(self.slot_watch_files)
+		self.action_copy_sfzs.triggered.connect(self.slot_copy_sfzs)
+		self.action_copy_sfz_paths.triggered.connect(self.slot_copy_sfz_paths)
+		self.action_show_sfzdb.triggered.connect(self.slot_show_sfzdb)
+
+		# Toolbar actions
+		self.action_transport_rewind.triggered.connect(self.slot_transport_rewind)
+		self.action_transport_start.triggered.connect(self.slot_transport_start)
+		self.action_transport_stop.triggered.connect(self.slot_transport_stop)
+		self.action_record.triggered.connect(self.slot_record)
+
+		# Pushbutton events
+		self.b_xruns.clicked.connect(self.slot_clear_xruns)
 
 	def _setup_timers(self):
 		self._update_indicator_timer = QTimer()
@@ -324,6 +303,13 @@ class MainWindow(QMainWindow):
 	def clear_dirty(self):
 		self.dirty = False
 		self.update_ui()
+
+	def show_hide_window_elements(self):
+		logging.debug(setting(KEY_SHOW_TOOLBAR, bool, True))
+		self.toolbar.setVisible(setting(KEY_SHOW_TOOLBAR, bool, True))
+		self.frm_balance.setVisible(setting(KEY_SHOW_BALANCE, bool, True))
+		self.scr_shared_plugins.setVisible(setting(KEY_SHOW_SHARED_PLUGINS, bool, True))
+		self.frm_statusbar.setVisible(setting(KEY_SHOW_STATUSBAR, bool, True))
 
 	def update_ui(self):
 		has_tracks = self.track_widget_count() > 0
@@ -482,9 +468,10 @@ class MainWindow(QMainWindow):
 				self.setWindowTitle(APPLICATION_NAME)
 			else:
 				self.enter_loading_state()
-				set_application_style()
 				self.project_filename = project_realpath
 				self.source_score = self.project_definition['source_score']
+				set_application_style()
+				self.show_hide_window_elements()
 				self.balance_control_widget.slot_set_lines(setting(KEY_BCWIDGET_LINES, int, 3))
 				if 'exported_wav_file' in self.project_definition:
 					self.wav_filename = self.project_definition['exported_wav_file']
@@ -1117,12 +1104,10 @@ class MainWindow(QMainWindow):
 	@pyqtSlot()
 	def slot_recent_menu_show(self):
 		self.menu_open_recent.clear()
-		actions = []
 		for filename in recent_files():
 			action = QAction(filename, self)
 			action.triggered.connect(partial(self.load_recent, filename))
-			actions.append(action)
-		self.menu_open_recent.addActions(actions)
+			self.menu_open_recent.addAction(action)
 
 	@pyqtSlot()
 	def slot_view_menu_show(self):
@@ -1140,6 +1125,34 @@ class MainWindow(QMainWindow):
 		self.action_unroll_all_plugins.setEnabled(
 			has_tracks and \
 			any(plugin.is_rolled_up() for plugin in self.iterate_track_plugin_widgets()))
+		with SigBlock(
+			self.action_show_toolbar,
+			self.action_show_port_inputs,
+			self.action_show_channels,
+			self.action_show_indicators,
+			self.action_show_balance,
+			self.action_show_shared_plugins,
+			self.action_show_statusbar,
+			self.action_show_track_volume,
+			self.action_show_plugin_volume
+		):
+			self.action_show_toolbar.setChecked(setting(KEY_SHOW_TOOLBAR, bool, True))
+			self.action_show_port_inputs.setChecked(setting(KEY_SHOW_PORT_INPUTS, bool, True))
+			self.action_show_channels.setChecked(setting(KEY_SHOW_CHANNELS, bool, True))
+			self.action_show_indicators.setChecked(setting(KEY_SHOW_INDICATORS, bool, True))
+			self.action_show_balance.setChecked(setting(KEY_SHOW_BALANCE, bool, True))
+			self.action_show_shared_plugins.setChecked(setting(KEY_SHOW_SHARED_PLUGINS, bool, True))
+			self.action_show_statusbar.setChecked(setting(KEY_SHOW_STATUSBAR, bool, True))
+			self.action_show_track_volume.setChecked(setting(KEY_SHOW_TRACK_VOLUME, bool, True))
+			self.action_show_plugin_volume.setChecked(setting(KEY_SHOW_PLUGIN_VOLUME, bool, True))
+
+	@pyqtSlot()
+	def slot_style_menu_show(self):
+		current_style = setting(KEY_STYLE, str, DEFAULT_STYLE)
+		for action in self.menu_style.actions():
+			if action.text() == current_style:
+				action.setChecked(True)
+				break
 
 	@pyqtSlot()
 	def slot_new(self):
