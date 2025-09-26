@@ -37,24 +37,20 @@ QFrame#frm_port_widget_top QLabel {
 	font-weight: bold;
 }
 
-QFrame#port0 #frm_port_widget_top QLabel {
-	background: #AD6900;
-}
-
 QFrame#port1 #frm_port_widget_top QLabel {
 	background: #AD0000;
 }
 
 QFrame#port2 #frm_port_widget_top QLabel {
-	background: #0004B3;
+	background: #3646D9;
 }
 
 QFrame#port3 #frm_port_widget_top QLabel {
-	background: #00B34D;
+	background: #08A34B;
 }
 
 QFrame#port4 #frm_port_widget_top QLabel {
-	background: #B3A700;
+	background: #968D00;
 }
 
 QFrame#port5 #frm_port_widget_top QLabel {

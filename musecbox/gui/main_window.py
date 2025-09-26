@@ -305,7 +305,6 @@ class MainWindow(QMainWindow):
 		self.update_ui()
 
 	def show_hide_window_elements(self):
-		logging.debug(setting(KEY_SHOW_TOOLBAR, bool, True))
 		self.toolbar.setVisible(setting(KEY_SHOW_TOOLBAR, bool, True))
 		self.frm_balance.setVisible(setting(KEY_SHOW_BALANCE, bool, True))
 		self.scr_shared_plugins.setVisible(setting(KEY_SHOW_SHARED_PLUGINS, bool, True))

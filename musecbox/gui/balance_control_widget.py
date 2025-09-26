@@ -33,7 +33,7 @@ from PyQt5.QtGui import		QPainter, QColor, QPen, QBrush, QPalette, QFontMetrics
 from PyQt5.QtWidgets import	QWidget, QMenu, QAction
 
 from musecbox import		setting, set_setting, main_window, \
-							KEY_BCWIDGET_LINES, KEY_BCWIDGET_LABELS, KEY_BCWIDGET_TRACKING
+							KEY_BCWIDGET_LINES, KEY_BCWIDGET_TRACKING
 
 GRAB_PANNING		= 0		# What the user is grabbing.
 GRAB_LEFT_BALANCE	= 1		# If "can_pan", but not "can_balance",
@@ -63,7 +63,7 @@ LINE_SATURATION_HL	= 240
 LINE_LUMINANCE_HL	= 120
 
 LABEL_ALPHA			= 90
-LABEL_TRIM			= 10		# Number of pixels to "trim" from label text bounding rect left/right.
+LABEL_PADDING		= 4		# Number of pixels to add to label text bounding rect left/right.
 
 
 class BalanceControlWidget(QWidget):
@@ -78,7 +78,6 @@ class BalanceControlWidget(QWidget):
 		self.panning_pen = QPen()
 		self.panning_pen.setWidth(TRACK_WIDTH)
 		self.label_pen = QPen()
-		self.label_pen.setWidth(1)
 		self.zero_line_pen = QPen(Qt.DashLine)
 		self.zero_line_pen.setWidth(1)
 		self.setAutoFillBackground(True)
@@ -87,7 +86,6 @@ class BalanceControlWidget(QWidget):
 		self.nearest_element = None
 		self.grabbed_feature = None
 		self.hovered_group = None
-		self.show_labels = setting(KEY_BCWIDGET_LABELS, bool, True)
 		self.hover_tracking = setting(KEY_BCWIDGET_TRACKING, bool, True)
 		self.lines = setting(KEY_BCWIDGET_LINES, int, 2)
 		self.last_line = self.lines - 1
@@ -127,12 +125,6 @@ class BalanceControlWidget(QWidget):
 			action.setChecked(self.lines == lines)
 			action.triggered.connect(partial(self.slot_set_lines, lines))
 			resize_menu.addAction(action)
-
-		action = QAction("Show labels", self)
-		action.setCheckable(True)
-		action.setChecked(self.show_labels)
-		action.triggered.connect(self.slot_show_labels)
-		menu.addAction(action)
 
 		action = QAction("Follow tracks as they are hovered", self)
 		action.setCheckable(True)
@@ -195,13 +187,11 @@ class BalanceControlWidget(QWidget):
 				self.draw_balance(pan_group, fill_color, line_color)
 			elif pan_group.can_pan:
 				self.draw_pan(pan_group, line_color)
-		if self.show_labels:
-			self.painter.setPen(self.label_pen)
-			for pan_group in PanGroups():
-				if pan_group.can_balance:
-					self.draw_label(pan_group, pan_group.balance_center)
-				elif pan_group.can_pan:
-					self.draw_label(pan_group, pan_group.panning)
+		for pan_group in PanGroups():
+			if pan_group.can_balance:
+				self.draw_label(pan_group, pan_group.balance_center)
+			elif pan_group.can_pan:
+				self.draw_label(pan_group, pan_group.panning)
 		self.painter.end()
 
 	def draw_balance(self, pan_group, fill_color, line_color):
@@ -225,12 +215,13 @@ class BalanceControlWidget(QWidget):
 	def draw_label(self, pan_group, float_x):
 		text = pan_group.brief_label()
 		rect = self.metrics.boundingRect(text)
-		rect.setWidth = self.metrics.horizontalAdvance(text)
+		rect.setWidth(self.metrics.horizontalAdvance(text) + LABEL_PADDING * 2)
 		rect.moveCenter(QPoint(
 			self.float_to_screen_x(float_x),
 			self.line_to_screen_y(pan_group.bcwidget_line) + TRACK_HALF_HEIGHT
 		))
-		self.painter.fillRect(rect.adjusted(LABEL_TRIM, 0, -LABEL_TRIM, 0), self.label_bgcolor)
+		self.painter.fillRect(rect, self.label_bgcolor)
+		self.painter.setPen(self.label_pen)
 		self.painter.drawText(rect, Qt.AlignHCenter | Qt.AlignBottom, text)
 
 	def mouseMoveEvent(self, event):
@@ -365,13 +356,6 @@ class BalanceControlWidget(QWidget):
 			if line == self.lines:
 				line = 0
 		self.update()
-
-	@pyqtSlot(bool)
-	def slot_show_labels(self, state):
-		if state != self.show_labels:
-			self.show_labels = state
-			set_setting(KEY_BCWIDGET_LABELS, state)
-			self.conditional_update()
 
 	@pyqtSlot(int)
 	def slot_set_lines(self, lines):

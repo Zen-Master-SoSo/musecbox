@@ -161,15 +161,15 @@ QFrame#frm_port_widget_top QLabel {
 }
 
 QFrame#port1 #frm_port_widget_top QLabel {
-	background: #C44545;
+	background: #D94E4E;
 }
 
 QFrame#port2 #frm_port_widget_top QLabel {
-	background: #7A7CEB;
+	background: #818BFC;
 }
 
 QFrame#port3 #frm_port_widget_top QLabel {
-	background: #91BDA4;
+	background: #68C490;
 }
 
 QFrame#port4 #frm_port_widget_top QLabel {
@@ -181,11 +181,11 @@ QFrame#port5 #frm_port_widget_top QLabel {
 }
 
 QFrame#port6 #frm_port_widget_top QLabel {
-	background: #00435C;
+	background: #3DB4E0;
 }
 
 QFrame#port7 #frm_port_widget_top QLabel {
-	background: #804A00;
+	background: #F59E27;
 }
 
 QFrame#port8 #frm_port_widget_top QLabel {
@@ -278,7 +278,7 @@ SmallBalanceControl QLabel {
 
 BalanceControlWidget {
 	font-size: 9pt;
-	color: #1F1F1F;
+	color: #5C5C5C;
 }
 
 
