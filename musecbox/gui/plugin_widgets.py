@@ -37,7 +37,7 @@ from PyQt5.QtCore import	Qt, pyqtSignal, pyqtSlot, QEvent, QVariant, \
 							QPoint, QRect, pyqtProperty, QPropertyAnimation
 from PyQt5.QtGui import		QPainter, QColor, QBrush, QPen, QPalette, \
 							QPixmap, QIcon, QFontMetrics
-from PyQt5.QtWidgets import QWidget, QDialog, QInputDialog, QLabel, QFrame, \
+from PyQt5.QtWidgets import QWidget, QDialog, QInputDialog, QLabel, QFrame, QTabWidget, \
 							QProgressBar, QHBoxLayout, QVBoxLayout, QGridLayout, \
 							QAction, QSizePolicy
 
@@ -842,37 +842,65 @@ class StereoPeakMeter(PeakMeter):
 
 class PluginInfoDialog(QDialog):
 
-	fields = [
-		('moniker', 'moniker'),
-		('plugin Name', 'original_plugin_name'),
-		('audio inputs', 'audio_in_count'),
-		('audio outputs', 'audio_out_count'),
-		('midi inputs', 'midi_in_count'),
-		('midi outputs', 'midi_out_count'),
-		('parameters in', 'input_parameter_count'),
-		('parameters out', 'output_parameter_count'),
-		('maker', 'maker'),
-		('category', 'category'),
-		('label', 'label'),
-		('filename', 'filename')
+	ov_fields = [
+		('Moniker', 'moniker'),
+		('Plugin name', 'original_plugin_name'),
+		('Audio inputs', 'audio_in_count'),
+		('Audio outputs', 'audio_out_count'),
+		('MIDI inputs', 'midi_in_count'),
+		('MIDI outputs', 'midi_out_count'),
+		('Parameters in', 'input_parameter_count'),
+		('Parameters out', 'output_parameter_count'),
+		('Maker', 'maker'),
+		('Category', 'category'),
+		('Label', 'label'),
+		('Filename', 'filename')
+	]
+
+	param_fields = [
+		('Name', 'name'),
+		('Symbol', 'symbol'),
+		('Comment:', 'comment'),
+		('Group Name', 'groupName'),
+		('Unit', 'unit'),
+		('bool', 'is_boolean'),
+		('int', 'is_integer'),
+		('log', 'is_logarithmic'),
+		('Enabled', 'is_enabled'),
+		('Automatable', 'is_automatable'),
+		('Read-only', 'is_read_only'),
+		('Uses samplerate', 'uses_samplerate'),
+		('Uses scalepoints', 'uses_scalepoints'),
+		('Scale point count', 'scalePointCount'),
+		('Uses custom text', 'uses_custom_text'),
+		('Can be CV controlled', 'can_be_cv_controlled')
 	]
 
 	def __init__(self, plugin):
 		super().__init__(plugin)
-		lo = QGridLayout(self)
-		lo.setSpacing(6)
-		row = 0
-		for f in self.fields:
-			lo.addWidget(QLabel(f[0], self), row, 0)
-			lo.addWidget(QLabel(str(getattr(plugin, f[1])), self), row, 1)
-			row += 1
-		frm = QFrame(self)
-		frm.setLayout(lo)
+		tab_widget = QTabWidget(self)
 		lo = QVBoxLayout()
-		lo.setContentsMargins(8, 4, 8, 14)
-		lo.addWidget(frm)
+		lo.addWidget(tab_widget)
+		tab_widget.addTab(InfoDialogTab(tab_widget, plugin, self.ov_fields), 'Overview')
+		for param in plugin.parameters.values():
+			tab_widget.addTab(InfoDialogTab(tab_widget, param, self.param_fields), param.name)
 		self.setLayout(lo)
 
+
+class InfoDialogTab(QFrame):
+
+	def __init__(self, parent, inspected_element, fields):
+		super().__init__(parent)
+		top_layout = QVBoxLayout()
+		grid = QGridLayout()
+		row = 0
+		for f in fields:
+			grid.addWidget(QLabel(f[0], self), row, 0)
+			grid.addWidget(QLabel(str(getattr(inspected_element, f[1])), self), row, 1)
+			row += 1
+		top_layout.addItem(grid)
+		top_layout.addStretch()
+		self.setLayout(top_layout)
 
 
 #  end musecbox/gui/plugin_widgets.py

@@ -408,3 +408,7 @@ CopySFZPathsDialog QLabel {
 }
 
 
+InfoDialogTab QLabel {
+	margin: 1px 3px;
+}
+
