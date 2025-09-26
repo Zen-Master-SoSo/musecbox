@@ -17,6 +17,7 @@ QWidget:disabled, QPushButton:disabled {
 	color: #707070;
 }
 
+
 QLineEdit {
 	background: #3B3B3B;
 	border: 2px solid transparent;
@@ -28,6 +29,7 @@ QLineEdit:focus {
 	border: 2px solid #3A7091;
 	padding: 2px 4px;
 }
+
 
 QCheckBox::indicator {
 	height: 16px;
@@ -49,6 +51,7 @@ QCheckBox::indicator:checked {
 		stop:1 #195882
 	);
 }
+
 
 QRadioButton::indicator {
 	width: 12px;
@@ -118,6 +121,7 @@ QScrollBar:sub-line {
 	border: 1px solid #4F4F4F;
 }
 
+
 QMenu {
 	background: #444444;
 	color: #EEE;
@@ -151,6 +155,10 @@ QtListButtonMenu::item {
 	padding: 2px 4px 2px 4px;
 }
 
+
+QListWidget::item {
+	padding: 4px;
+}
 
 QFrame#frm_port_widget_top QLabel {
 	background: #444;
@@ -351,18 +359,13 @@ PluginDialog QSlider::handle {
 }
 
 
-
-#lst_sfzs::item {
-	padding: 4px;
-}
-
 #score_info_dialog #tbl,
 #score_info_dialog #tbl::item {
 	background: palette(window);
 }
 
 
-#sfz_paths_dialog QLabel {
+CopySFZPathsDialog QLabel {
 	padding: 4px;
 	background: #000;
 }

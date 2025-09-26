@@ -7,15 +7,6 @@ QWidget {
 QPushButton {
 }
 
-QScrollBar:horizontal::groove {
-}
-
-QScrollBar:handle {
-}
-
-QScrollBar:add-line,
-QScrollBar:sub-line {
-}
 
 QToolBar {
 	border: none;
@@ -166,15 +157,12 @@ QFrame#frm_shared_plugins {
 
 
 
-#sfz_file_dialog QListWidget::item {
-}
-
-#lst_sfzs::item {
+QListWidget::item {
 	padding: 2px;
 }
 
 
-#sfz_paths_dialog QLabel {
+CopySFZPathsDialog QLabel {
 	background: #FFF;
 	padding: 4px;
 }

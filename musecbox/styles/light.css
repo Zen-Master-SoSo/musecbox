@@ -19,7 +19,7 @@ QLineEdit,
 QTreeView,
 QListView {
 	background: #FCFCFC;
-	border: 1px solid #BFBFBF;
+	border: 1px solid #D6D6D6;
 }
 
 QComboBox,
@@ -28,7 +28,7 @@ QLineEdit {
 }
 
 QComboBox:on,
-QComboBox:on::drop-down {
+QComboBox::drop-down:on {
 	background: #FCFCFC;
 }
 
@@ -40,16 +40,28 @@ QPushButton {
 }
 
 
-QScrollBar:horizontal::groove{
-	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #BFC1C9, stop:.5 #CED0D9, stop:1 #D3D5DE);
+QScrollBar:horizontal {
+	height: 20px;
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0.0 #D0D2D4, stop:0.5 #DCDFE0, stop:1.0 #DEE1E3);
 }
 
-QScrollBar:handle,
-QScrollBar:add-line,
-QScrollBar:sub-line {
-	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #F8F9FA, stop:.5 #F0F1F2, stop:1 #E9EAEB);
-	border: 1px solid #BFC6D6;
+QScrollBar::handle:horizontal,
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:0.5 #F5F5F5, stop:1 #E0E0E0);
+	border: none;
 }
+
+QScrollBar::handle:horizontal {
+	border-radius: 4px;
+	margin-left: 22px;
+	margin-right: 22px;
+}
+
+QScrollBar::left-arrow:horizontal,
+QScrollBar::right-arrow:horizontal {
+}
+
 
 
 QMenu {
@@ -89,10 +101,6 @@ QSlider::handle:vertical {
 }
 
 
-QFrame {
-}
-
-
 QTableView,
 QTableView::item {
 	background: #F5F5F5;
@@ -112,6 +120,10 @@ QTableView::item {
 	color: #000;
 }
 
+
+QListWidget::item {
+	padding: 2px;
+}
 
 
 QtListButton, #b_name {
@@ -326,16 +338,12 @@ PluginDialog QSlider::handle {
 
 
 
-#lst_sfzs::item {
-}
-
-
 #score_info_dialog #tbl,
 #score_info_dialog #tbl::item {
 	background: palette(window);
 }
 
-#sfz_paths_dialog QLabel {
+CopySFZPathsDialog QLabel {
 	background: #FFF;
 	padding: 4px;
 }
