@@ -863,12 +863,15 @@ class PluginInfoDialog(QDialog):
 		('Comment:', 'comment'),
 		('Group Name', 'groupName'),
 		('Unit', 'unit'),
+		('Enabled', 'is_enabled'),
 		('bool', 'is_boolean'),
 		('int', 'is_integer'),
 		('log', 'is_logarithmic'),
-		('Enabled', 'is_enabled'),
+		('Min', 'min'),
+		('Max', 'max'),
+		('Step', 'step'),
 		('Automatable', 'is_automatable'),
-		('Read-only', 'is_read_only'),
+		('Read only', 'is_read_only'),
 		('Uses samplerate', 'uses_samplerate'),
 		('Uses scalepoints', 'uses_scalepoints'),
 		('Scale point count', 'scalePointCount'),
@@ -883,7 +886,11 @@ class PluginInfoDialog(QDialog):
 		lo.addWidget(tab_widget)
 		tab_widget.addTab(InfoDialogTab(tab_widget, plugin, self.ov_fields), 'Overview')
 		for param in plugin.parameters.values():
-			tab_widget.addTab(InfoDialogTab(tab_widget, param, self.param_fields), param.name)
+			str_direction = 'in' if param.is_input else 'out'
+			tab_widget.addTab(
+				InfoDialogTab(tab_widget, param, self.param_fields),
+				f'{param.name} ({str_direction})'
+			)
 		self.setLayout(lo)
 
 
