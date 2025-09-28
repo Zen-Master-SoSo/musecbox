@@ -23,8 +23,8 @@ Provides both horizontal and vertical port widgets.
 import logging
 from os.path import join, dirname
 from functools import partial
-import qt_extras.autofit
 from qt_extras import ShutUpQT, SigBlock
+from qt_extras.autofit import autofit
 from qt_extras.list_button import QtListButton
 from qt_extras.list_layout import HListLayout, GListLayout, VERTICAL_FLOW
 from simple_carla import Plugin, PatchbayPort
@@ -48,7 +48,6 @@ from musecbox import (
 	KEY_SHOW_PORT_INPUTS
 )
 from musecbox.gui.track_widget import TrackWidget, HorizontalTrackWidget, VerticalTrackWidget
-from musecbox.gui.balance_control_widget import PanGroups
 from musecbox.dialogs.track_creation_dialog import TrackCreationDialog
 
 
@@ -196,13 +195,14 @@ class PortWidget(QFrame):
 		Adds a track as a gui element, but does not add to Carla.
 		"""
 		main_window().set_dirty()
-		return self.construct_track(len(self.track_layout), voice_name, sfz_filename, moniker = moniker)
+		return self._construct_track(len(self.track_layout),
+			voice_name, sfz_filename, moniker = moniker)
 
 	def restore_track(self, saved_state):
 		"""
-		Adds a track as a gui element, but does not add to Carla.
+		Restores a track as a gui element, but does not add to Carla.
 		"""
-		return self.construct_track(
+		return self._construct_track(
 			saved_state["slot"],
 			VoiceName(saved_state["instrument_name"], saved_state["voice"]),
 			saved_state["sfz"],
@@ -210,16 +210,13 @@ class PortWidget(QFrame):
 			saved_state = saved_state
 		)
 
-	def construct_track(self, slot, voice_name, sfz_filename, **kwargs):
+	def _append_track(self, track_widget):
 		"""
-		Constructs a track in a specific slot. Does not add it to Carla.
+		Connects signals for a new track and appends to track layout.
 
-		You should not call this function directly. Instead, call "add_track", which
-		will assign the new track to the next available slot.
-
-		This function is also called from "restore_track" when loading a project.
+		Called from a Horizonal or Vertical port widget instance, the track_widget will be
+		the appropriate class for this port widget.
 		"""
-		track_widget = self._construct_track(slot, voice_name, sfz_filename, **kwargs)
 		track_widget.sig_channel_set.connect(self.slot_channel_set)
 		track_widget.sig_cleared.connect(self.slot_track_cleared)
 		self.track_layout.append(track_widget)
@@ -311,9 +308,6 @@ class PortWidget(QFrame):
 		except IndexError:
 			return
 		self.track_layout.remove(track_widget)
-		if main_window().balance_control_widget.hovered_group is track_widget:
-			main_window().balance_control_widget.hovered_group = None
-		main_window().balance_control_widget.update()
 		track_widget.deleteLater()
 		if len(self.track_layout):
 			if not main_window().is_clearing:
@@ -391,7 +385,7 @@ class HorizontalPortWidget(PortWidget):
 	def __init__(self, parent, port, *, saved_state = None):
 		super().__init__(parent, port, saved_state = saved_state)
 		self.lbl_port.setText(f'Port {self.port}')
-		self.input_select_widget.autoFit()
+		autofit(self.input_select_widget)
 		self.icon_collapse = QIcon(join(APP_PATH, 'res', 'collapse.svg'))
 		self.icon_expand = QIcon(join(APP_PATH, 'res', 'expand.svg'))
 		self.b_collapse.setIcon(self.icon_collapse)
@@ -414,7 +408,8 @@ class HorizontalPortWidget(PortWidget):
 		self.implement_collapse(self.collapse_state)
 
 	def _construct_track(self, slot, voice_name, sfz_filename, **kwargs):
-		return HorizontalTrackWidget(self, self.port, slot, voice_name, sfz_filename, **kwargs)
+		return self._append_track(HorizontalTrackWidget(
+			self, self.port, slot, voice_name, sfz_filename, **kwargs))
 
 	@pyqtSlot(TrackWidget)
 	def slot_move_track_previous(self, track_widget):
@@ -474,7 +469,8 @@ class VerticalPortWidget(PortWidget):
 		self.implement_collapse(self.collapse_state)
 
 	def _construct_track(self, slot, voice_name, sfz_filename, **kwargs):
-		return VerticalTrackWidget(self, self.port, slot, voice_name, sfz_filename, **kwargs)
+		return self._append_track(VerticalTrackWidget(
+			self, self.port, slot, voice_name, sfz_filename, **kwargs))
 
 	@pyqtSlot()
 	def slot_layout_len_changed(self):

@@ -137,7 +137,102 @@ SmallBalanceControl #inner_bar {
 
 
 BalanceControlWidget {
+}
+
+BalanceControlWidget QLabel {
 	font-size: 9pt;
+	color: #FFFFFF;
+	border-style: solid;
+	border-width: 1px;
+}
+
+/*
+Labels inside the BalanceControlWidget are colored to match the port of the
+track that they are in, to make them easer to find. They are normally in a
+"disabled" state, and only become "enabled" when hovered over and ready for
+the mouse to "grab" them.
+*/
+
+QLabel#bcwidget_port_1 {
+	background: rgba(173, 0, 0, 180);
+	border-color: #AD0000;
+}
+
+QLabel#bcwidget_port_2 {
+	background: rgba(54, 70, 217, 180);
+	border-color: #3646D9;
+}
+
+QLabel#bcwidget_port_3 {
+	background: rgba(8, 163, 75, 180);
+	border-color: #08A34B;
+}
+
+QLabel#bcwidget_port_4 {
+	background: rgba(150, 141, 0, 180);
+	border-color: #968D00;
+}
+
+QLabel#bcwidget_port_5 {
+	background: rgba(153, 0, 179, 180);
+	border-color: #9900B3;
+}
+
+QLabel#bcwidget_port_6 {
+	background: rgba(0, 130, 179, 180);
+	border-color: #0082B3;
+}
+
+QLabel#bcwidget_port_7 {
+	background: rgba(179, 0, 0, 180);
+	border-color: #B30000;
+}
+
+QLabel#bcwidget_port_8 {
+	background: rgba(179, 0, 0, 180);
+	border-color: #B30000;
+}
+
+QLabel#bcwidget_port_9 {
+	background: rgba(179, 0, 0, 180);
+	border-color: #B30000;
+}
+
+
+QLabel#bcwidget_port_1:disabled {
+	background: rgba(173, 0, 0, 100);
+}
+
+QLabel#bcwidget_port_2:disabled {
+	background: rgba(54, 70, 217, 100);
+}
+
+QLabel#bcwidget_port_3:disabled {
+	background: rgba(8, 163, 75, 100);
+}
+
+QLabel#bcwidget_port_4:disabled {
+	background: rgba(150, 141, 0, 100);
+}
+
+QLabel#bcwidget_port_5:disabled {
+	background: rgba(153, 0, 179, 100);
+}
+
+QLabel#bcwidget_port_6:disabled {
+	background: rgba(0, 130, 179, 100);
+}
+
+QLabel#bcwidget_port_7:disabled {
+	background: rgba(179, 0, 0, 100);
+}
+
+QLabel#bcwidget_port_8:disabled {
+	background: rgba(179, 0, 0, 100);
+}
+
+QLabel#bcwidget_port_9:disabled {
+	background: rgba(179, 0, 0, 100);
 }
 
 

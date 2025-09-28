@@ -179,10 +179,8 @@ class MainWindow(QMainWindow):
 		self.scr_shared_plugins.setContextMenuPolicy(Qt.CustomContextMenu)
 		self.scr_shared_plugins.customContextMenuRequested.connect(self.slot_shared_plugins_context_menu)
 
-		self.balance_control_widget = BalanceControlWidget(self)
+		self.balance_control_widget = BalanceControlWidget(self.frm_balance)
 		lo = self.frm_balance.layout()
-		lo.setContentsMargins(0,0,0,0)
-		lo.setSpacing(0)
 		lo.addWidget(self.balance_control_widget)
 
 		self.load_indicator = LoadIndicator(self)
@@ -311,8 +309,9 @@ class MainWindow(QMainWindow):
 		self.frm_statusbar.setVisible(setting(KEY_SHOW_STATUSBAR, bool, True))
 
 	def update_ui(self):
-		has_tracks = self.track_widget_count() > 0
-		has_track_plugins = self.track_plugin_count() > 0
+		has_tracks = any(track_widget for track_widget in self.iterate_track_widgets())
+		has_track_plugins = has_tracks and any(track_widget.has_plugins() \
+			for track_widget in self.iterate_track_widgets())
 		has_shared_plugins = len(self.shared_plugin_layout) > 0
 		has_project = not self.project_filename is None
 		has_score = bool(self.source_score)
@@ -471,7 +470,6 @@ class MainWindow(QMainWindow):
 				self.source_score = self.project_definition['source_score']
 				set_application_style()
 				self.show_hide_window_elements()
-				self.balance_control_widget.slot_set_lines(setting(KEY_BCWIDGET_LINES, int, 3))
 				if 'exported_wav_file' in self.project_definition:
 					self.wav_filename = self.project_definition['exported_wav_file']
 				if ProjectLoadDialog(self, self.project_definition).exec():
@@ -485,7 +483,6 @@ class MainWindow(QMainWindow):
 			DevilBox(f"Project not found: {filename}")
 
 	def enter_loading_state(self):
-		self.balance_control_widget.setEnabled(False)
 		self.stop_timers()
 		self.project_loading = True
 
@@ -499,12 +496,15 @@ class MainWindow(QMainWindow):
 			widget.project_load_complete()
 		for widget in self.iterate_shared_plugin_widgets():
 			widget.project_load_complete()
+		self.balance_control_widget.project_load_complete()
 		QTimer.singleShot(DELAY_AFTER_LOAD, self.leave_loading_state)
 
 	def leave_loading_state(self):
+		"""
+		Second part of project_load_complete, after DELAY_AFTER_LOAD. This allows time
+		for JACK connections to be restored before going fully live.
+		"""
 		self.clear_dirty()
-		self.balance_control_widget.setEnabled(True)
-		self.balance_control_widget.update()
 		self.start_timers()
 		self.action_watch_files.setChecked(setting(KEY_WATCH_FILES, bool))
 		self.project_loading = False
@@ -574,11 +574,15 @@ class MainWindow(QMainWindow):
 
 	def encode_saved_state(self):
 		return {
-			"source_score"		: self.source_score,	# dict created by ScoreImportDialog.encoded_score()
+			"source_score"		: self.source_score,
 			"exported_wav_file"	: self.wav_filename,
-			"options"			: { key:setting(key) for key in PROJECT_OPTION_KEYS },
-			"ports"				: [ port.encode_saved_state() for port in self.port_layout ],
-			"shared_plugins"	: [ plugin.encode_saved_state() for plugin in self.shared_plugin_layout ]
+			"options"			: { key:setting(key) \
+									for key in PROJECT_OPTION_KEYS },
+			"ports"				: [ port.encode_saved_state() \
+									for port in self.port_layout ],
+			"shared_plugins"	: [ plugin.encode_saved_state() \
+									for plugin in self.shared_plugin_layout ],
+			"bcwidget"			: self.balance_control_widget.encode_saved_state()
 		}
 
 	def copy_sfzs(self):
@@ -657,12 +661,6 @@ class MainWindow(QMainWindow):
 		Used by balance_control_widget.spread()
 		"""
 		return sum( len(port_widget.track_layout) for port_widget in self.port_layout )
-
-	def track_plugin_count(self):
-		"""
-		Used by self.update_ui()
-		"""
-		return sum( track_widget.plugin_count() for track_widget in self.iterate_track_widgets() )
 
 	def port_widget(self, port, *, on_ready_slot = None):
 		"""

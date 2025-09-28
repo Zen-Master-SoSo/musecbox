@@ -155,8 +155,8 @@ QtListButtonMenu::item {
 
 
 QFrame#frm_port_widget_top QLabel {
-	background: #444;
-	color: #FFF;
+	background: #444444;
+	color: #FFFFFF;
 	font-weight: bold;
 }
 
@@ -276,9 +276,95 @@ SmallBalanceControl QLabel {
 }
 
 
-BalanceControlWidget {
-	font-size: 9pt;
-	color: #5C5C5C;
+
+BalanceControlWidget QLabel {
+	font-size: 11px;
+	color: #FFFFFF;
+}
+
+BalanceControlWidget QLabel:disabled {
+	color: #000000;
+}
+
+QLabel#bcwidget_port_1:disabled {
+	background: rgba(217, 78, 78, 120);
+}
+
+QLabel#bcwidget_port_2:disabled {
+	background: rgba(129, 139, 252, 120);
+}
+
+QLabel#bcwidget_port_3:disabled {
+	background: rgba(104, 196, 144, 120);
+}
+
+QLabel#bcwidget_port_4:disabled {
+	background: rgba(194, 177, 78, 120);
+}
+
+QLabel#bcwidget_port_5:disabled {
+	background: rgba(196, 119, 209, 120);
+}
+
+QLabel#bcwidget_port_6:disabled {
+	background: rgba(61, 180, 224, 120);
+}
+
+QLabel#bcwidget_port_7:disabled {
+	background: rgba(245, 158, 39, 120);
+}
+
+QLabel#bcwidget_port_8:disabled {
+	background: rgba(70, 0, 135, 120);
+}
+
+QLabel#bcwidget_port_9:disabled {
+	background: rgba(0, 99, 92, 120);
+}
+
+QLabel#bcwidget_port_10:disabled {
+	background: rgba(97, 97, 0, 120);
+}
+
+
+QLabel#bcwidget_port_1 {
+	background: rgba(217, 78, 78, 200);
+}
+
+QLabel#bcwidget_port_2 {
+	background: rgba(129, 139, 252, 200);
+}
+
+QLabel#bcwidget_port_3 {
+	background: rgba(104, 196, 144, 200);
+}
+
+QLabel#bcwidget_port_4 {
+	background: rgba(194, 177, 78, 200);
+}
+
+QLabel#bcwidget_port_5 {
+	background: rgba(196, 119, 209, 200);
+}
+
+QLabel#bcwidget_port_6 {
+	background: rgba(61, 180, 224, 200);
+}
+
+QLabel#bcwidget_port_7 {
+	background: rgba(245, 158, 39, 200);
+}
+
+QLabel#bcwidget_port_8 {
+	background: rgba(70, 0, 135, 200);
+}
+
+QLabel#bcwidget_port_9 {
+	background: rgba(0, 99, 92, 200);
+}
+
+QLabel#bcwidget_port_10 {
+	background: rgba(97, 97, 0, 200);
 }
 
 

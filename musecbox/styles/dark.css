@@ -142,7 +142,7 @@ QDialog * {
 }
 
 
-QtListButton, #b_name {
+QtListButton, #b_name, BalanceControlWidget QLabel {
 	font-family: "Liberation Sans Narrow", "Nimbus Sans Narrow", "Ubuntu Condensed", "sans serif";
 	font-size: 10pt;
 	font-weight: bold;
@@ -296,9 +296,114 @@ LoadIndicator QLabel {
 
 
 BalanceControlWidget {
-	font-size: 11px;
-	color: #A8A8A8;
 }
+
+BalanceControlWidget QLabel {
+	font-size: 9pt;
+	color: #E3E3E3;
+	border-style: solid;
+	border-width: 1px;
+}
+
+/*
+Labels inside the BalanceControlWidget are colored to match the port of the
+track that they are in, to make them easer to find. They are normally in a
+"disabled" state, and only become "enabled" when hovered over and ready for
+the mouse to "grab" them.
+*/
+
+QLabel#bcwidget_port_1 {
+	background: rgba(107, 0, 0, 200);
+	border-color: #6B0000;
+}
+
+QLabel#bcwidget_port_2 {
+	background: rgba(0, 18, 179, 200);
+	border-color: #0012B3;
+}
+
+QLabel#bcwidget_port_3 {
+	background: rgba(0, 92, 26, 200);
+	border-color: #005C1A;
+}
+
+QLabel#bcwidget_port_4 {
+	background: rgba(92, 81, 0, 200);
+	border-color: #5C5100;
+}
+
+QLabel#bcwidget_port_5 {
+	background: rgba(95, 20, 125, 200);
+	border-color: #5F147D;
+}
+
+QLabel#bcwidget_port_6 {
+	background: rgba(0, 87, 87, 200);
+	border-color: #005757;
+}
+
+QLabel#bcwidget_port_7 {
+	background: rgba(128, 74, 0, 200);
+	border-color: #804A00;
+}
+
+QLabel#bcwidget_port_8 {
+	background: rgba(53, 0, 102, 200);
+	border-color: #350066;
+}
+
+QLabel#bcwidget_port_9 {
+	background: rgba(0, 99, 92, 200);
+	border-color: #00635C;
+}
+
+QLabel#bcwidget_port_10 {
+	background: rgba(97, 97, 0, 200);
+	border-color: #616100;
+}
+
+
+QLabel#bcwidget_port_1:disabled {
+	background: rgba(107, 0, 0, 160);
+}
+
+QLabel#bcwidget_port_2:disabled {
+	background: rgba(0, 18, 179, 160);
+}
+
+QLabel#bcwidget_port_3:disabled {
+	background: rgba(0, 92, 26, 160);
+}
+
+QLabel#bcwidget_port_4:disabled {
+	background: rgba(92, 81, 0, 160);
+}
+
+QLabel#bcwidget_port_5:disabled {
+	background: rgba(95, 20, 125, 160);
+}
+
+QLabel#bcwidget_port_6:disabled {
+	background: rgba(0, 87, 87, 160);
+}
+
+QLabel#bcwidget_port_7:disabled {
+	background: rgba(128, 74, 0, 160);
+}
+
+QLabel#bcwidget_port_8:disabled {
+	background: rgba(53, 0, 102, 160);
+}
+
+QLabel#bcwidget_port_9:disabled {
+	background: rgba(0, 99, 92, 160);
+}
+
+QLabel#bcwidget_port_10:disabled {
+	background: rgba(97, 97, 0, 160);
+}
+
+
 
 
 PluginDialog, PluginDialog * {

@@ -25,8 +25,8 @@ from os.path import join, dirname, relpath, abspath, exists
 from math import floor
 from functools import partial
 from itertools import chain
-import qt_extras.autofit
 from qt_extras import SigBlock, ShutUpQT, DevilBox
+from qt_extras.autofit import autofit
 from qt_extras.list_button import QtListButton
 from qt_extras.list_layout import HListLayout, VListLayout
 from simple_carla import Plugin, PatchbayPort
@@ -39,8 +39,8 @@ except ModuleNotFoundError:
 from PyQt5 import uic
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QVariant, QTimer, QPoint
-from PyQt5.QtWidgets import QApplication, QPushButton, QFrame, QAction, QMenu, \
-							QHBoxLayout, QGraphicsColorizeEffect
+from PyQt5.QtWidgets import QApplication, QInputDialog, QPushButton, QFrame, \
+							QAction, QMenu, QHBoxLayout, QGraphicsColorizeEffect
 
 # musecbox imports
 from musecbox import (
@@ -65,7 +65,6 @@ from musecbox.liquidsfz import LiquidSFZ
 from musecbox.gui.plugin_widgets import	TrackPluginWidget, \
 										VerticalTrackPluginWidget, HorizontalTrackPluginWidget, \
 										ActivityIndicator, SmallSlider
-from musecbox.gui.balance_control_widget import PanGroups
 
 SPINNER_DEBOUNCE = 250
 
@@ -73,7 +72,6 @@ SPINNER_DEBOUNCE = 250
 class TrackWidget(QFrame):
 
 	sig_ready			= pyqtSignal(int, int)
-	sig_hover_over		= pyqtSignal(QObject)		# Used by balance control widget
 	sig_hover_out		= pyqtSignal()				# Used by balance control widget
 	sig_channel_set		= pyqtSignal(int, int, int)	# Triggered when channel is set
 	sig_cleared			= pyqtSignal(int, int)
@@ -102,7 +100,7 @@ class TrackWidget(QFrame):
 		with ShutUpQT():
 			uic.loadUi(join(dirname(__file__), self.ui), self)
 
-		self.b_name.autoFit()
+		autofit(self.b_name)
 		self.b_name.setText(self.moniker)
 		self.b_name.clicked.connect(self.slot_select_sfz_click)
 
@@ -148,7 +146,7 @@ class TrackWidget(QFrame):
 
 		# Setup output select button:
 		self.b_output = QtListButton(self, self.track_targets)
-		self.b_output.autoFit()
+		autofit(self.b_output)
 		self.b_output.setText(TEXT_NO_CONN)
 		self.b_output.sig_item_selected.connect(self.slot_output_client_selected)
 		self.layout().replaceWidget(self.b_output_placeholder, self.b_output)
@@ -190,11 +188,6 @@ class TrackWidget(QFrame):
 		# Setup track plugins context menu
 		self.frm_plugins.setContextMenuPolicy(Qt.CustomContextMenu)
 		self.frm_plugins.customContextMenuRequested.connect(self.slot_plugins_context_menu)
-
-		# Variable used only by the unified BalanceControlWidget:
-		self.bcwidget_line = 0 if saved_state is None else saved_state["bcwidget_line"]
-		self.sig_hover_over.connect(main_window().balance_control_widget.slot_track_hover_in)
-		self.sig_hover_out.connect(main_window().balance_control_widget.slot_track_hover_out)
 
 		self.show_channels(setting(KEY_SHOW_CHANNELS, bool, True))
 		self.show_indicators(setting(KEY_SHOW_INDICATORS, bool, True))
@@ -259,14 +252,15 @@ class TrackWidget(QFrame):
 		Called from context menu.
 		Lock this track's pan / balance to another track.
 		"""
-		groups = PanGroups.candidate_groups(self)
-		labels = [ group.label() for group in groups ]
+		bcwidget = main_window().balance_control_widget
+		groups = bcwidget.candidate_groups(self)
+		labels = [ group.long_text() for group in groups ]
 		selection, okay = QInputDialog().getItem(self,
 			f'{self.moniker}: Lock pan to ...',
 			'Track / group', labels, 0, False)
 		if okay:
 			idx = labels.index(selection)
-			PanGroups.join_group(groups[idx].key, self)
+			bcwidget.join_group(groups[idx].key, self)
 			main_window().set_dirty()
 
 	@pyqtSlot()
@@ -275,8 +269,9 @@ class TrackWidget(QFrame):
 		Called from context menu.
 		Allows the selected track's control its own pan / balance.
 		"""
-		PanGroups.orphan(self)
-		PanGroups.make_new_group(self)
+		bcwidget = main_window().balance_control_widget
+		bcwidget.orphan(self)
+		bcwidget.make_new_group(self)
 		main_window().set_dirty()
 
 	@pyqtSlot()
@@ -375,11 +370,12 @@ class TrackWidget(QFrame):
 
 	@pyqtSlot(Plugin)
 	def slot_plugin_ready(self, plugin):
+		bcwidget = main_window().balance_control_widget
 		if plugin is self.synth:
 			if self.pan_group_key is None:
-				PanGroups.make_new_group(self)
+				bcwidget.make_new_group(self)
 			else:
-				PanGroups.join_group(self.pan_group_key, self)
+				bcwidget.join_group(self.pan_group_key, self)
 			if not main_window().project_loading:
 				self.pb_volume.setValue(100)
 				if setting(KEY_AUTO_CONNECT, bool):
@@ -436,7 +432,6 @@ class TrackWidget(QFrame):
 			"instrument_name"			: self.voice_name.instrument_name,
 			"voice"						: self.voice_name.voice,
 			"pan_group_key"				: self.pan_group_key,
-			"bcwidget_line"				: self.bcwidget_line,
 			"sfz"						: self.synth.relative_path,
 			"synth"						: self.synth.encode_saved_state(),
 			"plugins"					: [ plugin.encode_saved_state() \
@@ -542,7 +537,7 @@ class TrackWidget(QFrame):
 			self.plugin_layout.remove(plugin)
 			plugin.deleteLater()
 		if self.synth is None and len(self.plugin_layout) == 0:
-			PanGroups.orphan(self)
+			main_window().balance_control_widget.orphan(self)
 			self.sig_cleared.emit(self.port, self.slot)
 		main_window().set_dirty()
 
@@ -570,8 +565,11 @@ class TrackWidget(QFrame):
 	# -----------------------------------------------------------------
 	# Misc funcs
 
-	def plugin_count(self):
-		return len(self.plugin_layout)
+	def has_plugins(self):
+		"""
+		Used by main window "update_ui" to enable clear plugins action.
+		"""
+		return len(self.plugin_layout) > 0
 
 	def slot_number_changed(self, slot):
 		"""
@@ -607,19 +605,19 @@ class TrackWidget(QFrame):
 		main_window().balance_control_widget.update()
 
 	def is_pan_group_orphan(self):
-		group = PanGroups.group(self.pan_group_key)
+		group = main_window().balance_control_widget.group(self.pan_group_key)
 		return group is None or len(group) < 2
 
 	def color(self):
 		return main_window().port_widget(self.port).color()
 
 	def enterEvent(self, _):
-		self.sig_hover_over.emit(self)
+		main_window().balance_control_widget.hover_in(self.pan_group_key)
 
 	def leaveEvent(self, _):
-		self.sig_hover_out.emit()
+		main_window().balance_control_widget.hover_out()
 
-	def set_selected(self, state):
+	def set_bcwidget_focus(self, state):
 		self.setGraphicsEffect(QGraphicsColorizeEffect() if state else None)
 
 	def show_indicators(self, state):

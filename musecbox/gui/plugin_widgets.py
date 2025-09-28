@@ -27,7 +27,7 @@ from operator import attrgetter
 from itertools import chain
 from qt_extras import ShutUpQT, SigBlock
 from qt_extras.list_button import QtListButton
-from qt_extras.autofit import abbreviated_text
+from qt_extras.autofit import autofit
 from simple_carla import SystemPatchbayClient, PatchbayPort, Plugin, Parameter
 from simple_carla.qt import AbstractQtPlugin
 
@@ -84,7 +84,7 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 
 		self.generic_dialog = None
 
-		self.b_name.autoFit()
+		autofit(self.b_name)
 		self.b_name.setText(self.moniker)
 		self.b_name.toggled.connect(self.show_plugin_dialog)
 		self.b_name.setContextMenuPolicy(Qt.NoContextMenu)
@@ -358,7 +358,7 @@ class SharedPluginWidget(PluginWidget):
 
 		# Do initial fill of b_output items:
 		self.b_output = QtListButton(self, self.available_out_clients)
-		self.b_output.autoFit()
+		autofit(self.b_output)
 		self.b_output.setText(TEXT_NO_CONN)
 		self.b_output.sig_item_selected.connect(self.slot_output_client_selected)
 		self.layout().replaceWidget(self.b_output_placeholder, self.b_output)
