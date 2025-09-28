@@ -13,7 +13,7 @@ dependencies = [
 	"mscore3 >= 1.11.1",
 	"sfzen >= 1.2.0",
 	"recent_items_list >= 1.1.0",
-	"soso_qt_extras >= 1.2.0",
+	"soso_qt_extras >= 1.4.0",
 	"log_soso"
 ]
 
