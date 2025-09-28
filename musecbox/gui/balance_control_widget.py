@@ -131,15 +131,10 @@ class BalanceControlWidget(QWidget):
 	# Screen / internal plugin value conversions
 
 	def resizeEvent(self, event):
-		# Returns a new rectangle with dx1, dy1, dx2 and dy2 added respectively to the
-		# existing coordinates of this rectangle.
 		self.bounds_rect = QRect(QPoint(0, 0), event.size()).adjusted(
 			TRACK_HALF_WIDTH + 1, 1, -TRACK_HALF_WIDTH - 1, -1)
 		self.center_x = self.bounds_rect.center().x()
-		# f_scale is what you divide event x by in order to get a value in a range
-		# from -1.0 to 1.0 (proportion)
 		self.f_scale = float(self.bounds_rect.width() / 2)
-		self.f_track_half_width = TRACK_HALF_WIDTH / self.f_scale
 		for group in self._groups.values():
 			group.reposition()
 		self.update()
@@ -342,7 +337,8 @@ class BalanceControlWidget(QWidget):
 
 	def _create_group(self, key, track):
 		self._groups[key] = BCGroup(self, key, track)
-		self._groups[key].reposition()
+		if self.isVisible():
+			self._groups[key].reposition()
 		self._groups[key].show()
 
 	def orphan(self, track):

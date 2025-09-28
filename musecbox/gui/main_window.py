@@ -470,6 +470,7 @@ class MainWindow(QMainWindow):
 				self.source_score = self.project_definition['source_score']
 				set_application_style()
 				self.show_hide_window_elements()
+				self.balance_control_widget.slot_set_lines(setting(KEY_BCWIDGET_LINES, int, 3))
 				if 'exported_wav_file' in self.project_definition:
 					self.wav_filename = self.project_definition['exported_wav_file']
 				if ProjectLoadDialog(self, self.project_definition).exec():
