@@ -29,6 +29,8 @@ from qt_extras import SigBlock, ShutUpQT, DevilBox
 from qt_extras.autofit import autofit
 from qt_extras.list_button import QtListButton
 from qt_extras.list_layout import HListLayout, VListLayout
+from sfzen import SFZ
+from sfzen.cleaners.liquidsfz import clean as liquid_clean
 from simple_carla import Plugin, PatchbayPort
 try:
 	from simple_carla.plugin_dialog import CarlaPluginDialog
@@ -39,7 +41,7 @@ except ModuleNotFoundError:
 from PyQt5 import uic
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QVariant, QTimer, QPoint
-from PyQt5.QtWidgets import QApplication, QInputDialog, QPushButton, QFrame, \
+from PyQt5.QtWidgets import QApplication, QInputDialog, QMessageBox, QPushButton, QFrame, \
 							QAction, QMenu, QHBoxLayout, QGraphicsColorizeEffect
 
 # musecbox imports
