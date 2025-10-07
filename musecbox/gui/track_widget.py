@@ -21,7 +21,7 @@
 Provides vertical and horizontal track widgets.
 """
 import logging, os
-from os.path import join, dirname, relpath, abspath, exists
+from os.path import join, dirname, relpath, realpath, exists
 from math import floor
 from functools import partial
 from itertools import chain
@@ -751,9 +751,8 @@ class TrackSynth(LiquidSFZ):
 	def __init__(self, port, slot, sfz_filename, *, saved_state = None):
 		self.port = port
 		self.slot = slot
-		if not exists(sfz_filename):
-			sfz_filename = abspath(join(main_window().project_dir(), sfz_filename))
-		super().__init__(sfz_filename, saved_state = saved_state)
+		super().__init__(self._get_real(sfz_filename), saved_state = saved_state)
+		logging.debug('Loaded synth "%s"; SFZ filename: %s', self, self.sfz_filename)
 
 	def track_widget(self):
 		return main_window().port_widget(self.port).track_widget(self.slot)
@@ -764,12 +763,15 @@ class TrackSynth(LiquidSFZ):
 
 	def load_sfz(self, sfz_filename):
 		oldpath = self.sfz_filename
-		if not exists(sfz_filename):
-			sfz_filename = abspath(join(main_window().project_dir(), sfz_filename))
-		super().load_sfz(sfz_filename)
+		super().load_sfz(self._get_real(sfz_filename))
 		if oldpath != self.sfz_filename:
 			main_window().unwatch(oldpath)
 			main_window().watch(self.sfz_filename)
+
+	def _get_real(self, sfz_filename):
+		if exists(sfz_filename):
+			return realpath(sfz_filename)
+		return realpath(join(main_window().project_dir(), sfz_filename))
 
 	def auto_load_complete(self):
 		super().auto_load_complete()

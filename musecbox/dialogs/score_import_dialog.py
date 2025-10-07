@@ -22,7 +22,7 @@ Provides a dialog used for importing MuseScore3 files
 """
 
 import logging
-from os.path import join, basename, dirname, splitext
+from os.path import join, basename, dirname, realpath, splitext
 from functools import partial, reduce
 from collections import defaultdict
 from operator import and_
@@ -58,7 +58,7 @@ class ScoreImportDialog(QDialog):
 		super().__init__(parent)
 		with ShutUpQT():
 			uic.loadUi(join(dirname(__file__), 'score_import_dialog.ui'), self)
-		self.filename = filename
+		self.filename = realpath(filename)
 		self.restore_geometry()
 		self.setFixedWidth(704)
 		self.finished.connect(self.save_geometry)

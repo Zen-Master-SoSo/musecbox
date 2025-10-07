@@ -299,7 +299,8 @@ class BalanceControlWidget(QWidget):
 		"""
 		Called from TrackWidget when mouse hovers over it
 		"""
-		self.change_focused_group(self._groups[pan_group_key], False)
+		if pan_group_key in self._groups:
+			self.change_focused_group(self._groups[pan_group_key], False)
 
 	def hover_out(self):
 		"""

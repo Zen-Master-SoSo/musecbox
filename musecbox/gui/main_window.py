@@ -30,7 +30,7 @@ from signal import signal, SIGINT, SIGTERM
 from socket import socket, AF_UNIX, SOCK_DGRAM, SOL_SOCKET, SO_REUSEADDR
 from qt_extras import SigBlock, ShutUpQT, DevilBox
 from qt_extras.list_layout import HListLayout, VListLayout
-from sfzen import SFZ
+from sfzen import SFZ, SAMPLES_ABSPATH
 from sfzen.cleaners.liquidsfz import clean as liquid_clean
 from mscore import VoiceName
 from simple_carla import	Plugin, Parameter, \
@@ -588,7 +588,8 @@ class MainWindow(QMainWindow):
 
 	def copy_sfzs(self):
 		self.setCursor(Qt.WaitCursor)
-		samples_mode = setting(KEY_SAMPLES_MODE, bool)
+		samples_mode = setting(KEY_SAMPLES_MODE, int, SAMPLES_ABSPATH)
+		logging.debug('Copying SFZs; samples_mode is %d', samples_mode)
 		clean_sfzs = setting(KEY_CLEAN_SFZS, bool)
 		title, _ = splitext(basename(self.project_filename))
 		sfz_dir = join(self.project_dir(), title)
