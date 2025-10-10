@@ -31,7 +31,7 @@ from qt_extras.list_button import QtListButton
 from qt_extras.list_layout import HListLayout, VListLayout
 from sfzen import SFZ
 from sfzen.cleaners.liquidsfz import clean as liquid_clean
-from simple_carla import Plugin, PatchbayPort
+from simple_carla.qt import Plugin, Parameter, PatchbayPort, AbstractQtPlugin
 try:
 	from simple_carla.plugin_dialog import CarlaPluginDialog
 except ModuleNotFoundError:
@@ -58,7 +58,6 @@ from musecbox import (
 	KEY_COPY_SFZS,
 	KEY_SHOW_CHANNELS,
 	KEY_SHOW_INDICATORS,
-	KEY_SHOW_TRACK_VOLUME,
 	KEY_SHOW_PLUGIN_VOLUME,
 	KEY_AUTO_CONNECT,
 	SFZ_FILE_TYPE
@@ -106,22 +105,12 @@ class TrackWidget(QFrame):
 		self.b_name.setText(self.moniker)
 		self.b_name.clicked.connect(self.slot_select_sfz_click)
 
-		# Setup indicators
-		lo_indicators = QHBoxLayout()
-		# QLayout::setContentsMargins(left, top, right, bottom)
-		lo_indicators.setContentsMargins(0,0,0,0)
-		self.led_midi = ActivityIndicator(self, 'led_midi')
-		lo_indicators.addWidget(self.led_midi)
-		self.frm_activity.setLayout(lo_indicators)
-
 		# Setup custom volume indicator
-		self.pb_volume = SmallSlider(self)
-		self.pb_volume.valueChanged.connect(self.slot_volume_change)
-		self.pb_volume.setFixedHeight(self.pb_indicator_height)
-		self.layout().replaceWidget(self.pb_volume_placeholder, self.pb_volume)
-		self.pb_volume_placeholder.setVisible(False)
-		self.pb_volume_placeholder.deleteLater()
-		del self.pb_volume_placeholder
+		self.led_midi = ActivityIndicator(self, 'led_midi')
+		self.layout().replaceWidget(self.led_placeholder, self.led_midi)
+		self.led_placeholder.setVisible(False)
+		self.led_placeholder.deleteLater()
+		del self.led_placeholder
 
 		# Setup mute/solo buttons
 		self.b_mute.setIcon(QIcon(join(APP_PATH, 'res', 'mute.svg')))
@@ -136,7 +125,7 @@ class TrackWidget(QFrame):
 		self.frm_plugins.setLayout(self.plugin_layout)
 
 		# Setup liquid_sfz
-		self.synth = TrackSynth(self.port, self.slot, sfz_filename, saved_state = synth_def)
+		self.synth = TrackSynth(sfz_filename, saved_state = synth_def)
 		for src, tgt in [
 			(self.synth.sig_midi_active, self.slot_midi_active),
 			(self.synth.sig_sfz_loaded, self.slot_sfz_loaded),
@@ -193,7 +182,6 @@ class TrackWidget(QFrame):
 
 		self.show_channels(setting(KEY_SHOW_CHANNELS, bool, True))
 		self.show_indicators(setting(KEY_SHOW_INDICATORS, bool, True))
-		self.show_track_volume(setting(KEY_SHOW_TRACK_VOLUME, bool, True))
 
 	# -----------------------------------------------------------------
 	# Handlers for internal signals:
@@ -379,7 +367,6 @@ class TrackWidget(QFrame):
 			else:
 				bcwidget.join_group(self.pan_group_key, self)
 			if not main_window().project_loading:
-				self.pb_volume.setValue(100)
 				if setting(KEY_AUTO_CONNECT, bool):
 					for client in carla().system_audio_in_clients():
 						self.synth.connect_audio_outputs_to(client)
@@ -457,9 +444,6 @@ class TrackWidget(QFrame):
 			except IndexError:
 				logging.debug('Named client "%s" not found', client_name)
 		self.display_channel_selection()
-		self.pb_volume.setValue(
-			100 if self.synth.volume is None \
-			else round(100 * self.synth.volume))
 
 	def remove_self(self):
 		for plugin in reversed(self.plugin_layout):
@@ -573,15 +557,6 @@ class TrackWidget(QFrame):
 		"""
 		return len(self.plugin_layout) > 0
 
-	def slot_number_changed(self, slot):
-		"""
-		Called from PortWidget when moving / removing a track.
-		"""
-		self.slot = slot
-		self.synth.slot = slot
-		for plugin_widget in self.plugin_layout:
-			plugin_widget.slot = slot
-
 	# -----------------------------------------------------------------
 	# Volume / balance / panning funcs:
 
@@ -623,10 +598,7 @@ class TrackWidget(QFrame):
 		self.setGraphicsEffect(QGraphicsColorizeEffect() if state else None)
 
 	def show_indicators(self, state):
-		self.frm_activity.setVisible(state)
-
-	def show_track_volume(self, state):
-		self.pb_volume.setVisible(state)
+		self.led_midi.setVisible(state)
 
 	def show_plugin_volume(self, state):
 		for plugin_widget in self.plugin_layout:
@@ -698,9 +670,7 @@ class HorizontalTrackWidget(TrackWidget):
 		self.frm_channels.setVisible(state)
 
 	def create_plugin_widget(self, parent, plugin_def, *, saved_state = None):
-		return HorizontalTrackPluginWidget(
-			parent, self.port, self.slot, len(self.plugin_layout),
-			plugin_def, saved_state = saved_state)
+		return HorizontalTrackPluginWidget(parent, plugin_def, saved_state = saved_state)
 
 
 class VerticalTrackWidget(TrackWidget):
@@ -737,10 +707,8 @@ class VerticalTrackWidget(TrackWidget):
 	def show_channels(self, state):
 		self.spn_channel.setVisible(state)
 
-	def create_plugin_widget(self, parent, plugin_def, *, saved_state):
-		return VerticalTrackPluginWidget(
-			parent, self.port, self.slot, len(self.plugin_layout),
-			plugin_def, saved_state = saved_state)
+	def create_plugin_widget(self, parent, plugin_def, *, saved_state = None):
+		return VerticalTrackPluginWidget(parent, plugin_def, saved_state = saved_state)
 
 
 class TrackSynth(LiquidSFZ):
@@ -750,14 +718,8 @@ class TrackSynth(LiquidSFZ):
 
 	sig_sfz_loaded = pyqtSignal(str)
 
-	def __init__(self, port, slot, sfz_filename, *, saved_state = None):
-		self.port = port
-		self.slot = slot
+	def __init__(self, sfz_filename, *, saved_state = None):
 		super().__init__(self._get_real(sfz_filename), saved_state = saved_state)
-		logging.debug('Loaded synth "%s"; SFZ filename: %s', self, self.sfz_filename)
-
-	def track_widget(self):
-		return main_window().port_widget(self.port).track_widget(self.slot)
 
 	def finalize_init(self):
 		super().finalize_init()

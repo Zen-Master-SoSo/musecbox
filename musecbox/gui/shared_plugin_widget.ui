@@ -71,13 +71,7 @@
    <item>
     <layout class="QHBoxLayout" name="lo_ui">
      <property name="spacing">
-      <number>0</number>
-     </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
+      <number>1</number>
      </property>
      <item>
       <widget class="QFrame" name="frm_activity">
@@ -97,10 +91,16 @@
      </item>
      <item>
       <widget class="QPushButton" name="b_solo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="maximumSize">
         <size>
-         <width>24</width>
-         <height>20</height>
+         <width>16777215</width>
+         <height>22</height>
         </size>
        </property>
        <property name="font">
@@ -109,7 +109,7 @@
         </font>
        </property>
        <property name="text">
-        <string>S</string>
+        <string/>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -118,10 +118,16 @@
      </item>
      <item>
       <widget class="QPushButton" name="b_mute">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="maximumSize">
         <size>
-         <width>24</width>
-         <height>20</height>
+         <width>16777215</width>
+         <height>22</height>
         </size>
        </property>
        <property name="font">
@@ -130,7 +136,7 @@
         </font>
        </property>
        <property name="text">
-        <string>M</string>
+        <string/>
        </property>
        <property name="checkable">
         <bool>true</bool>

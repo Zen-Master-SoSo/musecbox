@@ -30,7 +30,7 @@
   <property name="frameShadow">
    <enum>QFrame::Raised</enum>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,0,100,0">
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,100,0">
    <property name="spacing">
     <number>1</number>
    </property>
@@ -114,7 +114,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="frm_activity">
+    <widget class="QWidget" name="led_placeholder" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -130,28 +130,12 @@
     </widget>
    </item>
    <item>
-    <widget class="QProgressBar" name="pb_volume_placeholder">
-     <property name="maximumSize">
-      <size>
-       <width>68</width>
-       <height>22</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QPushButton" name="b_solo">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>24</width>
-       <height>24</height>
-      </size>
      </property>
      <property name="maximumSize">
       <size>
@@ -177,12 +161,6 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>24</width>
-       <height>24</height>
-      </size>
      </property>
      <property name="maximumSize">
       <size>

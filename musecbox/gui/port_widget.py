@@ -312,7 +312,7 @@ class PortWidget(QFrame):
 		if len(self.track_layout):
 			if not main_window().is_clearing:
 				for index, track_widget in enumerate(self.track_layout):
-					track_widget.slot_number_changed(index)
+					track_widget.slot = index
 		else:
 			self.sig_cleared.emit(self.port)
 
@@ -414,15 +414,16 @@ class HorizontalPortWidget(PortWidget):
 	@pyqtSlot(TrackWidget)
 	def slot_move_track_previous(self, track_widget):
 		self.track_layout.move_up(track_widget)
-		for index, track_widget in enumerate(self.track_layout):
-			track_widget.slot_number_changed(index)
-		main_window().set_dirty()
+		self._renumber_tracks()
 
 	@pyqtSlot(TrackWidget)
 	def slot_move_track_next(self, track_widget):
 		self.track_layout.move_down(track_widget)
-		for slot, _ in enumerate(self.track_layout):
-			self.track_layout[slot].slot_number_changed(slot)
+		self._renumber_tracks()
+
+	def _renumber_tracks(self):
+		for index, track_widget in enumerate(self.track_layout):
+			track_widget.slot = index
 		main_window().set_dirty()
 
 	@pyqtSlot(bool)

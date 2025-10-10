@@ -309,7 +309,6 @@
     <addaction name="action_show_balance"/>
     <addaction name="action_show_shared_plugins"/>
     <addaction name="action_show_statusbar"/>
-    <addaction name="action_show_track_volume"/>
     <addaction name="action_show_plugin_volume"/>
     <addaction name="separator"/>
     <addaction name="action_rollup_all_plugins"/>
@@ -765,20 +764,6 @@
    </property>
    <property name="shortcut">
     <string>Alt+Return</string>
-   </property>
-  </action>
-  <action name="action_show_track_volume">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Track Volume</string>
-   </property>
-   <property name="toolTip">
-    <string>Show/hide the volume indicators for each track</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+V</string>
    </property>
   </action>
   <action name="action_show_plugin_volume">

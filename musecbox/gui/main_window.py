@@ -58,7 +58,7 @@ from musecbox import 		carla, set_main_window, EngineInitFailure, \
 							PROJECT_OPTION_KEYS, DEFAULT_STYLE, KEY_STYLE, \
 							KEY_RECENT_PROJECT_DIR, KEY_RECENT_SCORE_DIR, \
 							KEY_SHOW_CHANNELS, KEY_SHOW_PORT_INPUTS, KEY_SHOW_INDICATORS, \
-							KEY_SHOW_TRACK_VOLUME, KEY_SHOW_PLUGIN_VOLUME, KEY_SHOW_BALANCE, \
+							KEY_SHOW_PLUGIN_VOLUME, KEY_SHOW_BALANCE, \
 							KEY_SHOW_SHARED_PLUGINS, KEY_SHOW_TOOLBAR, KEY_SHOW_STATUSBAR, \
 							KEY_AUTO_CONNECT, KEY_AUTO_START, KEY_WATCH_FILES, KEY_VERTICAL_LAYOUT, \
 							KEY_BCWIDGET_LINES, KEY_COPY_SFZS, KEY_SAMPLES_MODE, KEY_CLEAN_SFZS, \
@@ -111,11 +111,6 @@ class MainWindow(QMainWindow):
 				else:
 					self.project_filename = realpath(options.Filename)
 
-		if self.startup_options.vertical_layout:
-			set_setting(KEY_VERTICAL_LAYOUT, True)
-		elif self.startup_options.horizontal_layout:
-			set_setting(KEY_VERTICAL_LAYOUT, False)
-
 		set_application_style()
 		with ShutUpQT():
 			uic.loadUi(join(dirname(__file__), 'main_window.ui'), self)
@@ -158,7 +153,8 @@ class MainWindow(QMainWindow):
 		self.frm_ports.setContextMenuPolicy(Qt.CustomContextMenu)
 		self.frm_ports.customContextMenuRequested.connect(self.slot_ports_context_menu)
 
-		if setting(KEY_VERTICAL_LAYOUT, bool):
+		if self.startup_options.vertical_layout and not self.startup_options.horizontal_layout \
+			or setting(KEY_VERTICAL_LAYOUT, bool):
 			self.action_vertical_layout.setChecked(True)
 			self.port_layout = VListLayout(end_space=10)
 			self.scrl_ports.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -188,6 +184,11 @@ class MainWindow(QMainWindow):
 		self.pb_dsp_load_placeholder.setVisible(False)
 		self.pb_dsp_load_placeholder.deleteLater()
 		del self.pb_dsp_load_placeholder
+
+		if self.startup_options.vertical_layout:
+			set_setting(KEY_VERTICAL_LAYOUT, True)
+		elif self.startup_options.horizontal_layout:
+			set_setting(KEY_VERTICAL_LAYOUT, False)
 
 	def _connect_actions(self):
 		# File menu
@@ -222,7 +223,6 @@ class MainWindow(QMainWindow):
 		self.action_show_balance.toggled.connect(self.slot_show_balance_control)
 		self.action_show_shared_plugins.toggled.connect(self.slot_show_shared_plugins)
 		self.action_show_statusbar.toggled.connect(self.slot_show_statusbar)
-		self.action_show_track_volume.toggled.connect(self.slot_show_track_volume)
 		self.action_show_plugin_volume.toggled.connect(self.slot_show_plugin_volume)
 		self.action_rollup_all_plugins.triggered.connect(self.slot_rollup_all_plugins)
 		self.action_unroll_all_plugins.triggered.connect(self.slot_unroll_all_plugins)
@@ -865,7 +865,6 @@ class MainWindow(QMainWindow):
 	def slot_show_track_volume(self, state):
 		for track_widget in self.iterate_track_widgets():
 			track_widget.show_track_volume(state)
-		set_setting(KEY_SHOW_TRACK_VOLUME, state)
 
 	@pyqtSlot(bool)
 	def slot_show_plugin_volume(self, state):
@@ -1132,7 +1131,6 @@ class MainWindow(QMainWindow):
 			self.action_show_balance,
 			self.action_show_shared_plugins,
 			self.action_show_statusbar,
-			self.action_show_track_volume,
 			self.action_show_plugin_volume
 		):
 			self.action_show_toolbar.setChecked(setting(KEY_SHOW_TOOLBAR, bool, True))
@@ -1142,7 +1140,6 @@ class MainWindow(QMainWindow):
 			self.action_show_balance.setChecked(setting(KEY_SHOW_BALANCE, bool, True))
 			self.action_show_shared_plugins.setChecked(setting(KEY_SHOW_SHARED_PLUGINS, bool, True))
 			self.action_show_statusbar.setChecked(setting(KEY_SHOW_STATUSBAR, bool, True))
-			self.action_show_track_volume.setChecked(setting(KEY_SHOW_TRACK_VOLUME, bool, True))
 			self.action_show_plugin_volume.setChecked(setting(KEY_SHOW_PLUGIN_VOLUME, bool, True))
 
 	@pyqtSlot()

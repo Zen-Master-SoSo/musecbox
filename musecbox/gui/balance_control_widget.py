@@ -422,19 +422,20 @@ class GrabEvent:
 
 class BCGroup(QLabel):
 
-	def __init__(self, parent, key, track):
+	def __init__(self, parent, key, track_widget):
 		super().__init__(parent)
 		self.setMouseTracking(True)
 		autofit(self)
 		self.setEnabled(False)
 		self.key = key
-		self.tracks = [track]
-		self.port = track.port
-		track.pan_group_key = key
+		self.tracks = [track_widget]
+		self.port = track_widget.port
+		track_widget.pan_group_key = key
 		self.setObjectName(f'bcwidget_port_{self.port}')
-		self.can_balance = track.synth.can_balance
-		self.can_pan = track.synth.can_pan
+		self.can_balance = track_widget.synth.can_balance
+		self.can_pan = track_widget.synth.can_pan
 		pdef = main_window().project_definition
+		# TODO: This can be simplified once all projects are saved with version >= 0.1.0
 		self.bcwidget_line = 0 if pdef is None \
 			or 'bcwidget' not in pdef \
 			or key not in pdef['bcwidget'] \

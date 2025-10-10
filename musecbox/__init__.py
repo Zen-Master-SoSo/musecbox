@@ -143,7 +143,6 @@ KEY_SHOW_PORT_INPUTS	= 'MainWindow/ShowPortInputs'
 KEY_SHOW_BALANCE		= 'MainWindow/ShowBalanceControl'
 KEY_SHOW_SHARED_PLUGINS	= 'MainWindow/ShowSharedPlugins'
 KEY_SHOW_STATUSBAR		= 'MainWindow/ShowStatusbar'
-KEY_SHOW_TRACK_VOLUME	= 'MainWindow/ShowTrackVolume'
 KEY_SHOW_PLUGIN_VOLUME	= 'MainWindow/ShowPluginVolume'
 KEY_AUTO_CONNECT		= 'MainWindow/AutoConnectTracks'
 KEY_AUTO_START			= 'MainWindow/AutoStartProject'
@@ -176,7 +175,6 @@ PROJECT_OPTION_KEYS = [
 	KEY_SHOW_BALANCE,
 	KEY_SHOW_SHARED_PLUGINS,
 	KEY_SHOW_STATUSBAR,
-	KEY_SHOW_TRACK_VOLUME,
 	KEY_SHOW_PLUGIN_VOLUME,
 	KEY_BCWIDGET_LINES,
 	KEY_WATCH_FILES,

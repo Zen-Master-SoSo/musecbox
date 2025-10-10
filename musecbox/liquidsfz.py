@@ -43,7 +43,7 @@ class LiquidSFZ(QtPlugin):
 			'name'		: 'liquidsfz',
 			'label'		: 'http://spectmorph.org/plugins/liquidsfz',
 			'uniqueId'	: None
-		}, saved_state)
+		}, saved_state = saved_state)
 
 	def finalize_init(self):
 		self.reload()

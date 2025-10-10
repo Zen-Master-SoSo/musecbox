@@ -38,7 +38,7 @@ from PyQt5.QtCore import	Qt, pyqtSignal, pyqtSlot, QEvent, QVariant, \
 from PyQt5.QtGui import		QPainter, QColor, QBrush, QPen, QPalette, \
 							QPixmap, QIcon, QFontMetrics
 from PyQt5.QtWidgets import QWidget, QDialog, QInputDialog, QLabel, QFrame, QTabWidget, \
-							QProgressBar, QHBoxLayout, QVBoxLayout, QGridLayout, \
+							QProgressBar, QLayout, QHBoxLayout, QVBoxLayout, QGridLayout, \
 							QAction, QSizePolicy
 
 from musecbox import	carla, main_window, \
@@ -71,7 +71,7 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 
 	def __init__(self, parent, plugin_def, *, saved_state = None):
 		QFrame.__init__(self, parent)
-		AbstractQtPlugin.__init__(self, plugin_def, saved_state)
+		AbstractQtPlugin.__init__(self, plugin_def, saved_state = saved_state)
 		with ShutUpQT():
 			uic.loadUi(join(dirname(__file__), self.ui), self)
 
@@ -256,11 +256,8 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 
 class TrackPluginWidget(PluginWidget):
 
-	def __init__(self, parent, port, slot, ordinal, plugin_def, *, saved_state = None):
+	def __init__(self, parent, plugin_def, *, saved_state = None):
 		super().__init__(parent, plugin_def, saved_state = saved_state)
-		self.port = port
-		self.slot = slot
-		self.ordinal = ordinal
 		self.icon_collapse = QIcon(join(APP_PATH, 'res', self.icon_collapse_svg))
 		self.icon_expand = QIcon(join(APP_PATH, 'res', self.icon_expand_svg))
 		self.b_rollup.toggled.connect(self.slot_rollup)
@@ -336,16 +333,23 @@ class SharedPluginWidget(PluginWidget):
 
 	def __init__(self, parent, plugin_def, *, saved_state=None):
 		super().__init__(parent, plugin_def, saved_state = saved_state)
+
+		# Setup indicators
 		lo_indicators = QHBoxLayout()
 		lo_indicators.setContentsMargins(0,0,0,0)
-		lo_indicators.setSpacing(2)
+		lo_indicators.setSpacing(1)
+		lo_indicators.setSizeConstraint(QLayout.SetMinimumSize)
 		self.frm_activity.setLayout(lo_indicators)
 		policy = QSizePolicy()
 		policy.setHorizontalStretch(5)
-		for name in ["led_ctrl", "led_audio", "led_midi"]:
+		for name in ["led_audio", "led_midi"]:
 			setattr(self, name, ActivityIndicator(self, name))
 			getattr(self, name).setSizePolicy(policy)
 			lo_indicators.addWidget(getattr(self, name))
+
+		# Setup mute/solo buttons
+		self.b_mute.setIcon(QIcon(join(APP_PATH, 'res', 'mute.svg')))
+		self.b_solo.setIcon(QIcon(join(APP_PATH, 'res', 'solo.svg')))
 
 		# Setup balance control widget:
 		self.w_balance = SmallBalanceControl(self)
