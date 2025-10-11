@@ -36,7 +36,8 @@ from PyQt5.QtWidgets import	QApplication, QDialog, QFileSystemModel, QAbstractIt
 
 # musecbox imports
 from mscore import VoiceName
-from musecbox import 	carla, previewer, setting, set_setting, set_application_style, bold, \
+from musecbox import 	carla, previewer, setting, set_setting, set_application_style, \
+						xdg_open, bold, \
 						TEXT_NO_CONN, TEXT_NO_GROUP, TEXT_NEW_GROUP, KEY_SFZ_DIR, \
 						KEY_PREVIEW_FILES, KEY_PREVIEWER_MIDI_SRC, KEY_PREVIEWER_AUDIO_TGT, \
 						LAYOUT_COMPLETE_DELAY, LOG_FORMAT, EngineInitFailure
@@ -280,10 +281,17 @@ class SFZFileDialog(QDialog):
 				menu.addAction('Add to "%s" group' % group_name,
 					partial(self.assign_sfz_to_group, group_name, item))
 			add_group_action = menu.addAction('Add to new group ...')
+			menu.addSeparator()
+			xdg_open_action = menu.addAction('Open in external editor')
+			copy_path_action = menu.addAction('Copy path to clipboard')
 			action = menu.exec(self.lst_sfzs.mapToGlobal(position))
 			if action is add_group_action:
 				if group_name := self.show_add_group():
 					self.assign_sfz_to_group(group_name, item)
+			elif action is xdg_open_action:
+				xdg_open(item.data(Qt.UserRole).path)
+			elif action is copy_path_action:
+				QApplication.instance().clipboard().setText(item.data(Qt.UserRole).path)
 
 	# -------------------------------------------------
 	# Filtering:
