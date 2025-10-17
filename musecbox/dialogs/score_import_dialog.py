@@ -328,8 +328,8 @@ class PartWidget(QWidget):
 		with ShutUpQT():
 			uic.loadUi(join(dirname(__file__), 'score_import_part_widget.ui'), self)
 		self.score_part = score_part
-		self.lbl_part_name.setText(score_part.name)
-		self.lbl_instrument_name.setText(score_part.instrument().name)
+		self.lbl_part_name.setText(self.score_part.name)
+		self.lbl_instrument_name.setText(self.score_part.instrument().name)
 		self.make = True
 
 		self.b_menu = QtMenuButton(self, fill_callback = self.fill_menu)
@@ -345,7 +345,7 @@ class PartWidget(QWidget):
 		self.channel_widgets.setContentsMargins(0,0,0,0)
 		self.frm_channels.setLayout(self.channel_widgets)
 
-		for channel in score_part.instrument().channels():
+		for channel in self.score_part.instrument().channels():
 			self.append_channel_widget(channel)
 
 	def append_channel_widget(self, score_channel):
@@ -417,6 +417,7 @@ class PartWidget(QWidget):
 			dlg = InstrumentSelectionDialog(self, self.score_part)
 			if dlg.exec():
 				self.score_part.replace_instrument(dlg.new_instrument)
+				self.lbl_instrument_name.setText(dlg.new_instrument.name)
 				self.channel_widgets.clear()
 				for channel in self.score_part.instrument().channels():
 					self.append_channel_widget(channel)

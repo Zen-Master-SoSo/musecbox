@@ -45,11 +45,11 @@ from musecbox.dialogs.add_group_dialog import AddGroupDialog
 from musecbox.sfz_previewer import SFZPreviewer
 from musecbox.sfzdb import SFZDatabase
 
-SOURCE_TYPE_DIR		= 1
-SOURCE_TYPE_GROUP	= 2
-KEY_SELECT_SOURCE	= 'SFZFileDialog/sel_source'
-KEY_DIRECTORY		= 'SFZFileDialog/directory'
-KEY_GROUP			= 'SFZFileDialog/group'
+SOURCE_TYPE_DIR			= 1
+SOURCE_TYPE_GROUP		= 2
+KEY_CURRENT_SOURCE		= 'SFZFileDialog/SelectionSource'
+KEY_CURRENT_DIRECTORY	= 'SFZFileDialog/CurrentDirectory'
+KEY_CURRENT_GROUP		= 'SFZFileDialog/CurrentGroup'
 
 
 class SFZFileDialog(QDialog):
@@ -64,8 +64,6 @@ class SFZFileDialog(QDialog):
 		self.accepted.connect(self.slot_accepted)
 		self.setModal(True)
 
-		root_path = setting(KEY_SFZ_DIR, str, QDir.rootPath())
-
 		self.voice_name = voice_name
 		if self.voice_name is not None:
 			self.setWindowTitle(f'Select SFZ for "{self.voice_name}"')
@@ -79,6 +77,7 @@ class SFZFileDialog(QDialog):
 		self.directory_model.setFilter(QDir.Dirs | QDir.NoDotAndDotDot)
 		self.directory_model.setRootPath(QDir.rootPath())
 		self.tree_directories.setModel(self.directory_model)
+		root_path = setting(KEY_SFZ_DIR, str, QDir.rootPath())
 		self.tree_directories.setRootIndex(self.directory_model.index(root_path))
 		self.tree_directories.hideColumn(1)
 		self.tree_directories.hideColumn(2)
@@ -100,13 +99,13 @@ class SFZFileDialog(QDialog):
 		self.txt_search.textChanged.connect(self.slot_search_box_changed)
 		self.b_clear_search.clicked.connect(self.slot_clear_search_clicked)
 
-		index = self.directory_model.index(self.directory)
-		self.tree_directories.setExpanded(index, True)
+		self.current_directory = setting(KEY_CURRENT_DIRECTORY, str, QDir.homePath())
+		index = self.directory_model.index(self.current_directory)
 		self.tree_directories.setCurrentIndex(index)
 
-		for item in self.lst_groups.findItems(self.group_name, Qt.MatchExactly):
+		for item in self.lst_groups.findItems(self.current_group, Qt.MatchExactly):
 			item.setSelected(True)
-			if self.selection_source == SOURCE_TYPE_GROUP:
+			if self.current_source == SOURCE_TYPE_GROUP:
 				self.select_group(item)
 			break
 
@@ -132,16 +131,18 @@ class SFZFileDialog(QDialog):
 		enable = setting(KEY_PREVIEW_FILES, bool)
 		self.chk_live_preview.setChecked(enable)
 		self.frm_preview_settings.setEnabled(enable)
-
-		# Delay after showing dialog so Qt can scroll tree_directories correctly
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
 
 	@pyqtSlot()
 	def layout_complete(self):
-		index = self.directory_model.index(self.directory)
-		self.tree_directories.scrollTo(index, QAbstractItemView.PositionAtTop)
-		self.lst_sfzs.setFocus()
-		self.initializing = False
+		index = self.directory_model.index(self.current_directory)
+		if self.directory_model.canFetchMore(index):
+			QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
+			self.directory_model.fetchMore(index)
+		else:
+			self.tree_directories.scrollTo(index, QAbstractItemView.PositionAtTop)
+			self.lst_sfzs.setFocus()
+			self.initializing = False
 
 	@pyqtSlot(str, QVariant)
 	def slot_input_selected(self, _, midi_src):
@@ -163,16 +164,17 @@ class SFZFileDialog(QDialog):
 
 	@pyqtSlot(QModelIndex)
 	def slot_directory_current_changed(self, index):
-		self.directory = self.directory_model.filePath(index)
-		self.lbl_directory.setText(self.directory)
-		if not self.initializing or self.selection_source == SOURCE_TYPE_DIR:
-			self.lbl_selection.setText('Directory "%s"' % basename(self.directory))
-			entries = glob.glob('%s/*.sfz' % self.directory)
+		logging.debug('slot_directory_current_changed; initializing: %s', self.initializing)
+		self.current_directory = self.directory_model.filePath(index)
+		self.lbl_selection.setText('Directory "%s"' % basename(self.current_directory))
+		self.lbl_directory.setText(self.current_directory)
+		if not self.initializing or self.current_source == SOURCE_TYPE_DIR:
+			entries = glob.glob('%s/*.sfz' % self.current_directory)
 			if entries:
 				self.fill_sfz_list(self.db.sfzs_by_paths(entries), None, False)
 			else:
 				self.lst_sfzs.clear()
-			self.selection_source = SOURCE_TYPE_DIR
+			self.current_source = SOURCE_TYPE_DIR
 
 	@pyqtSlot(QListWidgetItem)
 	def slot_groups_current_changed(self, item):
@@ -191,28 +193,20 @@ class SFZFileDialog(QDialog):
 	# Properties which are directly mapped to settings:
 
 	@property
-	def directory(self):
-		return setting(KEY_DIRECTORY, str, QDir.homePath())
+	def current_group(self):
+		return setting(KEY_CURRENT_GROUP, str, TEXT_NO_GROUP)
 
-	@directory.setter
-	def directory(self, value):
-		set_setting(KEY_DIRECTORY, realpath(value))
-
-	@property
-	def group_name(self):
-		return setting(KEY_GROUP, str, TEXT_NO_GROUP)
-
-	@group_name.setter
-	def group_name(self, value):
-		set_setting(KEY_GROUP, value)
+	@current_group.setter
+	def current_group(self, value):
+		set_setting(KEY_CURRENT_GROUP, value)
 
 	@property
-	def selection_source(self):
-		return setting(KEY_SELECT_SOURCE, int, SOURCE_TYPE_DIR)
+	def current_source(self):
+		return setting(KEY_CURRENT_SOURCE, int, SOURCE_TYPE_DIR)
 
-	@selection_source.setter
-	def selection_source(self, value):
-		set_setting(KEY_SELECT_SOURCE, value)
+	@current_source.setter
+	def current_source(self, value):
+		set_setting(KEY_CURRENT_SOURCE, value)
 
 	# -------------------------------------------------
 	# Context menu handlers:
@@ -239,7 +233,7 @@ class SFZFileDialog(QDialog):
 				if group_name := self.show_add_group():
 					self.assign_dir_to_group(group_name)
 			elif action is set_root_action:
-				set_setting(KEY_SFZ_DIR, realpath(self.directory))
+				set_setting(KEY_SFZ_DIR, self.current_directory)
 				self.tree_directories.setRootIndex(self.tree_directories.currentIndex())
 			elif action is up_level_action:
 				root_path = dirname(root_path)
@@ -342,8 +336,8 @@ class SFZFileDialog(QDialog):
 		else:
 			self.fill_sfz_list(self.db.sfzs(group_name), group_name, True)
 			self.lbl_selection.setText('Group "%s"' % group_name)
-		self.group_name = group_name
-		self.selection_source = SOURCE_TYPE_GROUP
+		self.current_group = group_name
+		self.current_source = SOURCE_TYPE_GROUP
 
 	def _append_sfz(self, sfz, mapped, show_dirs):
 		sfz_list_item = QListWidgetItem(self.lst_sfzs)
@@ -359,7 +353,7 @@ class SFZFileDialog(QDialog):
 		return dlg.group_name if dlg.exec() else None
 
 	def assign_dir_to_group(self, group_name):
-		entries = glob.glob('%s/**/*.sfz' % self.directory, recursive = True)
+		entries = glob.glob('%s/**/*.sfz' % self.current_directory, recursive = True)
 		self.db.insert_sfzs(entries)
 		self.db.assign_group(group_name, entries)
 		self.lst_groups.clear()
@@ -379,6 +373,7 @@ class SFZFileDialog(QDialog):
 
 	@pyqtSlot()
 	def slot_accepted(self):
+		set_setting(KEY_CURRENT_DIRECTORY, realpath(self.current_directory))
 		if self.voice_name is not None:
 			self.db.map_instrument(self.voice_name, self.sfz_filename)
 

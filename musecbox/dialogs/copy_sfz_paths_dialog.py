@@ -29,12 +29,12 @@ class CopySFZPathsDialog(QDialog):
 
 	def __init__(self, parent, text):
 		super().__init__(parent)
-		self.setObjectName("sfz_paths_dialog")
-		sz = QSize(636, 320)
-		self.resize(sz)
-		self.setMinimumSize(sz)
+		self.restore_geometry()
+		self.finished.connect(self.save_geometry)
+		self.setObjectName("sfz_paths_dialog")	# Useful for CSS styling
+		self.setMinimumSize(QSize(636, 320))
 		lo = QHBoxLayout(self)
-		lo.setContentsMargins(20, 10, 20, 24)
+		lo.setContentsMargins(16, 10, 16, 24)
 		lo.setSpacing(12)
 		self.lbl_list = QLabel(self)
 		self.lbl_list.setWordWrap(True)

@@ -63,8 +63,8 @@ class CopySFZDialog(QFileDialog):
 		self.setNameFilter(SFZ_FILE_TYPE)
 		self.setViewMode(QFileDialog.List)
 
-		self.group_box = QGroupBox(
-			'When copying SFZs for this project, how do you want to handle their samples?')
+		sample_mode_group = QGroupBox(
+			'When copying this SFZ, how do you want to handle its samples?')
 		self.r_abspath = QRadioButton(T_SAMPLEMODE_ABSPATH)
 		self.r_resolve = QRadioButton(T_SAMPLEMODE_RELPATH)
 		self.r_copy = QRadioButton(T_SAMPLEMODE_COPY)
@@ -78,13 +78,13 @@ class CopySFZDialog(QFileDialog):
 		lo.addWidget(self.r_copy)
 		lo.addWidget(self.r_symlink)
 		lo.addWidget(self.r_hardlink)
-		self.group_box.setLayout(lo)
+		sample_mode_group.setLayout(lo)
 
 		self.chk_clean = QCheckBox(T_CLEAN_SFZ)
 		self.chk_clean.setChecked(self.clean_sfzs)
 
 		self.layout().addWidget(QLabel())
-		self.layout().addWidget(self.group_box, self.layout().rowCount() - 1, 1, 1, 2)
+		self.layout().addWidget(sample_mode_group, self.layout().rowCount() - 1, 1, 1, 2)
 		self.layout().addWidget(QLabel())
 		self.layout().addWidget(self.chk_clean, self.layout().rowCount() - 1, 1, 1, 2)
 

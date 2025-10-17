@@ -146,7 +146,7 @@ class TrackWidget(QFrame):
 		del self.b_output_placeholder
 
 		# Setup this TrackWidget's actions:
-		action = QAction('Copy SFZ ...', self)
+		action = QAction('Save SFZ as ...', self)
 		action.triggered.connect(self.slot_copy_sfz)
 		self.addAction(action)
 		action = QAction('Open SFZ in editor', self)

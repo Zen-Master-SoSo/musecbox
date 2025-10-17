@@ -37,7 +37,7 @@ from musecbox import	setting, set_setting, set_application_style, KEY_SFZ_DIR, \
 						LAYOUT_COMPLETE_DELAY, LOG_FORMAT
 from musecbox.sfzdb import SFZDatabase
 
-KEY_DIRECTORY			= 'AddGroupDialog/directory'
+KEY_CURRENT_DIRECTORY	= 'AddGroupDialog/CurrentDirectory'
 
 TEXT_ADD_ALL			= 'Add all in this folder'
 TEXT_ADD_ALL_RECURSIVE	= 'Add all in this folder and all subfolders'
@@ -65,6 +65,7 @@ class AddGroupDialog(QDialog):
 
 		self.sfzs = []
 		self.existing_groups = SFZDatabase().group_names()
+		self.current_directory = setting(KEY_CURRENT_DIRECTORY, str, QDir.homePath())
 		self.lbl_warning.setVisible(False)
 		self.buttons.button(QDialogButtonBox.Ok).setEnabled(False)
 		self.group_edited = False
@@ -91,15 +92,20 @@ class AddGroupDialog(QDialog):
 		self.lst_sfzs.setContextMenuPolicy(Qt.CustomContextMenu)
 		self.lst_sfzs.customContextMenuRequested.connect(self.slot_sfz_context_menu)
 
-		index = self.directory_model.index(self.directory)
+		index = self.directory_model.index(self.current_directory)
 		self.tree_directories.setCurrentIndex(index)
 		self.tree_directories.setExpanded(index, True)
+
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
 
 	@pyqtSlot()
 	def layout_complete(self):
-		index = self.directory_model.index(self.directory)
-		self.tree_directories.scrollTo(index, QAbstractItemView.PositionAtTop)
+		index = self.directory_model.index(self.current_directory)
+		if self.directory_model.canFetchMore(index):
+			QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
+			self.directory_model.fetchMore(index)
+		else:
+			self.tree_directories.scrollTo(index, QAbstractItemView.PositionAtTop)
 
 	@pyqtSlot(str)
 	def slot_group_changed(self, text):
@@ -119,24 +125,16 @@ class AddGroupDialog(QDialog):
 	def group_name(self):
 		return self.ed_group_name.text()
 
-	@property
-	def directory(self):
-		return setting(KEY_DIRECTORY, str, QDir.homePath())
-
-	@directory.setter
-	def directory(self, value):
-		set_setting(KEY_DIRECTORY, realpath(value))
-
 	@pyqtSlot(QModelIndex, QModelIndex)
 	def slot_tree_current_changed(self, current, _):
 		if self.directory_model.isDir(current):
-			self.directory = self.directory_model.filePath(current)
+			self.current_directory = self.directory_model.filePath(current)
 			if not self.group_edited:
-				self.ed_group_name.setText(basename(self.directory))
+				self.ed_group_name.setText(basename(self.current_directory))
 			dir_count = len(self.current_directory_sfzs(False))
-			self.lbl_status.setText(f'{self.directory}: {dir_count} SFZs')
+			self.lbl_status.setText(f'{self.current_directory}: {dir_count} SFZs')
 		else:
-			self.directory = None
+			self.current_directory = None
 
 	@pyqtSlot(QItemSelection, QItemSelection)
 	def slot_tree_selection_changed(self, *_):
@@ -150,10 +148,10 @@ class AddGroupDialog(QDialog):
 		menu = QMenu(self)
 
 		add_all_action = menu.addAction(TEXT_ADD_ALL) \
-			if self.directory else None
+			if self.current_directory else None
 		add_all_recursive_action = menu.addAction(TEXT_ADD_ALL_RECURSIVE) \
-			if self.directory else None
-		if self.directory:
+			if self.current_directory else None
+		if self.current_directory:
 			menu.addSeparator()	# ---------------------
 
 		add_selected = menu.addAction(TEXT_ADD_SELECTED) \
@@ -163,7 +161,7 @@ class AddGroupDialog(QDialog):
 
 		root_path = self.directory_model.filePath(self.tree_directories.rootIndex())
 		set_root_action = menu.addAction('Set as directory root')
-		set_root_action.setEnabled(self.directory != root_path)
+		set_root_action.setEnabled(self.current_directory != root_path)
 		up_level_action = menu.addAction('Up to parent directory')
 		up_level_action.setEnabled(root_path != QDir.rootPath())
 		collapse_action = menu.addAction('Collapse All')
@@ -179,7 +177,7 @@ class AddGroupDialog(QDialog):
 			elif action is collapse_action:
 				self.tree_directories.collapseAll()
 			elif action is set_root_action:
-				set_setting(KEY_SFZ_DIR, realpath(self.directory))
+				set_setting(KEY_SFZ_DIR, realpath(self.current_directory))
 				self.tree_directories.setRootIndex(self.tree_directories.currentIndex())
 			elif action is up_level_action:
 				root_path = dirname(root_path)
@@ -226,9 +224,9 @@ class AddGroupDialog(QDialog):
 
 	def current_directory_sfzs(self, recursive):
 		return sorted(
-			glob(f'{self.directory}/**/*.sfz', recursive = True) \
+			glob(f'{self.current_directory}/**/*.sfz', recursive = True) \
 			if recursive else \
-			glob(f'{self.directory}/*.sfz')
+			glob(f'{self.current_directory}/*.sfz')
 		)
 
 	def update_count(self):
@@ -246,6 +244,8 @@ class AddGroupDialog(QDialog):
 	@pyqtSlot()
 	def slot_accepted(self):
 		SFZDatabase().assign_group(self.group_name, self.sfzs)
+		if self.current_directory:
+			set_setting(KEY_CURRENT_DIRECTORY, realpath(self.current_directory))
 
 
 if __name__ == "__main__":

@@ -1213,7 +1213,16 @@ class MainWindow(QMainWindow):
 
 	@pyqtSlot()
 	def slot_revert(self):
-		self.when_clear(partial(self.load_project, self.project_filename))
+		if self.is_clear():
+			self.clear_internal_state()
+			self.load_project(self.project_filename)
+		elif QMessageBox(QMessageBox.Question, 'Confirm revert MusecBox project',
+			'Are you sure you want to revert to the last saved version of this project?',
+			QMessageBox.Ok | QMessageBox.Cancel, self).exec() == QMessageBox.Ok:
+			logging.debug('CLEARING')
+			self.function_after_cleared = partial(self.load_project, self.project_filename)
+			self.is_clearing = True
+			carla().remove_all_plugins()	# See: slot_last_plugin_removed
 
 	@pyqtSlot()
 	def slot_close(self):

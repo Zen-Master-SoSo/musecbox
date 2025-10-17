@@ -35,7 +35,7 @@ from mscore import Score, Part
 from mscore.instruments import Instruments
 from mscore.fuzzy import FuzzyCandidate, FuzzyName
 from musecbox import	setting, set_setting, set_application_style, \
-						KEY_SCORES_DIR, KEY_RECENT_SCORE_DIR, LAYOUT_COMPLETE_DELAY, LOG_FORMAT
+						KEY_SCORES_DIR, KEY_RECENT_INST_DIR, LAYOUT_COMPLETE_DELAY, LOG_FORMAT
 
 TEXT_ANY = '[Any]'
 TEXT_NOTHING = '-'
@@ -77,28 +77,33 @@ class InstrumentSelectionDialog(QDialog):
 		self.file_model.setFilter(QDir.AllDirs | QDir.Files | QDir.NoDotAndDotDot)
 		self.file_model.setNameFilters(['*.mscz', '*.mscx'])
 		self.file_model.setRootPath(QDir.rootPath())
+		root_path = realpath(setting(KEY_SCORES_DIR, str, QDir.rootPath()))
+		logging.debug('root_path: %s', root_path)
 		self.tree_scores.setModel(self.file_model)
-		root_path = setting(KEY_SCORES_DIR, str, QDir.homePath())
 		self.tree_scores.setRootIndex(self.file_model.index(root_path))
 		self.tree_scores.hideColumn(1)
 		self.tree_scores.hideColumn(2)
 		self.tree_scores.hideColumn(3)
 		self.tree_scores.selectionModel().currentChanged.connect(self.slot_file_current_changed)
-		index = self.file_model.index(self.directory)
+		self.current_directory = setting(KEY_RECENT_INST_DIR, str, QDir.homePath())
+		logging.debug('current_directory: %s', self.current_directory)
+		index = self.file_model.index(self.current_directory)
 		self.tree_scores.setCurrentIndex(index)
-		self.tree_scores.setExpanded(index, True)
 
 		self.lbl_new_instrument_name.setText(TEXT_NOTHING)
 		self.ed_mscore_search.textChanged.connect(self.search_changed)
 		self.b_search.clicked.connect(self.clear_search)
 		self.lst_instruments.currentItemChanged.connect(self.slot_inst_list_selection_changed)
-
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
 
 	@pyqtSlot()
 	def layout_complete(self):
-		index = self.file_model.index(self.directory)
-		self.tree_scores.scrollTo(index, QAbstractItemView.PositionAtTop)
+		index = self.file_model.index(self.current_directory)
+		if self.file_model.canFetchMore(index):
+			QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
+			self.file_model.fetchMore(index)
+		else:
+			self.tree_scores.scrollTo(index, QAbstractItemView.PositionAtTop)
 
 	@pyqtSlot(str)
 	def slot_combo_changed(self, _):
@@ -129,9 +134,9 @@ class InstrumentSelectionDialog(QDialog):
 	def slot_file_current_changed(self, current, _):
 		path = self.file_model.filePath(current)
 		if self.file_model.isDir(current):
-			self.directory = path
+			self.current_directory = path
 		else:
-			self.directory = dirname(path)
+			self.current_directory = dirname(path)
 			self.selected_score = self.get_score(path)
 			self.fill_sorted(self.selected_score.instruments())
 
@@ -166,14 +171,11 @@ class InstrumentSelectionDialog(QDialog):
 	def get_score(self, path):
 		return Score(path)
 
-	@property
-	def directory(self):
-		return setting(KEY_RECENT_SCORE_DIR, str, QDir.homePath())
-
-	@directory.setter
-	def directory(self, value):
-		set_setting(KEY_RECENT_SCORE_DIR, realpath(value))
-
+	@pyqtSlot()
+	def accept(self):
+		logging.debug('accept')
+		set_setting(KEY_RECENT_INST_DIR, realpath(self.current_directory))
+		super().accept()
 
 
 if __name__ == "__main__":

@@ -350,9 +350,13 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="action_new"/>
    <addaction name="action_open"/>
    <addaction name="action_save"/>
-   <addaction name="action_new"/>
+   <addaction name="action_revert"/>
+   <addaction name="separator"/>
+   <addaction name="action_open_project_folder"/>
+   <addaction name="action_copy_sfz_paths"/>
    <addaction name="separator"/>
    <addaction name="action_add_track"/>
    <addaction name="separator"/>
