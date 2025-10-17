@@ -35,7 +35,7 @@ from mscore import VoiceName
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QVariant, QPoint
 from PyQt5.QtGui import QPalette, QIcon, QMouseEvent
-from PyQt5.QtWidgets import QSizePolicy, QFrame, QAction, QMenu, QInputDialog
+from PyQt5.QtWidgets import QSizePolicy, QFrame, QAction, QMenu, QInputDialog, QMessageBox
 
 from musecbox import (
 	carla,
@@ -256,6 +256,13 @@ class PortWidget(QFrame):
 		self.track_layout[slot].channel = channel
 		self.track_layout[slot].display_channel_selection()
 
+	@pyqtSlot()
+	def slot_remove_self(self):
+		if QMessageBox(QMessageBox.Question, 'Confirm port removal',
+			f'Are you sure you want to remove port {self.port} and its {len(self.track_layout)} tracks?',
+			QMessageBox.Ok | QMessageBox.Cancel, self).exec() == QMessageBox.Ok:
+			self.remove_self()
+
 	def remove_self(self):
 		self.is_removing = True
 		if len(self.track_layout):
@@ -282,7 +289,10 @@ class PortWidget(QFrame):
 
 	@pyqtSlot(TrackWidget)
 	def slot_remove_track(self, track_widget):
-		track_widget.remove_self()
+		if QMessageBox(QMessageBox.Question, 'Confirm track removal',
+			f'Are you sure you want to remove track "{track_widget.moniker}"?',
+			QMessageBox.Ok | QMessageBox.Cancel, self).exec() == QMessageBox.Ok:
+			track_widget.remove_self()
 
 	@pyqtSlot(int, int, int)
 	def slot_channel_set(self, _, slot, channel):
@@ -364,8 +374,11 @@ class PortWidget(QFrame):
 
 	@pyqtSlot()
 	def slot_remove_all_tracks(self):
-		for track_widget in reversed(self.track_layout):
-			track_widget.remove_self()
+		if QMessageBox(QMessageBox.Question, 'Confirm track removal',
+			f'Are you sure you want to remove these {len(self.track_layout)} tracks?',
+			QMessageBox.Ok | QMessageBox.Cancel, self).exec() == QMessageBox.Ok:
+			for track_widget in reversed(self.track_layout):
+				track_widget.remove_self()
 
 	@pyqtSlot(QMouseEvent)
 	def slot_port_lbl_dblclk(self, _):

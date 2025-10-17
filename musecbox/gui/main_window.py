@@ -1242,7 +1242,7 @@ class MainWindow(QMainWindow):
 				action.setEnabled(len(clicked_port_widget.track_layout) > 0)
 				menu.addAction(action)
 				action = QAction(f'Remove port {clicked_port_widget.port}', self)
-				action.triggered.connect(clicked_port_widget.remove_self)
+				action.triggered.connect(clicked_port_widget.slot_remove_self)
 				menu.addAction(action)
 				menu.addSeparator()	# ---------------------
 			else:
@@ -1260,8 +1260,11 @@ class MainWindow(QMainWindow):
 
 	@pyqtSlot()
 	def slot_remove_all_ports(self):
-		for port_widget in reversed(self.port_layout):
-			port_widget.slot_remove_all_tracks()
+		if QMessageBox(QMessageBox.Question, 'Confirm port removal',
+			'Are you sure you want to remove all ports and all tracks?',
+			QMessageBox.Ok | QMessageBox.Cancel, self).exec() == QMessageBox.Ok:
+			for port_widget in reversed(self.port_layout):
+				port_widget.remove_self()
 
 	# -----------------------------------------------------------------
 	# Transport -related slots
