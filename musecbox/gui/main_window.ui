@@ -519,11 +519,17 @@
    </property>
   </action>
   <action name="action_unroll_all_plugins">
+   <property name="icon">
+    <iconset theme="go-down"/>
+   </property>
    <property name="text">
     <string>&amp;Unroll all plugins</string>
    </property>
   </action>
   <action name="action_rollup_all_plugins">
+   <property name="icon">
+    <iconset theme="go-up"/>
+   </property>
    <property name="text">
     <string>Ro&amp;llup all plugins</string>
    </property>
@@ -535,6 +541,9 @@
    </property>
   </action>
   <action name="action_unmute_all_tracks">
+   <property name="icon">
+    <iconset theme="audio-volume-high"/>
+   </property>
    <property name="text">
     <string>&amp;Unmute all tracks</string>
    </property>
@@ -543,6 +552,9 @@
    </property>
   </action>
   <action name="action_mute_all_tracks">
+   <property name="icon">
+    <iconset theme="audio-volume-muted"/>
+   </property>
    <property name="text">
     <string>&amp;Mute all tracks</string>
    </property>
@@ -782,6 +794,9 @@
    </property>
   </action>
   <action name="action_show_connections">
+   <property name="icon">
+    <iconset theme="preferences-system-network"/>
+   </property>
    <property name="text">
     <string>Connections</string>
    </property>
@@ -795,6 +810,9 @@
   <action name="action_watch_files">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="edit-find"/>
    </property>
    <property name="text">
     <string>&amp;Watch SFZs for changes</string>
@@ -829,6 +847,10 @@
    </property>
   </action>
   <action name="action_copy_sfzs">
+   <property name="icon">
+    <iconset theme="document-save">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Copy SFZs to &amp;project folder</string>
    </property>

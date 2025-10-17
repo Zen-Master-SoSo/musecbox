@@ -60,7 +60,7 @@ class ScoreInfoDialog(QDialog):
 				channels.append(chan)
 
 		center_flags = int(Qt.AlignHCenter | Qt.AlignVCenter)
-		channels.sort(key=lambda chan: chan.midi_port * 256 + chan.midi_channel)
+		channels.sort(key = lambda chan: chan.midi_port * 256 + chan.midi_channel)
 		for chan in channels:
 			item = QTableWidgetItem("%02d" % chan.midi_port)
 			item.setTextAlignment(center_flags)

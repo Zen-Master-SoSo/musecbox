@@ -27,14 +27,14 @@ from musecbox.score_fixer import ScoreFixer
 
 def main():
 	p = argparse.ArgumentParser()
-	p.add_argument('Project', type=str, nargs=1,
-		help='MusecBox project to use for port setup')
-	p.add_argument('Score', type=str, nargs='+',
-		help='MuseScore score to apply port setup to')
-	p.add_argument("--dry-run", "-n", action="store_true",
-		help="Do not make changes - just show what would be changed.")
-	p.add_argument("--verbose", "-v", action="store_true",
-		help="Show more detailed debug information")
+	p.add_argument('Project', type = str, nargs = 1,
+		help = 'MusecBox project to use for port setup')
+	p.add_argument('Score', type = str, nargs = '+',
+		help = 'MuseScore score to apply port setup to')
+	p.add_argument("--dry-run", "-n", action = "store_true",
+		help = "Do not make changes - just show what would be changed.")
+	p.add_argument("--verbose", "-v", action = "store_true",
+		help = "Show more detailed debug information")
 	p.epilog = """
 	Applies the port/channel assignments in a MusecBox project to a MuseScore3 score.
 	"""

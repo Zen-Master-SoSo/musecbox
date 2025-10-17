@@ -171,7 +171,7 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 	@pyqtSlot()
 	def slot_rename(self):
 		new_name, ok = QInputDialog.getText(self,
-			'Rename plugin', 'Enter a name for this plugin', text=self.moniker)
+			'Rename plugin', 'Enter a name for this plugin', text = self.moniker)
 		if ok:
 			self.moniker = new_name
 
@@ -331,7 +331,7 @@ class SharedPluginWidget(PluginWidget):
 	progressbar_width	= 84
 	min_led_audio_peak	= 0.001
 
-	def __init__(self, parent, plugin_def, *, saved_state=None):
+	def __init__(self, parent, plugin_def, *, saved_state = None):
 		super().__init__(parent, plugin_def, saved_state = saved_state)
 
 		# Setup indicators
@@ -616,7 +616,7 @@ class SmallBalanceControl(QWidget):
 					GrabEvent(GRAB_RIGHT_BALANCE, self.plugin_widget.balance_right, float_x),
 					GrabEvent(GRAB_CENTER, self.plugin_widget.balance_center, float_x)
 				]
-				features.sort(key=attrgetter('distance'))
+				features.sort(key = attrgetter('distance'))
 				self.nearest_element = features[0]
 			else:
 				self.nearest_element = GrabEvent(GRAB_PANNING, self.plugin_widget.balance_center, float_x)

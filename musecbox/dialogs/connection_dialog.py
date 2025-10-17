@@ -403,10 +403,8 @@ class Cell(QGraphicsItemGroup):
 class PortCell(Cell):
 
 	def create_downstream_cells(self):
-		self.downstream_cells = [ Cell(
-			client,
-			client.track_widget().moniker if isinstance(client, LiquidSFZ) else client.moniker
-		) for client in self.client.output_clients() ]
+		self.downstream_cells = [ Cell(client, client.moniker) \
+			for client in self.client.output_clients() ]
 
 
 class Connector(QGraphicsPathItem):

@@ -404,7 +404,7 @@ class HorizontalPortWidget(PortWidget):
 		self.b_collapse.setIcon(self.icon_collapse)
 		self.b_collapse.clicked.connect(self.slot_collapse_click)
 		# Setup track_layout
-		self.track_layout = HListLayout(end_space=10)
+		self.track_layout = HListLayout(end_space = 10)
 		self.track_layout.setContentsMargins(0,0,0,0)
 		self.track_layout.setSpacing(0)
 		self.frm_tracks.setLayout(self.track_layout)

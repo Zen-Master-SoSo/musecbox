@@ -37,16 +37,16 @@ def main():
 	p.epilog = """
 	Hosts multiple LiquidSFZ instances for real-time music generation.
 	"""
-	p.add_argument('Filename', type=str, nargs='?',
-		help='MuseScore score to use for port setup, or saved port setup')
-	p.add_argument("--horizontal-layout", "-H", action="store_true",
-		help="Use standard (horizontal) layout")
-	p.add_argument("--vertical-layout", "-V", action="store_true",
-		help="Use compact (vertical) layout")
-	p.add_argument("--log-file", "-l", type=str,
-		help="Log to this file")
-	p.add_argument("--verbose", "-v", action="store_true",
-		help="Show more detailed debug information")
+	p.add_argument('Filename', type = str, nargs = '?',
+		help = 'MuseScore score to use for port setup, or saved port setup')
+	p.add_argument("--horizontal-layout", "-H", action = "store_true",
+		help = "Use standard (horizontal) layout")
+	p.add_argument("--vertical-layout", "-V", action = "store_true",
+		help = "Use compact (vertical) layout")
+	p.add_argument("--log-file", "-l", type = str,
+		help = "Log to this file")
+	p.add_argument("--verbose", "-v", action = "store_true",
+		help = "Show more detailed debug information")
 	options = p.parse_args()
 
 	# Setup logging

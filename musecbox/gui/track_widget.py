@@ -117,9 +117,9 @@ class TrackWidget(QFrame):
 		self.b_solo.setIcon(QIcon(join(APP_PATH, 'res', 'solo.svg')))
 
 		# Setup track plugins layout
-		self.plugin_layout = VListLayout(end_space=10) \
+		self.plugin_layout = VListLayout(end_space = 10) \
 			if isinstance(self, HorizontalTrackWidget) else \
-			HListLayout(end_space=10)
+			HListLayout(end_space = 10)
 		self.plugin_layout.setContentsMargins(0,0,0,0)
 		self.plugin_layout.setSpacing(0)
 		self.frm_plugins.setLayout(self.plugin_layout)

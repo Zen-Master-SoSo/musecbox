@@ -156,18 +156,18 @@ class MainWindow(QMainWindow):
 		if self.startup_options.vertical_layout and not self.startup_options.horizontal_layout \
 			or setting(KEY_VERTICAL_LAYOUT, bool):
 			self.action_vertical_layout.setChecked(True)
-			self.port_layout = VListLayout(end_space=10)
+			self.port_layout = VListLayout(end_space = 10)
 			self.scrl_ports.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 		else:
 			self.action_vertical_layout.setChecked(False)
-			self.port_layout = HListLayout(end_space=10)
+			self.port_layout = HListLayout(end_space = 10)
 			self.scrl_ports.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 
 		self.port_layout.setContentsMargins(0,0,0,0)
 		self.port_layout.setSpacing(0)
 		self.frm_ports.setLayout(self.port_layout)
 
-		self.shared_plugin_layout = HListLayout(end_space=10)
+		self.shared_plugin_layout = HListLayout(end_space = 10)
 		self.shared_plugin_layout.setContentsMargins(0,0,0,0)
 		self.shared_plugin_layout.setSpacing(0)
 		self.frm_shared_plugins.setLayout(self.shared_plugin_layout)
@@ -567,7 +567,7 @@ class MainWindow(QMainWindow):
 	def save_project(self):
 		try:
 			with open(self.project_filename, 'w') as fh:
-				json.dump(self.encode_saved_state(), fh, indent="\t")
+				json.dump(self.encode_saved_state(), fh, indent = "\t")
 		except Exception as e:
 			DevilBox(e)
 		else:
@@ -614,6 +614,7 @@ class MainWindow(QMainWindow):
 				sfz_copy.save_as(op.new_abs, samples_mode)
 				op.track_widget.synth.load_sfz(op.new_relative)
 		except Exception as err:
+			logging.exception(err)
 			self.unsetCursor()
 			QMessageBox.warning(self, "SFZ Copy failed",
 				f"""<p>There was an error when copying {op.current} to {op.new_relative}:</p>

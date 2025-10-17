@@ -29,8 +29,8 @@ from musecbox.dialogs.score_import_dialog import ScoreImportDialog
 
 def main():
 	p = argparse.ArgumentParser()
-	p.add_argument('Filename', type=str, nargs='+', help='MuseScore score to use for track setup.')
-	p.add_argument("--verbose", "-v", action="store_true", help="Show more detailed debug information")
+	p.add_argument('Filename', type = str, nargs = '+', help = 'MuseScore score to use for track setup.')
+	p.add_argument("--verbose", "-v", action = "store_true", help = "Show more detailed debug information")
 	p.epilog = __doc__
 	options = p.parse_args()
 	log_level = logging.DEBUG if options.verbose else logging.ERROR
@@ -39,7 +39,7 @@ def main():
 	set_application_style()
 	dialog = ScoreImportDialog(None, options.Filename[0])
 	if dialog.exec():
-		json.dump(dialog.track_setup(), sys.stdout, indent="\t")
+		json.dump(dialog.track_setup(), sys.stdout, indent = "\t")
 		print()
 
 if __name__ == '__main__':
