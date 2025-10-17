@@ -11,7 +11,7 @@ dependencies = [
 	"simple_carla >= 2.6.0",
 	"JACK-Client >= 0.5.0",
 	"mscore3 >= 1.11.1",
-	"sfzen >= 1.2.0",
+	"sfzen >= 1.7.0",
 	"recent_items_list >= 1.1.0",
 	"soso_qt_extras >= 1.4.0",
 	"log_soso"
