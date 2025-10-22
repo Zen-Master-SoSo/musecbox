@@ -587,51 +587,49 @@ class MainWindow(QMainWindow):
 		}
 
 	def copy_sfzs(self):
+		if self.project_dir() is None:
+			raise RuntimeError('Cannot copy SFZs without a project')
 		self.setCursor(Qt.WaitCursor)
 		samples_mode = setting(KEY_SAMPLES_MODE, int, SAMPLES_ABSPATH)
-		logging.debug('Copying SFZs; samples_mode is %d', samples_mode)
 		clean_sfzs = setting(KEY_CLEAN_SFZS, bool)
-		title, _ = splitext(basename(self.project_filename))
-		sfz_dir = join(self.project_dir(), title)
-
-		CopyOp = namedtuple('CopyOp', ['track_widget', 'current', 'new_abs', 'new_relative'])
+		logging.debug('Copying SFZs; samples_mode is %d; clean_sfzs is %d',
+			samples_mode, clean_sfzs)
+		project_title, _ = splitext(basename(self.project_filename))
+		sfz_dir = join(self.project_dir(), project_title)
+		if not exists(sfz_dir):
+			mkdir(sfz_dir)
+		CopyOp = namedtuple('CopyOp', ['track_widget', 'current_abspath', 'new_abspath', 'new_relative'])
 		copy_ops = [
 			CopyOp(
 				track_widget,
-				track_widget.synth.sfz_filename,
-				join(sfz_dir, basename(track_widget.synth.sfz_filename)),
-				join(title, basename(track_widget.synth.sfz_filename))
+				realpath(track_widget.synth.sfz_filename),
+				realpath(join(sfz_dir, basename(track_widget.synth.sfz_filename))),
+				join(project_title, basename(track_widget.synth.sfz_filename))
 			) for track_widget in self.iterate_track_widgets()
 		]
-
-		try:
-			if not exists(sfz_dir):
-				mkdir(sfz_dir)
-			for op in copy_ops:
-				sfz_copy = SFZ(op.current)
-				if clean_sfzs:
-					liquid_clean(sfz_copy)
-				sfz_copy.save_as(op.new_abs, samples_mode)
-				op.track_widget.synth.load_sfz(op.new_relative)
-		except Exception as err:
-			logging.exception(err)
-			self.unsetCursor()
-			QMessageBox.warning(self, "SFZ Copy failed",
-				f"""<p>There was an error when copying {op.current} to {op.new_relative}:</p>
-				<p><b>{err}</b></p>
-				<p>None of the SFZs in your project will be copied to the new
-				location - the original SFZ files will be used instead.</p>
-				<p>You can try to fix the problem, and then choose "Save as ..."
-				from the file menu in order to try again.</p>
-				""")
-			self.setCursor(Qt.WaitCursor)
+		copy_ops = [ op for op in copy_ops if op.current_abspath != op.new_abspath ]
+		if copy_ops:
 			for op in copy_ops:
 				try:
-					op.track_widget.synth.load_sfz(op.current)
-				except Exception as e:
-					DevilBox(e)
+					sfz_copy = SFZ(op.current_abspath)
+					if clean_sfzs:
+						liquid_clean(sfz_copy)
+					sfz_copy.save_as(op.new_abspath, samples_mode, overwrite = True)
+					op.track_widget.synth.load_sfz(op.new_relative)
+				except Exception as err:
+					logging.exception(err)
+					QMessageBox.warning(self, "SFZ Copy failed",
+						f"""<p>There was an error when copying</p>
+						<p><b>{op.current_abspath}</b></p>
+						<p>to</p>
+						<p><b>{op.new_relative}</b></p>
+						<p><b>{err}</b></p>""")
+				else:
+					self.set_dirty()
 		else:
-			self.set_dirty()
+			QMessageBox.information(self, "No SFZ was copied",
+				"""<p>No SFZs were copied to the project folder.</p>
+				<p>All the SFZz used in this project reside in the project folder already.</p>""")
 		self.unsetCursor()
 
 	def sfzs_used(self):
