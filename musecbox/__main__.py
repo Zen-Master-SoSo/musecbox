@@ -106,7 +106,10 @@ def main():
 		win32process.SetPriorityClass(handle, win32process.ABOVE_NORMAL_PRIORITY_CLASS)
 	else:
 		from os import nice
-		nice(-10)
+		try:
+			nice(-10)
+		except PermissionError:
+			pass
 
 	application = QApplication([])
 	QGuiApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
