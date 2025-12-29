@@ -24,10 +24,12 @@ import sys, logging, argparse
 from os import environ, unlink
 from os.path import abspath, expanduser
 from socket import socket, AF_UNIX, SOCK_DGRAM, error as sock_error
+from traceback import print_tb
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QErrorMessage
 from PyQt5.QtGui import QGuiApplication
 from qt_extras import DevilBox
+from log_soso import StreamToLogger
 from musecbox import SOCKET_PATH, CARRIAGE_RETURN, carla, EngineInitFailure, LOG_FORMAT
 from musecbox.gui.main_window import MainWindow
 
@@ -80,7 +82,7 @@ def main():
 	except FileNotFoundError:
 		pass
 	except sock_error as e:
-		logging.error('%s: %s', type(e).__name__, str(e))
+		logging.error('%s: %s', e.__class__.__name__, str(e))
 		return 1
 	else:
 		sock.sendall(bytes(abspath(options.Filename) \
@@ -96,10 +98,10 @@ def main():
 	try:
 		sys.getwindowsversion()
 	except AttributeError:
-		isWindows = False
+		is_windows = False
 	else:
-		isWindows = True
-	if isWindows:
+		is_windows = True
+	if is_windows:
 		import win32api, win32process, win32con
 		pid = win32api.GetCurrentProcessId()
 		handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
@@ -112,6 +114,7 @@ def main():
 			pass
 
 	application = QApplication([])
+	sys.excepthook = exceptions_hook
 	QGuiApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 	try:
 		main_window = MainWindow(options)
@@ -123,6 +126,21 @@ def main():
 	unlink(SOCKET_PATH)
 	carla().delete()
 	return return_value
+
+
+# -------------------------------------------------------------------
+# Exception hook
+
+def exceptions_hook(exception_type, value, traceback):
+	if not QApplication.instance() is None:
+		msg = QErrorMessage.qtHandler()
+		msg.setWindowModality(Qt.ApplicationModal)
+		msg.showMessage(
+			f'{exception_type.__name__}: "{value}"',
+			exception_type.__name__)
+	logging.error('Exception "%s": %s', exception_type.__name__, value)
+	with StreamToLogger() as log:
+		print_tb(traceback, file = log)
 
 
 if __name__ == "__main__":

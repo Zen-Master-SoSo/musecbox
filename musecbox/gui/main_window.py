@@ -42,10 +42,11 @@ except ModuleNotFoundError:
 
 # PyQt5 imports
 from PyQt5 import uic
-from PyQt5.QtCore import	Qt, pyqtSignal, pyqtSlot, QDir, QThread, QPoint, QTimer, QEvent, QVariant, \
-							pyqtProperty, QPropertyAnimation, QAbstractAnimation, QFileSystemWatcher
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QMessageBox, QFileDialog, QInputDialog, \
-							QMenu, QLabel, QAction, QActionGroup, QStyle, QSizePolicy, QVBoxLayout
+from PyQt5.QtCore import	Qt, pyqtSignal, pyqtSlot, QThread, QPoint, QTimer, QEvent, QVariant, \
+							pyqtProperty, QPropertyAnimation, QAbstractAnimation, QFileSystemWatcher, \
+							QDir
+from PyQt5.QtWidgets import QWidget, QMainWindow, QMessageBox, QFileDialog, QInputDialog, \
+							QMenu, QLabel, QAction, QActionGroup, QSizePolicy, QVBoxLayout
 from PyQt5.QtGui import		QPainter, QColor, QBrush, QPalette, QIcon
 
 # musecbox imports
@@ -77,6 +78,9 @@ DELAY_BEFORE_RENDER		= 250
 
 
 class MainWindow(QMainWindow):
+	"""
+	Main window of the MusecBox application.
+	"""
 
 	# -----------------------------------------------------------------
 	# Window init functions
@@ -99,6 +103,7 @@ class MainWindow(QMainWindow):
 		self.wav_filename = None
 		self.transport_mode = TRANSPORT_DISABLED
 		self.port_assignments = {}	# {midi_port:self.port_layout index}
+		self._cancel_action_dialog = None
 
 		if options.Filename and exists(options.Filename):
 			ext = splitext(options.Filename)[-1]
@@ -231,7 +236,6 @@ class MainWindow(QMainWindow):
 		self.action_show_connections.triggered.connect(self.slot_show_connections)
 		self.action_show_project_info.triggered.connect(self.slot_show_project_info)
 		self.action_show_score_info.triggered.connect(self.slot_show_score_info)
-		current_style = setting(KEY_STYLE, str, DEFAULT_STYLE)
 		actions = QActionGroup(self)
 		actions.setExclusive(True)
 		for style_name in styles():
@@ -281,12 +285,12 @@ class MainWindow(QMainWindow):
 	# Carla file open/save filename helpers
 	# (see Carla.set_open_file_callback)
 
-	def carla_open_file_dialog(self, caption, filter):
-		filename, ok = QFileDialog.getOpenFileName(self, caption, "", filter)
+	def carla_open_file_dialog(self, caption, file_filter):
+		filename, ok = QFileDialog.getOpenFileName(self, caption, "", file_filter)
 		return filename if ok else None
 
-	def carla_save_file_dialog(self, caption, filter, dirs_only):
-		filename, ok = QFileDialog.getSaveFileName(self, caption, "", filter,
+	def carla_save_file_dialog(self, caption, file_filter, dirs_only):
+		filename, ok = QFileDialog.getSaveFileName(self, caption, "", file_filter,
 			QFileDialog.ShowDirsOnly if dirs_only else 0)
 		return filename if ok else None
 
@@ -536,7 +540,7 @@ class MainWindow(QMainWindow):
 				setup = json.load(fh)
 			self.load_from_track_setup(setup)
 		except json.JSONDecodeError:
-			DevilBox('There was a problem decoding "{0}"'.format(filename))
+			DevilBox(f'There was a problem decoding "{filename}"')
 
 	def load_from_track_setup(self, setup):
 		from musecbox.dialogs.score_load_dialog import ScoreLoadDialog
@@ -803,7 +807,7 @@ class MainWindow(QMainWindow):
 
 	@pyqtSlot(int)
 	def slot_port_ready(self, port):
-		port_widget = self.port_layout[self.port_assignments[port]]
+		pass
 
 	@pyqtSlot(int)
 	def slot_port_cleared(self, port):
@@ -1040,11 +1044,11 @@ class MainWindow(QMainWindow):
 		"""
 		existing_ports = list(self.port_assignments.keys())
 		port, ok = QInputDialog.getInt(self, 'Add port', 'Enter the port number you wish to add',
-			value = max(existing_ports) + 1 if len(existing_ports) else 1
+			value = max(existing_ports) + 1 if existing_ports else 1
 		)
 		if ok:
 			if port in existing_ports:
-				DevilBox("Port %d already exists" % port)
+				DevilBox(f"Port {port} already exists")
 			else:
 				self.port_widget(port)
 
@@ -1413,16 +1417,28 @@ class MainWindow(QMainWindow):
 		DevilBox("Error:" + error)
 
 	@pyqtSlot(str, str, str, int)
-	def slot_application_error(self, err_type, err_message, err_file, err_line):
-		DevilBox('{0} "{1}" in {2}, line {3}'.format(err_type, err_message, err_file, err_line))
+	def slot_application_error(self, e_type, e_message, e_file, e_line):
+		DevilBox(f'{e_type} "{e_message}" in {e_file}, line {e_line}')
 
 	@pyqtSlot()
 	def slot_carla_quit(self):
-		self._project_is_loading = False
+		self.project_loading = False
 		self.stop_timers()
 
 
 class SocketListener(QThread):
+	"""
+	A thread which listens on a local socket for file open requests from a new
+	instance, triggering a signal which carries the path to the requested file to
+	the open MainWindow.
+
+	This mechanism forces only one instance to load at any given time. If a user
+	attempts to start a new instance, the existence of the listening socket opened
+	in this thread signals that the application is already open, and instead of
+	showing a new window, the new instance passes the path name of the requested
+	file through the open socket. This class receives it and passes it to the
+	MainWindow using a pyqtSignal.
+	"""
 
 	sig_message = pyqtSignal(QVariant)
 
@@ -1457,7 +1473,7 @@ class LoadIndicator(QWidget):
 		self.__value = 0
 		self.label = QLabel(self)
 		self.label.setAlignment(Qt.AlignHCenter | Qt.AlignBaseline)
-		self.label.setText("%d%%" % self.__value)
+		self.label.setText('0%')
 		self.bar = LoadIndicatorBar(self)
 		lo = QVBoxLayout()
 		lo.setSpacing(2)
@@ -1475,7 +1491,7 @@ class LoadIndicator(QWidget):
 			self.bar.anim.stop()
 
 	def set_value(self, value):
-		self.label.setText("%d%%" % value)
+		self.label.setText(f"{value}%")
 		self.bar.set_value(value)
 
 

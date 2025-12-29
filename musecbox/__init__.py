@@ -347,13 +347,13 @@ def _geometry_key(widget):
 	"""
 	Automatic QSettings key generated from class name.
 	"""
-	return f'{type(widget).__name__}/geometry'
+	return f'{widget.__class__.__name__}/geometry'
 
 def _splitter_geometry_key(widget, splitter):
 	"""
 	Automatic QSettings key generated from class name.
 	"""
-	return f'{type(widget).__name__}/{splitter.objectName()}/geometry'
+	return f'{widget.__class__.__name__}/{splitter.objectName()}/geometry'
 
 QWidget.restore_geometry = _restore_geometry
 QWidget.save_geometry = _save_geometry
@@ -391,20 +391,5 @@ class EngineInitFailure(RuntimeError):
 		else:
 			super().__init__('Could not start carla')
 
-# -------------------------------------------------------------------
-# Exception hook
-
-def exceptions_hook(exception_type, value, traceback):
-	if not QApplication.instance() is None:
-		msg = QErrorMessage.qtHandler()
-		msg.setWindowModality(Qt.ApplicationModal)
-		msg.showMessage(
-			f'{exception_type.__name__}: "{value}"',
-			exception_type.__name__)
-	logging.error('Exception "%s": %s', exception_type.__name__, value)
-	with StreamToLogger() as log:
-		print_tb(traceback, file = log)
-
-sys.excepthook = exceptions_hook
 
 #  end musecbox/__init__.py
