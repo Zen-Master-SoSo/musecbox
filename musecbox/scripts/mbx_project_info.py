@@ -49,29 +49,42 @@ def main():
 	except json.JSONDecodeError:
 		p.exit(f'There was an error decoding "{options.Filename[0]}"')
 
-	if options.show_channels or options.show_sfzs or options.show_plugins:
+	show_channels = options.show_channels or \
+		options.show_sfzs or \
+		options.show_plugins and any(trackdef["plugins"] \
+			for portdef in project_definition["ports"] \
+			for trackdef in portdef["tracks"])
+	show_shared_plugins = options.show_plugins and bool(project_definition["shared_plugins"])
+	show_options = options.show_options and bool(project_definition['options'])
+	show_section_heads = sum([show_channels, show_shared_plugins, show_options]) > 1
+
+	if show_channels:
+		if show_section_heads:
+			print(' -- Channels --')
 		for portdef in project_definition["ports"]:
-			if options.show_channels:
-				print(f' Port {portdef["port"]:d}')
 			for trackdef in portdef["tracks"]:
 				sfz = abspath(trackdef["sfz"]) if options.abspath else trackdef["sfz"]
-				if options.show_channels:
-					print(f'   Channel {trackdef["channel"]:2d}: ' + \
-						f'{trackdef["instrument_name"]} ({trackdef["voice"]})')
-				if options.show_channels or options.show_plugins:
-					print(f'     {sfz}')
+				if options.show_channels or options.show_plugins and trackdef["plugins"]:
+					print(f' Port {portdef["port"]}\tChannel {trackdef["channel"]}\t' + \
+						f'{trackdef["instrument_name"]} ({trackdef["voice"]})\t{sfz}')
 					if options.show_plugins:
 						for saved_state in trackdef["plugins"]:
-							print(f'     Plugin: {saved_state["vars"]["moniker"]}')
-				else:
+							print(f'     Plugin {saved_state["vars"]["moniker"]}\t{saved_state["plugin_def"]["label"]}')
+				elif options.show_sfzs:
 					print(sfz)
+		if show_section_heads:
+			print()
 	if options.show_plugins and project_definition["shared_plugins"]:
-		print(' Shared Plugins:')
+		if show_section_heads:
+			print(' -- Shared Plugins --')
 		for saved_state in project_definition["shared_plugins"]:
-			print(f'   {saved_state["vars"]["moniker"]}')
+			print(f' {saved_state["vars"]["moniker"]}\t{saved_state["plugin_def"]["label"]}')
+		if show_section_heads:
+			print()
 	if options.show_options and project_definition['options']:
-		print(' Options:')
-		fmt = '   {0:%ds}: {1}' % max(len(key) for key in PROJECT_OPTION_KEYS)
+		if show_section_heads:
+			print(' -- Options --')
+		fmt = ' {0:%ds}: {1}' % max(len(key) for key in PROJECT_OPTION_KEYS)
 		for key in PROJECT_OPTION_KEYS:
 			if key in project_definition['options']:
 				print(fmt.format(key, project_definition['options'][key]))
