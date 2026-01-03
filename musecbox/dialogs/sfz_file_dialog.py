@@ -22,7 +22,7 @@ Provides a dialog for selecting SFZ files from either the file system or the
 integrated database.
 """
 import logging, glob
-from os.path import join, dirname, basename, realpath
+from os.path import join, dirname, basename, abspath
 from functools import partial
 from qt_extras import ShutUpQT
 from qt_extras.list_button import QtListButton
@@ -237,7 +237,7 @@ class SFZFileDialog(QDialog):
 				self.tree_directories.setRootIndex(self.tree_directories.currentIndex())
 			elif action is up_level_action:
 				root_path = dirname(root_path)
-				set_setting(KEY_SFZ_DIR, realpath(root_path))
+				set_setting(KEY_SFZ_DIR, abspath(root_path))
 				self.lbl_directory.setText(root_path)
 				index = self.directory_model.index(root_path)
 				self.tree_directories.setRootIndex(index)
@@ -373,7 +373,7 @@ class SFZFileDialog(QDialog):
 
 	@pyqtSlot()
 	def slot_accepted(self):
-		set_setting(KEY_CURRENT_DIRECTORY, realpath(self.current_directory))
+		set_setting(KEY_CURRENT_DIRECTORY, abspath(self.current_directory))
 		if self.voice_name is not None:
 			self.db.map_instrument(self.voice_name, self.sfz_filename)
 

@@ -30,7 +30,7 @@ from PyQt5 import uic
 from PyQt5.QtCore import Qt, pyqtSlot, QTimer
 from PyQt5.QtWidgets import QApplication, QDialog
 
-from musecbox import set_application_style, carla, main_window, LOG_FORMAT
+from musecbox import set_application_style, carla, main_window, LOG_FORMAT, EngineInitFailure
 from musecbox.audio_recorder import AudioRecorder
 
 

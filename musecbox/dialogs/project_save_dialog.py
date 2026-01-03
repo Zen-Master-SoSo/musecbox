@@ -22,7 +22,7 @@ Provides a dialog used for importing MuseScore3 files
 """
 
 import logging
-from os.path import realpath, splitext
+from os.path import abspath, splitext
 from functools import partial
 
 # PyQt5 imports
@@ -130,7 +130,7 @@ class ProjectSaveDialog(QFileDialog):
 		"""
 		selected_files = self.selectedFiles()
 		if selected_files:
-			self.target_path = realpath(
+			self.target_path = abspath(
 				selected_files[0] \
 				if splitext(selected_files[0])[-1].lower() == '.mbxp' \
 				else selected_files[0] + '.mbxp')

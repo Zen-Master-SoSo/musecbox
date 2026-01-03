@@ -43,7 +43,7 @@ class MissingSFZsDialog(QDialog):
 		self.tracks_missing_sfzs = tracks_missing_sfzs
 		dirs_parted = defaultdict(list)
 		for track_widget in tracks_missing_sfzs:
-			path = track_widget.synth.sfz_filename
+			path = track_widget.sfz_filename
 			dirs_parted[dirname(path)].append(track_widget)
 		lo = QVBoxLayout()
 		lo.setContentsMargins(18,12,18,20)
@@ -116,7 +116,7 @@ class MissingSFZ(QFrame):
 		self.lbl_icon = QLabel(CHAR_MISSING, self)
 		self.lbl_icon.setFixedWidth(18)
 		lo.addWidget(self.lbl_icon)
-		self.lbl_filename = QLabel(self.track_widget.synth.sfz_filename, self)
+		self.lbl_filename = QLabel(self.track_widget.sfz_filename, self)
 		lo.addWidget(self.lbl_filename)
 		btn = QPushButton('Select', self)
 		btn.clicked.connect(self.slot_select)
@@ -127,8 +127,8 @@ class MissingSFZ(QFrame):
 	def slot_select(self):
 		sfz_dialog = SFZFileDialog(self.track_widget.voice_name)
 		if sfz_dialog.exec():
-			self.track_widget.synth.load_sfz(sfz_dialog.sfz_filename)
-			self.lbl_filename.setText(self.track_widget.synth.sfz_filename)
+			self.track_widget.load_sfz(sfz_dialog.sfz_filename)
+			self.lbl_filename.setText(self.track_widget.sfz_filename)
 			self.lbl_icon.setText(CHAR_OKAY)
 			self.is_missing = False
 			self.sig_selected.emit()

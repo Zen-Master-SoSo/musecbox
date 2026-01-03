@@ -23,7 +23,7 @@ integrated database.
 """
 import logging
 from glob import glob
-from os.path import join, dirname, basename, realpath
+from os.path import join, dirname, basename, abspath
 from qt_extras import ShutUpQT
 
 # PyQt5 imports
@@ -177,11 +177,11 @@ class AddGroupDialog(QDialog):
 			elif action is collapse_action:
 				self.tree_directories.collapseAll()
 			elif action is set_root_action:
-				set_setting(KEY_SFZ_DIR, realpath(self.current_directory))
+				set_setting(KEY_SFZ_DIR, abspath(self.current_directory))
 				self.tree_directories.setRootIndex(self.tree_directories.currentIndex())
 			elif action is up_level_action:
 				root_path = dirname(root_path)
-				set_setting(KEY_SFZ_DIR, realpath(root_path))
+				set_setting(KEY_SFZ_DIR, abspath(root_path))
 				index = self.directory_model.index(root_path)
 				self.tree_directories.setRootIndex(index)
 
@@ -245,7 +245,7 @@ class AddGroupDialog(QDialog):
 	def slot_accepted(self):
 		SFZDatabase().assign_group(self.group_name, self.sfzs)
 		if self.current_directory:
-			set_setting(KEY_CURRENT_DIRECTORY, realpath(self.current_directory))
+			set_setting(KEY_CURRENT_DIRECTORY, abspath(self.current_directory))
 
 
 if __name__ == "__main__":

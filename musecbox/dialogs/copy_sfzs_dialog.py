@@ -48,6 +48,7 @@ class CopySFZsDialog(QDialog):
 		super().__init__(parent)
 		with ShutUpQT():
 			uic.loadUi(join(dirname(__file__), 'copy_sfzs_dialog.ui'), self)
+		self.copy_sfzs = False
 		self.samples_mode = setting(KEY_SAMPLES_MODE, int, SAMPLES_ABSPATH)
 
 		self.r_abspath = QRadioButton(T_SAMPLEMODE_ABSPATH)

@@ -22,7 +22,7 @@ Provides the main application window.
 """
 import logging, json
 from os import mkdir, linesep
-from os.path import join, dirname, basename, splitext, realpath, exists
+from os.path import join, dirname, basename, splitext, abspath, realpath, exists
 from functools import partial
 from itertools import chain
 from collections import namedtuple
@@ -114,7 +114,7 @@ class MainWindow(QMainWindow):
 				except json.JSONDecodeError as e:
 					logging.error(e)
 				else:
-					self.project_filename = realpath(options.Filename)
+					self.project_filename = abspath(options.Filename)
 
 		set_application_style()
 		with ShutUpQT():
@@ -329,7 +329,7 @@ class MainWindow(QMainWindow):
 		self.action_watch_files.setEnabled(has_tracks)
 		self.action_show_project_info.setEnabled(has_project)
 		self.action_show_score_info.setEnabled(has_score)
-		self.action_copy_sfzs.setEnabled(has_project)
+		self.action_copy_sfzs.setEnabled(bool(self.sfz_copy_ops()))
 		self.action_copy_sfz_paths.setEnabled(has_tracks)
 		self.action_clear_shared_plugins.setEnabled(has_shared_plugins)
 		self.action_mute_all_tracks.setEnabled(has_tracks)
@@ -457,11 +457,11 @@ class MainWindow(QMainWindow):
 
 	def load_project(self, filename):
 		from musecbox.dialogs.project_load_dialog import ProjectLoadDialog
-		project_realpath = realpath(filename)
-		logging.debug('Load project "%s"', project_realpath)
-		if exists(project_realpath):
+		project_abspath = abspath(filename)
+		logging.debug('Load project "%s"', project_abspath)
+		if exists(project_abspath):
 			try:
-				with open(project_realpath, 'r') as fh:
+				with open(project_abspath, 'r') as fh:
 					self.project_definition = json.load(fh)
 			except json.JSONDecodeError as e:
 				DevilBox(
@@ -470,7 +470,7 @@ class MainWindow(QMainWindow):
 				self.setWindowTitle(APPLICATION_NAME)
 			else:
 				self.enter_loading_state()
-				self.project_filename = project_realpath
+				self.project_filename = project_abspath
 				self.source_score = self.project_definition['source_score']
 				set_application_style()
 				self.show_hide_window_elements()
@@ -514,10 +514,12 @@ class MainWindow(QMainWindow):
 		self.action_watch_files.setChecked(setting(KEY_WATCH_FILES, bool))
 		self.project_loading = False
 		tracks_missing_sfzs = [ track for track in self.iterate_track_widgets() \
-			if track.is_missing_sfz() ]
+			if not exists(track.sfz_filename) ]
 		if tracks_missing_sfzs:
 			from musecbox.dialogs.missing_sfzs_dialog import MissingSFZsDialog
 			MissingSFZsDialog(self, tracks_missing_sfzs).show()
+		if setting(KEY_COPY_SFZS, bool) and self.copy_sfzs():
+			self.set_dirty()
 
 	def load_recent(self, filename):
 		"""
@@ -531,7 +533,7 @@ class MainWindow(QMainWindow):
 		import_dialog = ScoreImportDialog(self, filename)
 		if import_dialog.exec():
 			self.source_score = import_dialog.encoded_score()
-			set_setting(KEY_RECENT_SCORE_DIR, dirname(realpath(filename)))
+			set_setting(KEY_RECENT_SCORE_DIR, dirname(abspath(filename)))
 			self.load_from_track_setup(import_dialog.track_setup())
 
 	def import_track_setup(self, filename):
@@ -590,61 +592,77 @@ class MainWindow(QMainWindow):
 			"bcwidget"			: self.balance_control_widget.encode_saved_state()
 		}
 
-	def copy_sfzs(self):
-		if self.project_dir() is None:
-			raise RuntimeError('Cannot copy SFZs without a project')
-		self.setCursor(Qt.WaitCursor)
-		samples_mode = setting(KEY_SAMPLES_MODE, int, SAMPLES_ABSPATH)
-		clean_sfzs = setting(KEY_CLEAN_SFZS, bool)
-		logging.debug('Copying SFZs; samples_mode is %d; clean_sfzs is %d',
-			samples_mode, clean_sfzs)
-		project_title, _ = splitext(basename(self.project_filename))
-		sfz_dir = join(self.project_dir(), project_title)
-		if not exists(sfz_dir):
-			mkdir(sfz_dir)
-		CopyOp = namedtuple('CopyOp', ['track_widget', 'current_abspath', 'new_abspath', 'new_relative'])
+
+	def sfz_copy_ops(self):
+		"""
+		Returns a list of CopyOp (namedtuple) for all tracks whose SFZ does not reside
+		in the project SFZ directory.
+		"""
+		if self.project_filename is None or not setting(KEY_COPY_SFZS, bool):
+			return []
+		sfz_dirname = self.sfz_dirname()
+		sfz_dir = realpath(self.sfz_dir())
+		CopyOp = namedtuple('CopyOp', ['track_widget', 'current_realpath', 'new_realpath', 'relpath'])
 		copy_ops = [
 			CopyOp(
-				track_widget,
-				realpath(track_widget.synth.sfz_filename),
-				realpath(join(sfz_dir, basename(track_widget.synth.sfz_filename))),
-				join(project_title, basename(track_widget.synth.sfz_filename))
+				track_widget,											# track_widget
+				realpath(track_widget.sfz_filename),					# current_realpath
+				join(sfz_dir, basename(track_widget.sfz_filename)),		# new_realpath
+				join(sfz_dirname, basename(track_widget.sfz_filename))	# relpath
 			) for track_widget in self.iterate_track_widgets()
 		]
-		copy_ops = [ op for op in copy_ops if op.current_abspath != op.new_abspath ]
-		if copy_ops:
+		return [ op for op in copy_ops if op.current_realpath != op.new_realpath ]
+
+	def copy_sfzs(self):
+		"""
+		Copies any SFZ files outside the project folder to the project folder.
+		Returns boolean True if any file was copied.
+		"""
+		sfz_copied = False
+		if copy_ops := self.sfz_copy_ops():
+			self.setCursor(Qt.WaitCursor)
+			samples_mode = setting(KEY_SAMPLES_MODE, int, SAMPLES_ABSPATH)
+			clean_sfzs = setting(KEY_CLEAN_SFZS, bool)
+			if not exists(self.sfz_dir()):
+				mkdir(self.sfz_dir())
 			for op in copy_ops:
 				try:
-					sfz_copy = SFZ(op.current_abspath)
+					sfz_copy = SFZ(op.current_realpath)
 					if clean_sfzs:
 						liquid_clean(sfz_copy)
-					sfz_copy.save_as(op.new_abspath, samples_mode, overwrite = True)
-					op.track_widget.synth.load_sfz(op.new_relative)
+					sfz_copy.save_as(op.new_realpath, samples_mode, overwrite = True)
+					op.track_widget.load_sfz(op.new_realpath)
 				except Exception as err:
 					logging.exception(err)
 					QMessageBox.warning(self, "SFZ Copy failed",
 						f"""<p>There was an error when copying</p>
-						<p><b>{op.current_abspath}</b></p>
+						<p><b>{op.track_widget.sfz_filename}</b></p>
 						<p>to</p>
-						<p><b>{op.new_relative}</b></p>
+						<p><b>{op.relpath}</b></p>
 						<p><b>{err}</b></p>""")
 				else:
-					self.set_dirty()
-		else:
-			QMessageBox.information(self, "No SFZ was copied",
-				"""<p>No SFZs were copied to the project folder.</p>
-				<p>All the SFZz used in this project reside in the project folder already.</p>""")
-		self.unsetCursor()
+					sfz_copied = True
+			self.unsetCursor()
+		return sfz_copied
 
-	def sfzs_used(self):
+	def sfz_paths(self):
 		"""
 		Returns a list of (str) SFZ paths.
 		"""
-		return [ track_widget.synth.sfz_filename \
+		return [ track_widget.sfz_filename \
 			for track_widget in self.iterate_track_widgets() ]
 
 	def project_dir(self):
-		return dirname(self.project_filename) if self.project_filename else None
+		return dirname(realpath(self.project_filename)) if self.project_filename else None
+
+	def sfz_dirname(self):
+		if self.project_filename:
+			project_title, _ = splitext(basename(self.project_filename))
+			return f'{project_title}-SFZs'
+		return None
+
+	def sfz_dir(self):
+		return join(self.project_dir(), self.sfz_dirname()) if self.project_filename else None
 
 	def option(self, key):
 		if self.project_definition and key in self.project_definition['options']:
@@ -830,7 +848,7 @@ class MainWindow(QMainWindow):
 			self.file_system_watcher = QFileSystemWatcher(self)
 			self.file_system_watcher.fileChanged.connect(self.slot_watched_file_changed)
 			for track_widget in self.iterate_track_widgets():
-				self.watch(track_widget.synth.sfz_filename)
+				self.watch(track_widget.sfz_filename)
 		else:
 			logging.debug('Deleting QFileSystemWatcher')
 			self.file_system_watcher = None
@@ -840,8 +858,8 @@ class MainWindow(QMainWindow):
 		logging.debug('Watched file changed: %s', sfz_filename)
 		path_exists = False
 		for track_widget in self.iterate_track_widgets():
-			if track_widget.synth.sfz_filename == sfz_filename:
-				track_widget.synth.load_sfz(sfz_filename)
+			if track_widget.sfz_filename == sfz_filename:
+				track_widget.synth.reload()
 				path_exists = True
 				break
 		if not path_exists:
@@ -1100,7 +1118,7 @@ class MainWindow(QMainWindow):
 		self.project_definition = self.encode_saved_state()
 		for filename in filenames:
 			ApplyScoreDialog(self, self.project_definition, filename).exec()
-			set_setting(KEY_RECENT_SCORE_DIR, dirname(realpath(filename)))
+			set_setting(KEY_RECENT_SCORE_DIR, dirname(abspath(filename)))
 
 	@pyqtSlot()
 	def slot_recent_menu_show(self):
@@ -1203,7 +1221,11 @@ class MainWindow(QMainWindow):
 			set_setting(KEY_COPY_SFZS, dlg.copy_sfzs)
 			set_setting(KEY_CLEAN_SFZS, dlg.clean_sfzs)
 			set_setting(KEY_SAMPLES_MODE, dlg.samples_mode)
-			self.copy_sfzs()
+			if self.copy_sfzs():
+				self.set_dirty()
+			else:
+				QMessageBox.information(self, "No SFZ copied",
+					'No SFZs were copied to the project folder.')
 
 	@pyqtSlot()
 	def slot_copy_sfz_paths(self):
@@ -1211,7 +1233,7 @@ class MainWindow(QMainWindow):
 		Copy SFZ paths to clipboard
 		"""
 		from musecbox.dialogs.copy_sfz_paths_dialog import CopySFZPathsDialog
-		dlg = CopySFZPathsDialog(self, linesep.join(self.sfzs_used()))
+		dlg = CopySFZPathsDialog(self, linesep.join(self.sfz_paths()))
 		dlg.exec()
 
 	@pyqtSlot()

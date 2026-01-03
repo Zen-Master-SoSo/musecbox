@@ -21,7 +21,7 @@
 Provides vertical and horizontal track widgets.
 """
 import logging, os
-from os.path import join, dirname, relpath, realpath, exists
+from os.path import join, dirname, relpath, abspath, exists
 from math import floor
 from functools import partial
 from itertools import chain
@@ -55,7 +55,6 @@ from musecbox import (
 	APP_PATH,
 	TEXT_NO_CONN,
 	TEXT_MULTI_CONN,
-	KEY_COPY_SFZS,
 	KEY_SHOW_CHANNELS,
 	KEY_SHOW_INDICATORS,
 	KEY_SHOW_PLUGIN_VOLUME,
@@ -86,6 +85,7 @@ class TrackWidget(QFrame):
 		self.slot = slot
 		self.voice_name = voice_name
 		self.moniker = moniker or str(voice_name)
+		self.sfz_filename = self._get_abspath(sfz_filename)
 		self.setVisible(False)
 		if saved_state is None:
 			synth_def = None
@@ -125,7 +125,7 @@ class TrackWidget(QFrame):
 		self.frm_plugins.setLayout(self.plugin_layout)
 
 		# Setup liquid_sfz
-		self.synth = TrackSynth(sfz_filename, saved_state = synth_def)
+		self.synth = TrackSynth(self.sfz_filename, saved_state = synth_def)
 		for src, tgt in [
 			(self.synth.sig_midi_active, self.slot_midi_active),
 			(self.synth.sig_sfz_loaded, self.slot_sfz_loaded),
@@ -146,9 +146,6 @@ class TrackWidget(QFrame):
 		del self.b_output_placeholder
 
 		# Setup this TrackWidget's actions:
-		action = QAction('Save SFZ as ...', self)
-		action.triggered.connect(self.slot_copy_sfz)
-		self.addAction(action)
 		action = QAction('Open SFZ in editor', self)
 		action.triggered.connect(self.slot_open_sfz_externally)
 		self.addAction(action)
@@ -187,54 +184,18 @@ class TrackWidget(QFrame):
 	# Handlers for internal signals:
 
 	@pyqtSlot()
-	def slot_copy_sfz(self):
-		"""
-		Copy this TrackWidget's SFZ to a new location.
-		This function overrides the project preference.
-		"""
-		from musecbox.dialogs.copy_sfz_dialog import CopySFZDialog
-		old_path = self.synth.sfz_filename
-		dlg = CopySFZDialog(self, old_path)
-		if dlg.exec():
-			self.setCursor(Qt.WaitCursor)
-			target_path = realpath(dlg.target_path)
-			# Determine if target file is beneath project dir; If so, the Synth will be
-			# given a relative filename (so that it can be moved with the project). If not,
-			# we need to pass an absolute path.
-			if project_dir := main_window().project_dir():
-				new_path = relpath(target_path, project_dir)
-				if new_path.startswith(os.pardir):
-					new_path = target_path
-			else:
-				new_path = target_path
-			try:
-				sfz_copy = SFZ(old_path)
-				if dlg.clean_sfzs:
-					liquid_clean(sfz_copy)
-				sfz_copy.save_as(target_path, dlg.samples_mode)
-			except Exception as err:
-				self.unsetCursor()
-				QMessageBox.warning(self, "SFZ Copy failed",
-					f"""<p>There was an error when copying {self.synth.sfz_filename} to
-					{dlg.target_path}:</p><p><b>{err}</b></p>""")
-			else:
-				self.synth.load_sfz(new_path)
-				self.unsetCursor()
-				logging.debug('Copied SFZ %s to %s', old_path, new_path)
-
-	@pyqtSlot()
 	def slot_copy_sfz_path(self):
 		"""
 		Copies this TrackWidget's SFZ path to the clipboard.
 		"""
-		QApplication.instance().clipboard().setText(self.synth.sfz_filename)
+		QApplication.instance().clipboard().setText(self.sfz_filename)
 
 	@pyqtSlot()
 	def slot_open_sfz_externally(self):
 		"""
 		Opens this TrackWidget's SFZ in the system -defined external editor.
 		"""
-		xdg_open(self.synth.sfz_filename)
+		xdg_open(self.sfz_filename)
 
 	@pyqtSlot()
 	def slot_lock_pan(self):
@@ -351,12 +312,12 @@ class TrackWidget(QFrame):
 		from musecbox.dialogs.sfz_file_dialog import SFZFileDialog
 		sfz_dialog = SFZFileDialog(self.voice_name)
 		if sfz_dialog.exec():
-			self.synth.load_sfz(sfz_dialog.sfz_filename)
+			self.load_sfz(sfz_dialog.sfz_filename)
 			main_window().set_dirty()
 
-	@pyqtSlot(str)
-	def slot_sfz_loaded(self, sfz_filename):
-		self.setToolTip(sfz_filename)
+	@pyqtSlot()
+	def slot_sfz_loaded(self):
+		self.setToolTip(self.sfz_filename)
 
 	@pyqtSlot(Plugin)
 	def slot_plugin_ready(self, plugin):
@@ -421,7 +382,7 @@ class TrackWidget(QFrame):
 			"instrument_name"			: self.voice_name.instrument_name,
 			"voice"						: self.voice_name.voice,
 			"pan_group_key"				: self.pan_group_key,
-			"sfz"						: self.synth.relative_path,
+			"sfz"						: relpath(self.sfz_filename, main_window().project_dir()),
 			"synth"						: self.synth.encode_saved_state(),
 			"plugins"					: [ plugin.encode_saved_state() \
 											for plugin in self.plugin_layout ],
@@ -448,11 +409,8 @@ class TrackWidget(QFrame):
 	def remove_self(self):
 		for plugin in reversed(self.plugin_layout):
 			self.remove_plugin(plugin, False)
-		main_window().unwatch(self.synth.sfz_filename)
+		main_window().unwatch(self.sfz_filename)
 		self.synth.remove_from_carla()
-
-	def is_missing_sfz(self):
-		return not exists(self.synth.sfz_filename)
 
 	# -----------------------------------------------------------------
 	# Plugin manipulation:
@@ -550,6 +508,17 @@ class TrackWidget(QFrame):
 
 	# -----------------------------------------------------------------
 	# Misc funcs
+
+	def load_sfz(self, sfz_filename):
+		self.sfz_filename = self._get_abspath(sfz_filename)
+		self.synth.load_sfz(self.sfz_filename)
+
+	def _get_abspath(self, sfz_filename):
+		if exists(sfz_filename):
+			return abspath(sfz_filename)
+		if project_dir := main_window().project_dir():
+			return join(abspath(project_dir), sfz_filename)
+		raise RuntimeError(f'File not found: "{sfz_filename}"')
 
 	def has_plugins(self):
 		"""
@@ -716,34 +685,21 @@ class TrackSynth(LiquidSFZ):
 	Synth used by track widgets.
 	"""
 
-	sig_sfz_loaded = pyqtSignal(str)
-
-	def __init__(self, sfz_filename, *, saved_state = None):
-		super().__init__(self._get_real(sfz_filename), saved_state = saved_state)
+	sig_sfz_loaded = pyqtSignal()
 
 	def finalize_init(self):
 		super().finalize_init()
 		main_window().watch(self.sfz_filename)
 
 	def load_sfz(self, sfz_filename):
-		oldpath = self.sfz_filename
-		super().load_sfz(self._get_real(sfz_filename))
-		if oldpath != self.sfz_filename:
-			main_window().unwatch(oldpath)
-			main_window().watch(self.sfz_filename)
-
-	def _get_real(self, sfz_filename):
-		if exists(sfz_filename):
-			return realpath(sfz_filename)
-		return realpath(join(main_window().project_dir(), sfz_filename))
+		if self.sfz_filename != sfz_filename:
+			main_window().unwatch(self.sfz_filename)
+			main_window().watch(sfz_filename)
+		super().load_sfz(sfz_filename)
 
 	def auto_load_complete(self):
 		super().auto_load_complete()
-		self.sig_sfz_loaded.emit(self.sfz_filename)
-
-	@property
-	def relative_path(self):
-		return relpath(self.sfz_filename, main_window().project_dir())
+		self.sig_sfz_loaded.emit()
 
 
 #  end musecbox/gui/track_widget.py

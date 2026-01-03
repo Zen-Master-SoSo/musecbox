@@ -39,7 +39,7 @@ location of each instrument within the stereo plane.
 
 """
 import sys, logging, argparse, glob
-from os.path import join, dirname, basename, realpath, splitext
+from os.path import join, dirname, basename, abspath, splitext
 from os import linesep
 try:
 	from os import startfile
@@ -80,7 +80,7 @@ from log_soso import StreamToLogger
 __version__ = "0.5.2"
 
 APPLICATION_NAME		= 'MusecBox'
-APP_PATH				= dirname(realpath(__file__))
+APP_PATH				= dirname(abspath(__file__))
 SOCKET_PATH				= join(tempdir(), 'musecbox.socket')
 CARRIAGE_RETURN			= linesep.encode()
 DEFAULT_STYLE			= 'system'
@@ -195,9 +195,9 @@ TEXT_NEW_GROUP			= 'New group ...'
 
 T_SAMPLEMODE_ABSPATH	= 'Point to the original samples - absolute path'
 T_SAMPLEMODE_RELPATH	= 'Point to the original samples - relative path'
-T_SAMPLEMODE_COPY		= 'Copy samples to a "<project name>-samples" folder'
-T_SAMPLEMODE_SYMLINK	= 'Create symlinks in a "<project name>-samples" folder'
-T_SAMPLEMODE_HARDLINK	= 'Hardlink the originals in a "<project name>-samples" folder'
+T_SAMPLEMODE_COPY		= 'Copy samples to "<project name>/<sfz name>-samples"'
+T_SAMPLEMODE_SYMLINK	= 'Create symlinks in "<project name>/<sfz name>-samples"'
+T_SAMPLEMODE_HARDLINK	= 'Hardlink the originals to "<project name>/<sfz name>-samples"'
 
 T_COPY_TO_LOCAL			= 'Copy SFZs to a local project folder'
 T_CLEAN_SFZ				= 'Remove opcodes not recognized by LiquidSFZ'

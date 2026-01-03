@@ -20,7 +20,7 @@
 """
 """
 import logging
-from os.path import join, dirname, realpath
+from os.path import join, dirname, abspath
 from functools import lru_cache
 
 # PyQt5 imports
@@ -77,7 +77,7 @@ class InstrumentSelectionDialog(QDialog):
 		self.file_model.setFilter(QDir.AllDirs | QDir.Files | QDir.NoDotAndDotDot)
 		self.file_model.setNameFilters(['*.mscz', '*.mscx'])
 		self.file_model.setRootPath(QDir.rootPath())
-		root_path = realpath(setting(KEY_SCORES_DIR, str, QDir.rootPath()))
+		root_path = abspath(setting(KEY_SCORES_DIR, str, QDir.rootPath()))
 		logging.debug('root_path: %s', root_path)
 		self.tree_scores.setModel(self.file_model)
 		self.tree_scores.setRootIndex(self.file_model.index(root_path))
@@ -174,7 +174,7 @@ class InstrumentSelectionDialog(QDialog):
 	@pyqtSlot()
 	def accept(self):
 		logging.debug('accept')
-		set_setting(KEY_RECENT_INST_DIR, realpath(self.current_directory))
+		set_setting(KEY_RECENT_INST_DIR, abspath(self.current_directory))
 		super().accept()
 
 

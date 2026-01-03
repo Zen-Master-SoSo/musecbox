@@ -22,7 +22,7 @@ Provides a dialog which displays information about the current project,
 """
 import logging
 from os import linesep
-from os.path import join, dirname, basename, realpath, splitext
+from os.path import join, dirname, basename, abspath, splitext
 from qt_extras import ShutUpQT
 
 # PyQt5 imports
@@ -62,7 +62,7 @@ class ProjectInfoDialog(QDialog):
 			self.tbl.setItem(row, 1, item)
 			self.tbl.setItem(row, 2, QTableWidgetItem(track_widget.moniker.replace('&', '&&')))
 			self.tbl.setItem(row, 3, QTableWidgetItem(str(track_widget.voice_name).replace('&', '&&')))
-			self.tbl.setItem(row, 4, QTableWidgetItem(track_widget.synth.sfz_filename.replace('&', '&&')))
+			self.tbl.setItem(row, 4, QTableWidgetItem(track_widget.sfz_filename.replace('&', '&&')))
 
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
 
@@ -85,7 +85,7 @@ class ProjectInfoDialog(QDialog):
 			TRACK_DEF_FILE_TYPE
 		)
 		if filename:
-			set_setting(KEY_RECENT_EXPORT_DIR, realpath(dirname(filename)))
+			set_setting(KEY_RECENT_EXPORT_DIR, abspath(dirname(filename)))
 			tab = "\t"
 			with open(filename, 'w') as fh:
 				for track_widget in self.parent().iterate_track_widgets():
@@ -95,7 +95,7 @@ class ProjectInfoDialog(QDialog):
 						track_widget.moniker,
 						track_widget.voice_name.instrument_name,
 						track_widget.voice_name.voice,
-						track_widget.synth.sfz_filename
+						track_widget.sfz_filename
 					]))
 					fh.write(linesep)
 
