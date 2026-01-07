@@ -50,7 +50,7 @@ from PyQt5.QtWidgets import QWidget, QMainWindow, QMessageBox, QFileDialog, QInp
 from PyQt5.QtGui import		QPainter, QColor, QBrush, QPalette, QIcon
 
 # musecbox imports
-from musecbox import 		carla, set_main_window, EngineInitFailure, \
+from musecbox import 		carla, set_main_window, \
 							recent_files, recent_plugins, \
 							setting, set_setting, sync_settings, \
 							styles, set_application_style, xdg_open, plugin_display_name, \
@@ -131,8 +131,7 @@ class MainWindow(QMainWindow):
 		signal(SIGTERM, self.system_signal)
 
 		self.restore_geometry()
-		if not carla().engine_init():
-			raise EngineInitFailure()
+		carla().engine_init()
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.update_ui)
 
 	def _connect_host_callbacks(self):

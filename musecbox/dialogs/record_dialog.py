@@ -22,15 +22,15 @@ Provides a dialog which shows modal when recording.
 """
 import logging
 from os.path import join, dirname
-from qt_extras import ShutUpQT
-from simple_carla import Plugin
+from qt_extras import DevilBox, ShutUpQT
+from simple_carla import Plugin, EngineInitFailure
 
 # PyQt5 imports
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, pyqtSlot, QTimer
 from PyQt5.QtWidgets import QApplication, QDialog
 
-from musecbox import set_application_style, carla, main_window, LOG_FORMAT, EngineInitFailure
+from musecbox import set_application_style, carla, main_window, LOG_FORMAT
 from musecbox.audio_recorder import AudioRecorder
 
 
@@ -54,7 +54,11 @@ class RecordDialog(QDialog):
 		self.timer.timeout.connect(self.slot_timer_timeout)
 		self.recorder = AudioRecorder()
 		self.recorder.sig_ready.connect(self.slot_recorder_ready)
-		self.recorder.add_to_carla()
+		try:
+			self.recorder.add_to_carla()
+		except Exception as e:
+			DevilBox(e)
+			QTimer.singleShot(0, self.close)	# Event loop hasn't started yet.
 		self.started_playing = False
 
 	@pyqtSlot(Plugin)
@@ -114,8 +118,12 @@ class TestApp(QApplication):
 		super().__init__([])
 		set_application_style()
 		carla().sig_engine_started.connect(self.slot_engine_started, type = Qt.QueuedConnection)
-		if not carla().engine_init():
-			raise EngineInitFailure()
+		try:
+			carla().engine_init()
+		except EngineInitFailure as e:
+			DevilBox(f'<h2>{e.args[0]}</h2><p>Possible reason:<br/>{e.args[1]}<p>' \
+				if e.args[1] else e.args[0])
+			QTimer.singleShot(0, self.quit)	# Event loop hasn't started yet.
 
 	@pyqtSlot(int, int, int, int, float, str)
 	def slot_engine_started(*_):

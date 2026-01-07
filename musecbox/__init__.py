@@ -377,19 +377,4 @@ def unbold(widget):
 	font.setWeight(QFont.Normal)
 	widget.setFont(font)
 
-# -------------------------------------------------------------------
-# Custom exceptions:
-
-class EngineInitFailure(RuntimeError):
-	"""
-	Raised if carla fails to initialize.
-	"""
-	def __init__(self):
-		audio_error = carla().get_last_error()
-		if audio_error:
-			super().__init__(f'Could not start carla; possible reasons:\n{audio_error}')
-		else:
-			super().__init__('Could not start carla')
-
-
 #  end musecbox/__init__.py

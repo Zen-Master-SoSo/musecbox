@@ -24,8 +24,9 @@ integrated database.
 import logging, glob
 from os.path import join, dirname, basename, abspath
 from functools import partial
-from qt_extras import ShutUpQT
+from qt_extras import DevilBox, ShutUpQT
 from qt_extras.list_button import QtListButton
+from simple_carla import EngineInitFailure
 
 # PyQt5 imports
 from PyQt5 import uic
@@ -40,7 +41,7 @@ from musecbox import 	carla, previewer, setting, set_setting, set_application_st
 						xdg_open, bold, \
 						TEXT_NO_CONN, TEXT_NO_GROUP, TEXT_NEW_GROUP, KEY_SFZ_DIR, \
 						KEY_PREVIEW_FILES, KEY_PREVIEWER_MIDI_SRC, KEY_PREVIEWER_AUDIO_TGT, \
-						LAYOUT_COMPLETE_DELAY, LOG_FORMAT, EngineInitFailure
+						LAYOUT_COMPLETE_DELAY, LOG_FORMAT
 from musecbox.dialogs.add_group_dialog import AddGroupDialog
 from musecbox.sfz_previewer import SFZPreviewer
 from musecbox.sfzdb import SFZDatabase
@@ -388,8 +389,12 @@ class TestApp(QApplication):
 		super().__init__([])
 		set_application_style()
 		carla().sig_engine_started.connect(self.slot_engine_started, type = Qt.QueuedConnection)
-		if not carla().engine_init():
-			raise EngineInitFailure()
+		try:
+			carla().engine_init()
+		except EngineInitFailure as e:
+			DevilBox(f'<h2>{e.args[0]}</h2><p>Possible reason:<br/>{e.args[1]}<p>' \
+				if e.args[1] else e.args[0])
+			QTimer.singleShot(0, self.quit)	# Event loop hasn't started yet.
 
 	@pyqtSlot(int, int, int, int, float, str)
 	def slot_engine_started(*_):

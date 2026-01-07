@@ -30,7 +30,8 @@ from PyQt5.QtWidgets import QApplication, QErrorMessage
 from PyQt5.QtGui import QGuiApplication
 from qt_extras import DevilBox
 from log_soso import StreamToLogger
-from musecbox import SOCKET_PATH, CARRIAGE_RETURN, carla, EngineInitFailure, LOG_FORMAT
+from simple_carla import EngineInitFailure
+from musecbox import carla, SOCKET_PATH, CARRIAGE_RETURN, LOG_FORMAT
 from musecbox.gui.main_window import MainWindow
 
 
@@ -119,7 +120,8 @@ def main():
 	try:
 		main_window = MainWindow(options)
 	except EngineInitFailure as e:
-		DevilBox(e)
+		DevilBox(f'<h2>{e.args[0]}</h2><p>Possible reason:<br/>{e.args[1]}<p>' \
+			if e.args[1] else e.args[0])
 		return 1
 	main_window.show()
 	return_value = application.exec()
