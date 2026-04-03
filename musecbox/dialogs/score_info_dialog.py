@@ -29,7 +29,7 @@ from qt_extras import ShutUpQT
 # PyQt5 imports
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import QDialog, QTableWidgetItem
+from PyQt5.QtWidgets import QDialog, QTableWidgetItem, QHeaderView
 
 from musecbox import APP_PATH, set_application_style, LAYOUT_COMPLETE_DELAY, LOG_FORMAT
 
@@ -42,6 +42,7 @@ class ScoreInfoDialog(QDialog):
 			uic.loadUi(join(dirname(__file__), 'score_info_dialog.ui'), self)
 
 		self.resize(100, 100)
+		self.tbl.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 		self.score = Score(source_score['filename'])
 		self.lbl_score.setText(self.score.filename)
 

@@ -107,7 +107,8 @@ QTableView::item {
 }
 
 QTableView {
-	gridline-color: #CCCCCC;
+	gridline-color: #DEDEDE;
+	font-size: 9pt;
 }
 
 QHeaderView::section {
@@ -118,6 +119,7 @@ QHeaderView::section {
 
 QTableView::item {
 	color: #000;
+	padding: 1px 6px;
 }
 
 
@@ -424,6 +426,8 @@ PluginDialog QSlider::handle {
 
 
 
+#project_info_dialog #tbl,
+#project_info_dialog #tbl::item,
 #score_info_dialog #tbl,
 #score_info_dialog #tbl::item {
 	background: palette(window);

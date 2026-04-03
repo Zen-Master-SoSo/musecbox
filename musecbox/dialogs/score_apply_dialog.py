@@ -28,7 +28,7 @@ from os.path import join, dirname
 from PyQt5 import			uic
 from PyQt5.QtCore import	Qt, pyqtSlot, QTimer
 from PyQt5.QtGui import		QPalette
-from PyQt5.QtWidgets import QApplication, QDialog, QTableWidgetItem, QStyle
+from PyQt5.QtWidgets import QApplication, QDialog, QTableWidgetItem, QHeaderView, QStyle
 
 from qt_extras import ShutUpQT
 from musecbox.score_fixer import ScoreFixer
@@ -64,6 +64,7 @@ class ApplyScoreDialog(QDialog):
 			uic.loadUi(join(dirname(__file__), 'score_apply_dialog.ui'), self)
 
 		self.resize(100, 100)
+		self.tbl.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 		self.fixer = ScoreFixer(project_definition, mscore_filename)
 		self.lbl_score.setText(self.fixer.score.filename)
 

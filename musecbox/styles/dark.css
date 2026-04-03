@@ -464,12 +464,6 @@ PluginDialog QSlider::handle {
 }
 
 
-#score_info_dialog #tbl,
-#score_info_dialog #tbl::item {
-	background: palette(window);
-}
-
-
 CopySFZPathsDialog QLabel {
 	padding: 4px;
 	background: #000;

@@ -31,6 +31,20 @@ QtListButtonMenu::item:selected {
 
 
 
+QTableView {
+	font-size: 10pt;
+}
+
+QHeaderView::section {
+	font-size: 10pt;
+	text-align: center;
+}
+
+QTableView::item {
+	padding: 2px 5px;
+}
+
+
 QFrame#frm_port_widget_top QLabel {
 	background: #444;
 	color: #FFF;

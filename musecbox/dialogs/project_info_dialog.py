@@ -28,7 +28,7 @@ from qt_extras import ShutUpQT
 # PyQt5 imports
 from PyQt5 import			uic
 from PyQt5.QtCore import	Qt, pyqtSlot, QTimer, QDir
-from PyQt5.QtWidgets import QFileDialog, QDialog, QTableWidgetItem
+from PyQt5.QtWidgets import QFileDialog, QDialog, QTableWidgetItem, QHeaderView
 
 from musecbox import		setting, set_setting, KEY_RECENT_EXPORT_DIR, TRACK_DEF_FILE_TYPE, \
 							LAYOUT_COMPLETE_DELAY
@@ -45,6 +45,8 @@ class ProjectInfoDialog(QDialog):
 		self.restore_geometry()
 		self.finished.connect(self.save_geometry)
 		self.b_export.clicked.connect(self.slot_export)
+
+		self.tbl.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
 		headers = ["MIDI Port", "MIDI Channel", "Moniker", "Voice", "SFZ"]
 		self.tbl.setColumnCount(len(headers))
