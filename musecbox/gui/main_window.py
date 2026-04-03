@@ -479,7 +479,8 @@ class MainWindow(QMainWindow):
 				if ProjectLoadDialog(self, self.project_definition).exec():
 					recent_files().bump(self.project_filename)
 					set_setting(KEY_RECENT_PROJECT_DIR, self.project_dir())
-					if bool(setting(KEY_AUTO_START)):
+					autostart = setting(KEY_AUTO_START)
+					if autostart and len(autostart):
 						set_setting(KEY_AUTO_START, self.project_filename)
 					self.project_load_complete()
 		else:
@@ -927,7 +928,7 @@ class MainWindow(QMainWindow):
 
 	@pyqtSlot(bool)
 	def slot_set_autostart(self, state):
-		set_setting(KEY_AUTO_START, self.project_filename if state else False)
+		set_setting(KEY_AUTO_START, self.project_filename if state else '')
 
 	@pyqtSlot()
 	def slot_connect_all_tracks(self):
@@ -1386,7 +1387,7 @@ class MainWindow(QMainWindow):
 			self.open_file(self.startup_options.Filename)
 		else:
 			autostart = setting(KEY_AUTO_START)
-			if bool(autostart):
+			if autostart and len(autostart):
 				self.open_file(autostart)
 				self.action_auto_start.setChecked(True)
 

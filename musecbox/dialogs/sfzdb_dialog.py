@@ -26,9 +26,9 @@ from qt_extras import ShutUpQT
 
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, pyqtSlot, QEvent
-from PyQt5.QtWidgets import QApplication, QDialog, QMenu, QListWidgetItem
+from PyQt5.QtWidgets import QApplication, QDialog, QFileDialog, QMenu, QListWidgetItem
 
-from musecbox import bold, unbold, TEXT_NO_GROUP, LOG_FORMAT
+from musecbox import bold, unbold, setting, TEXT_NO_GROUP, LOG_FORMAT, SFZ_FILE_TYPE, KEY_SFZ_DIR
 from musecbox.sfzdb import SFZDatabase
 from musecbox.dialogs.add_group_dialog import AddGroupDialog
 
@@ -127,11 +127,12 @@ class SFZMaintDialog(QDialog):
 					break
 				self.fill_sfzs()
 		elif action is action_add_sfzs:
-			from musecbox.dialogs.sfz_file_dialog import SFZFileDialog
-			dlg = SFZFileDialog()
-			if dlg.exec():
-				# TODO: UNFINISHED!
-				logging.debug(dlg.files)
+			filenames, _ = QFileDialog.getOpenFileNames(self,
+				"Select SFZ files to add to group",
+				setting(KEY_SFZ_DIR, str, ''),
+				SFZ_FILE_TYPE)
+			# TODO: UNFINISHED!
+			logging.debug(filenames)
 		return True
 
 	def sfz_context_menu(self, event, item, menu):
@@ -280,8 +281,8 @@ class SFZMaintDialog(QDialog):
 if __name__ == "__main__":
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
-	window = SFZMaintDialog()
-	window.show()
+	dialog = SFZMaintDialog()
+	dialog.show()
 	app.exec()
 
 

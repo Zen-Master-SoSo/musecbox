@@ -435,7 +435,6 @@ class BCGroup(QLabel):
 		self.can_balance = track_widget.synth.can_balance
 		self.can_pan = track_widget.synth.can_pan
 		pdef = main_window().project_definition
-		# TODO: This can be simplified once all projects are saved with version >= 0.1.0
 		self.bcwidget_line = 0 if pdef is None \
 			or 'bcwidget' not in pdef \
 			or key not in pdef['bcwidget'] \
@@ -444,7 +443,8 @@ class BCGroup(QLabel):
 		self.right = None
 		self.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 		self.setText(self.brief_text())
-		self.resize(TRACK_WIDTH, TRACK_HEIGHT)		# Will be changed for can_balance groups
+		# Set initial geometry which will may changed for "can_balance" groups:
+		self.resize(TRACK_WIDTH, TRACK_HEIGHT)
 
 	def add_track(self, track):
 		if track in self.tracks:
