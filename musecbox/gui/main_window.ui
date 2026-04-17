@@ -268,8 +268,10 @@
     <addaction name="action_save_as"/>
     <addaction name="action_revert"/>
     <addaction name="separator"/>
-    <addaction name="action_auto_start"/>
     <addaction name="action_open_project_folder"/>
+    <addaction name="action_open_in_terminal"/>
+    <addaction name="separator"/>
+    <addaction name="action_auto_start"/>
     <addaction name="action_apply_to_score"/>
     <addaction name="separator"/>
     <addaction name="action_close"/>
@@ -520,7 +522,8 @@
   </action>
   <action name="action_unroll_all_plugins">
    <property name="icon">
-    <iconset theme="go-down"/>
+    <iconset theme="go-down">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Unroll all plugins</string>
@@ -528,7 +531,8 @@
   </action>
   <action name="action_rollup_all_plugins">
    <property name="icon">
-    <iconset theme="go-up"/>
+    <iconset theme="go-up">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Ro&amp;llup all plugins</string>
@@ -542,7 +546,8 @@
   </action>
   <action name="action_unmute_all_tracks">
    <property name="icon">
-    <iconset theme="audio-volume-high"/>
+    <iconset theme="audio-volume-high">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Unmute all tracks</string>
@@ -553,7 +558,8 @@
   </action>
   <action name="action_mute_all_tracks">
    <property name="icon">
-    <iconset theme="audio-volume-muted"/>
+    <iconset theme="audio-volume-muted">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Mute all tracks</string>
@@ -795,7 +801,8 @@
   </action>
   <action name="action_show_connections">
    <property name="icon">
-    <iconset theme="preferences-system-network"/>
+    <iconset theme="preferences-system-network">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Connections</string>
@@ -812,7 +819,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="edit-find"/>
+    <iconset theme="edit-find">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Watch SFZs for changes</string>
@@ -910,6 +918,17 @@
    </property>
    <property name="toolTip">
     <string>Rewind the JACK transport to position 0</string>
+   </property>
+  </action>
+  <action name="action_open_in_terminal">
+   <property name="icon">
+    <iconset theme="utilities-terminal"/>
+   </property>
+   <property name="text">
+    <string>Open project folder in terminal</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens a terminal in the directory that the project is in</string>
    </property>
   </action>
  </widget>

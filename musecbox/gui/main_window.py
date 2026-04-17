@@ -53,7 +53,8 @@ from PyQt5.QtGui import		QPainter, QColor, QBrush, QPalette, QIcon
 from musecbox import 		carla, set_main_window, \
 							recent_files, recent_plugins, \
 							setting, set_setting, sync_settings, \
-							styles, set_application_style, xdg_open, plugin_display_name, \
+							styles, set_application_style, \
+							xdg_open, open_in_terminal, plugin_display_name, \
 							APPLICATION_NAME, APP_PATH, SOCKET_PATH, CARRIAGE_RETURN, \
 							SUPPORTED_FILE_TYPES, MUSESCORE_FILE_TYPES, RENDER_FILE_TYPE, \
 							PROJECT_OPTION_KEYS, DEFAULT_STYLE, KEY_STYLE, \
@@ -204,6 +205,7 @@ class MainWindow(QMainWindow):
 		self.action_revert.triggered.connect(self.slot_revert)
 		self.action_auto_start.toggled.connect(self.slot_set_autostart)
 		self.action_open_project_folder.triggered.connect(self.slot_open_project_folder)
+		self.action_open_in_terminal.triggered.connect(self.slot_open_in_terminal)
 		self.action_apply_to_score.triggered.connect(self.slot_apply_to_score)
 		self.action_close.triggered.connect(self.slot_close)
 
@@ -1096,6 +1098,10 @@ class MainWindow(QMainWindow):
 	@pyqtSlot()
 	def slot_open_project_folder(self):
 		xdg_open(self.project_dir())
+
+	@pyqtSlot()
+	def slot_open_in_terminal(self):
+		open_in_terminal(self.project_dir())
 
 	@pyqtSlot()
 	def slot_show_score_info(self):

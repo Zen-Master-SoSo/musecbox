@@ -39,14 +39,14 @@ location of each instrument within the stereo plane.
 
 """
 import sys, logging, argparse, glob
-from os.path import join, dirname, basename, abspath, splitext
+from os.path import join, dirname, basename, abspath, splitext, exists
 from os import linesep
 try:
 	from os import startfile
 except ImportError:
 	pass
 from platform import system
-from subprocess import Popen
+from subprocess import Popen, run
 from tempfile import gettempdir as tempdir
 from traceback import print_tb
 
@@ -315,6 +315,28 @@ def xdg_open(filename):
 		Popen(["open", filename])
 	else:
 		Popen(["xdg-open", filename])
+
+# -------------------------------------------------------------------
+# Cross-platform open terminal
+
+def open_in_terminal(path):
+	if system() == "Windows":
+		Popen('start', shell=True, cwd=path)
+	elif system() == "Darwin":
+		Popen('open -a Terminal .', shell=True, cwd=path)
+	elif exists('/etc/alternatives/x-terminal-emulator'):
+		Popen('/etc/alternatives/x-terminal-emulator', shell=True, cwd=path)
+	else:
+		for term in ['alacritty', 'contour', 'cool', 'deepin', 'extraterm', 'foot', 'fyne',
+					'gnome-terminal', 'ghostty', 'guake', 'hyper', 'kitty', 'konsole',
+					'lxterminal', 'mate-terminal', 'mlterm', 'ptyxis', 'qterminal',
+					'remmina', 'rio', 'roxterm', 'st', 'tabby', 'terminator',
+					'terminology', 'termius', 'termux', 'tilda', 'tilix', 'urxvt', 'warp',
+					'wave', 'wezterm', 'windterm', 'xfce4', 'yakuake', 'xterm']:
+			res = run(['which', term], capture_output=True, text=True, cwd=path)
+			if not res.returncode:
+				Popen(res.stdout, shell=True, cwd=path)
+				return
 
 # -------------------------------------------------------------------
 # Add extra methods to the QWidget class:
