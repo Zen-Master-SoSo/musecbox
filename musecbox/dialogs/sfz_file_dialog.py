@@ -61,8 +61,10 @@ class SFZFileDialog(QDialog):
 			uic.loadUi(join(dirname(__file__), 'sfz_file_dialog.ui'), self)
 		self.restore_geometry()
 		self.finished.connect(self.save_geometry)
-		self.finished.connect(previewer().deactivate)
 		self.accepted.connect(self.slot_accepted)
+		self.previewer = previewer()
+		if self.previewer:
+			self.finished.connect(previewer().deactivate)
 		self.setModal(True)
 
 		self.voice_name = voice_name
@@ -111,27 +113,39 @@ class SFZFileDialog(QDialog):
 			break
 
 		# Setup input select button:
-		self.b_input = QtListButton(self, SFZPreviewer.midi_sources)
-		self.b_input.setText(setting(KEY_PREVIEWER_MIDI_SRC, str, TEXT_NO_CONN))
-		self.b_input.sig_item_selected.connect(self.slot_input_selected)
-		self.input_layout.replaceWidget(self.input_select_placeholder, self.b_input)
+		if self.previewer:
+			self.b_input = QtListButton(self, SFZPreviewer.midi_sources)
+			self.b_input.setText(setting(KEY_PREVIEWER_MIDI_SRC, str, TEXT_NO_CONN))
+			self.b_input.sig_item_selected.connect(self.slot_input_selected)
+			self.input_layout.replaceWidget(self.input_select_placeholder, self.b_input)
 		self.input_select_placeholder.setVisible(False)
 		self.input_select_placeholder.deleteLater()
 		del self.input_select_placeholder
 
 		# Setup output select button:
-		self.b_output = QtListButton(self, SFZPreviewer.audio_targets)
-		self.b_output.setText(setting(KEY_PREVIEWER_AUDIO_TGT, str, TEXT_NO_CONN))
-		self.b_output.sig_item_selected.connect(self.slot_output_client_selected)
-		self.output_layout.replaceWidget(self.b_output_placeholder, self.b_output)
+		if self.previewer:
+			self.b_output = QtListButton(self, SFZPreviewer.audio_targets)
+			self.b_output.setText(setting(KEY_PREVIEWER_AUDIO_TGT, str, TEXT_NO_CONN))
+			self.b_output.sig_item_selected.connect(self.slot_output_client_selected)
+			self.output_layout.replaceWidget(self.b_output_placeholder, self.b_output)
 		self.b_output_placeholder.setVisible(False)
 		self.b_output_placeholder.deleteLater()
 		del self.b_output_placeholder
 
-		self.chk_live_preview.stateChanged.connect(self.slot_chk_preview_state)
-		enable = setting(KEY_PREVIEW_FILES, bool)
-		self.chk_live_preview.setChecked(enable)
-		self.frm_preview_settings.setEnabled(enable)
+		if self.previewer:
+			self.chk_live_preview.stateChanged.connect(self.slot_chk_preview_state)
+			enable = setting(KEY_PREVIEW_FILES, bool)
+			self.chk_live_preview.setChecked(enable)
+			self.frm_preview_settings.setEnabled(enable)
+		else:
+			self.chk_live_preview.setVisible(False)
+			self.chk_live_preview.deleteLater()
+			del self.chk_live_preview
+			self.frm_preview_settings.setVisible(False)
+			self.frm_preview_settings.deleteLater()
+			del self.frm_preview_settings
+
+
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
 
 	@pyqtSlot()
@@ -147,17 +161,17 @@ class SFZFileDialog(QDialog):
 
 	@pyqtSlot(str, QVariant)
 	def slot_input_selected(self, _, midi_src):
-		previewer().midi_src = midi_src
+		self.previewer.midi_src = midi_src
 
 	@pyqtSlot(str, QVariant)
 	def slot_output_client_selected(self, _, audio_tgt):
-		previewer().audio_tgt = audio_tgt
+		self.previewer.audio_tgt = audio_tgt
 
 	@pyqtSlot(int)
 	def slot_chk_preview_state(self, state):
 		enable = bool(state)
 		self.frm_preview_settings.setEnabled(enable)
-		previewer().active = enable
+		self.previewer.active = enable
 		set_setting(KEY_PREVIEW_FILES, enable)
 
 	# ------------------------------------------------
@@ -165,7 +179,6 @@ class SFZFileDialog(QDialog):
 
 	@pyqtSlot(QModelIndex)
 	def slot_directory_current_changed(self, index):
-		logging.debug('slot_directory_current_changed; initializing: %s', self.initializing)
 		self.current_directory = self.directory_model.filePath(index)
 		self.lbl_selection.setText('Directory "%s"' % basename(self.current_directory))
 		self.lbl_directory.setText(self.current_directory)
@@ -187,8 +200,8 @@ class SFZFileDialog(QDialog):
 		ok = not current is None and not current.data(Qt.UserRole) is None
 		self.buttons.button(QDialogButtonBox.Ok).setEnabled(ok)
 		self.sfz_filename = current.data(Qt.UserRole).path if ok else None
-		if ok:
-			previewer().load_sfz(self.sfz_filename)
+		if ok and self.previewer:
+			self.previewer.load_sfz(self.sfz_filename)
 
 	# -------------------------------------------------
 	# Properties which are directly mapped to settings:
@@ -380,7 +393,7 @@ class SFZFileDialog(QDialog):
 
 	@pyqtSlot()
 	def closeEvent(self, _):
-		logging.debug('closeEvent')
+		pass
 
 
 class TestApp(QApplication):
@@ -394,11 +407,15 @@ class TestApp(QApplication):
 		except EngineInitFailure as e:
 			DevilBox(f'<h2>{e.args[0]}</h2><p>Possible reason:<br/>{e.args[1]}<p>' \
 				if e.args[1] else e.args[0])
-			QTimer.singleShot(0, self.quit)	# Event loop hasn't started yet.
+			# Start dialog using a timer, as the event loop hasn't started yet:
+			QTimer.singleShot(0, self.run_dialog)
 
 	@pyqtSlot(int, int, int, int, float, str)
 	def slot_engine_started(*_):
 		logging.debug('======= Engine started ======== ')
+		self.run_dialog()
+
+	def run_dialog(self):
 		dialog = SFZFileDialog(VoiceName('Violins II', None))
 		if dialog.exec():
 			print(dialog.sfz_filename)

@@ -107,7 +107,7 @@ class ScoreImportDialog(QDialog):
 		self.cmb_group.currentTextChanged.connect(self.group_changed)
 
 		self.overwrite_warning_shown = False
-		self.update_enable_states()
+		self.update_ui()
 		self.unsetCursor()
 
 	def slot_okay_clicked(self, _):
@@ -205,6 +205,8 @@ class ScoreImportDialog(QDialog):
 	def slot_sfz_changed(self):
 		self.b_okay.setEnabled(not any(chan_widget.sfz_filename is None \
 			for chan_widget in self.findChildren(ChannelWidget)))
+		self.b_auto_share.setEnabled(any(chan_widget.sfz_filename \
+			for chan_widget in self.findChildren(ChannelWidget)))
 
 	@pyqtSlot(int)
 	def slot_autonum_chkstate_change(self, state):
@@ -221,7 +223,7 @@ class ScoreImportDialog(QDialog):
 	@pyqtSlot(bool)
 	def slot_may_modify_toggled(self, state):
 		self.b_may_modify.setIcon(self.unlock_icon if state else self.lock_icon)
-		self.update_enable_states()
+		self.update_ui()
 
 	def has_edit_perm(self):
 		return not self.overwrite_warning_shown or self.b_may_modify.isChecked()
@@ -233,16 +235,16 @@ class ScoreImportDialog(QDialog):
 			if dlg.exec() == QMessageBox.Ok:
 				self.b_may_modify.click()
 			else:
-				self.update_enable_states()
+				self.update_ui()
 		return self.b_may_modify.isChecked()
 
-	def update_enable_states(self):
+	def update_ui(self):
 		editable = self.has_edit_perm()
 		self.chk_auto_number.setEnabled(editable)
 		self.chk_auto_number.setChecked(
 			bool(self.chk_auto_number.checkState()) and editable)
 		for part_widget in self.part_widgets:
-			part_widget.update_enable_states()
+			part_widget.update_ui()
 		if self.chk_auto_number.checkState():
 			self.auto_number()
 
@@ -271,6 +273,7 @@ class ScoreImportDialog(QDialog):
 		"""
 		Share every channel which uses the same SFZ.
 		"""
+		self.find_shared_sfzs()
 		for chan_widget in self.findChildren(ChannelWidget):
 			if not chan_widget.shares_with and chan_widget.may_share_with:
 				other_widget = chan_widget.may_share_with.copy().pop()
@@ -288,15 +291,15 @@ class ScoreImportDialog(QDialog):
 		Find which channels share the same SFZ.
 		Each ChannelWidget's "may_share_with" property is updated.
 		"""
-		assignments = defaultdict(list)
+		sfz_chan_widget_dict = defaultdict(list)
 		for chan_widget in self.findChildren(ChannelWidget):
 			if chan_widget.sfz_filename:
-				assignments[chan_widget.sfz_filename].append(chan_widget)
-		for widget_list in assignments.values():
+				sfz_chan_widget_dict[chan_widget.sfz_filename].append(chan_widget)
+		for widget_list in sfz_chan_widget_dict.values():
 			for chan_widget in widget_list:
 				chan_widget.may_share_with = set(widget_list) - set([chan_widget])
 		self.b_auto_share.setEnabled(
-			any(len(widget_list) > 1 for widget_list in assignments.values()))
+			any(len(widget_list) > 1 for widget_list in sfz_chan_widget_dict.values()))
 
 	def track_setup(self):
 		"""
@@ -437,11 +440,10 @@ class PartWidget(QWidget):
 					new_channel.pan = last_channel.pan
 				if not last_channel.balance is None:
 					new_channel.balance = last_channel.balance
-				if not self.parent_dialog().chk_auto_number.checkState():
-					new_channel.midi_port = last_channel.midi_port
-					new_channel.midi_channel = last_channel.midi_channel
+				new_channel.midi_port = last_channel.midi_port
+				new_channel.midi_channel = last_channel.midi_channel
 				self.append_channel_widget(new_channel)
-				self.update_enable_states()
+				self.update_ui()
 				self.sig_channels_changed.emit()
 
 	@pyqtSlot(QWidget)
@@ -452,7 +454,7 @@ class PartWidget(QWidget):
 		if self.parent_dialog().get_edit_permission():
 			self.score_part.instrument().remove_channel(chan_widget.lbl_voice.text())
 			self.channel_widgets.remove(chan_widget)
-			self.update_enable_states()
+			self.update_ui()
 			self.sig_channels_changed.emit()
 
 	@pyqtSlot(QWidget, bool)
@@ -479,11 +481,11 @@ class PartWidget(QWidget):
 	@pyqtSlot(bool)
 	def slot_make_me_checked(self, state):
 		self.make = state
-		self.update_enable_states()
+		self.update_ui()
 
-	def update_enable_states(self):
+	def update_ui(self):
 		for chan_widget in self.channel_widgets:
-			chan_widget.update_enable_states()
+			chan_widget.update_ui()
 
 	def enable_delete(self):
 		return len(self.channel_widgets) > 1
@@ -648,7 +650,7 @@ class ChannelWidget(QWidget):
 				self._shares_with.spn_port.valueChanged.connect(self.spn_port.setValue)
 			self._shared_channel_connection = \
 				self._shares_with.spn_channel.valueChanged.connect(self.spn_channel.setValue)
-		self.update_enable_states()
+		self.update_ui()
 		self.sig_shares_with_changed.emit()
 
 	def make(self):
@@ -658,7 +660,7 @@ class ChannelWidget(QWidget):
 		"""
 		return self._shares_with is None and self.part_widget().make
 
-	def update_enable_states(self):
+	def update_ui(self):
 		make = self.make()
 		for widget in self.findChildren(QLabel):
 			widget.setEnabled(make)
@@ -668,8 +670,7 @@ class ChannelWidget(QWidget):
 		self.spn_channel.setEnabled(editable)
 		if not editable:
 			self.reset_midi_spinners()
-		deleteable = editable and self.part_widget().enable_delete()
-		self.b_delete.setEnabled(deleteable)
+		self.b_delete.setEnabled(editable and self.part_widget().enable_delete())
 
 	def __str__(self):
 		return '{} "{}"'.format(

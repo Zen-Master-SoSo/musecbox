@@ -227,8 +227,14 @@ def main_window():
 	return __MAIN_WINDOW
 
 def previewer():
+	"""
+	Returns the global instance of an SFZPreviewer (extends LiquidSFZ).
+	For testing purposes, returns None if Carla is not initialized.
+	"""
+	global __CARLA, __SFZ_PREVIEWER
+	if __CARLA is None or not __CARLA.is_engine_running():
+		return None
 	from musecbox.sfz_previewer import SFZPreviewer
-	global __SFZ_PREVIEWER
 	if __SFZ_PREVIEWER is None:
 		__SFZ_PREVIEWER = SFZPreviewer()
 		__SFZ_PREVIEWER.add_to_carla()
