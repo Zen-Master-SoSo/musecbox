@@ -29,7 +29,7 @@ from uuid import uuid4
 from qt_extras.autofit import autofit
 
 # PyQt5 imports
-from PyQt5.QtCore import	Qt, pyqtSlot, QObject, QRect, QEvent
+from PyQt5.QtCore import	Qt, pyqtSlot, QObject, QRect, QEvent, QTimer
 from PyQt5.QtCore import	QPoint
 from PyQt5.QtGui import		QPainter, QColor, QPen, QBrush, QPalette, QFontMetrics
 from PyQt5.QtWidgets import	QWidget, QLabel, QMenu, QAction, QSizePolicy
@@ -118,6 +118,13 @@ class BalanceControlWidget(QWidget):
 		action.setChecked(self.hover_tracking)
 		action.triggered.connect(self.slot_hover_tracking)
 		menu.addAction(action)
+
+		if self.nearest_feature:
+			for track in self.nearest_feature.group.tracks:
+				action = QAction(f'Focus track "{track.moniker}"', self)
+				action.triggered.connect(partial(self.slot_focus_track, track.port, track.slot))
+				menu.addAction(action)
+
 		menu.addSeparator()	# ---------------------
 
 		action = QAction("Spread out evenly", self)
@@ -286,6 +293,21 @@ class BalanceControlWidget(QWidget):
 		set_setting(KEY_BCWIDGET_LINES, self.lines)
 		self.setFixedHeight(self.lines * TRACK_HEIGHT)
 
+	@pyqtSlot(int, int)
+	def slot_focus_track(self, port, slot):
+		port = main_window().port_widget(port)
+		track = port.track_widget(slot)
+		if port.is_collapsed():
+			port.implement_collapse(False)
+			QTimer.singleShot(200, partial(self.focus_exposed_track, track))
+		else:
+			self.focus_exposed_track(track)
+
+	def focus_exposed_track(self, track):
+		main_window().scrl_ports.ensureWidgetVisible(track)
+		track.set_bcwidget_focus(True)
+		QTimer.singleShot(750, partial(track.set_bcwidget_focus, False))
+
 	@pyqtSlot(bool)
 	def slot_hover_tracking(self, state):
 		self.hover_tracking = state
@@ -293,7 +315,6 @@ class BalanceControlWidget(QWidget):
 		if not state:
 			for group in self._groups.values():
 				group.set_bcwidget_focus(False, True)
-
 
 	def hover_in(self, pan_group_key):
 		"""

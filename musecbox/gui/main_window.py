@@ -1281,7 +1281,7 @@ class MainWindow(QMainWindow):
 				action.triggered.connect(clicked_port_widget.slot_remove_all_tracks)
 				action.setEnabled(len(clicked_port_widget.track_layout) > 0)
 				menu.addAction(action)
-				action = QAction(f'Remove port {clicked_port_widget.port}', self)
+				action = QAction(f'Remove "Port {clicked_port_widget.port}"', self)
 				action.triggered.connect(clicked_port_widget.slot_remove_self)
 				menu.addAction(action)
 				menu.addSeparator()	# ---------------------

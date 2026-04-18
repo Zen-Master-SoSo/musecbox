@@ -636,10 +636,10 @@
   </action>
   <action name="action_add_port">
    <property name="text">
-    <string>Add port</string>
+    <string>Add a new port</string>
    </property>
    <property name="toolTip">
-    <string>Add a new port</string>
+    <string>Add a new port (unique jack client); MuseScore creates multiple ports when there are more than 16 channels</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>

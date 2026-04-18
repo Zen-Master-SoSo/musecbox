@@ -165,12 +165,12 @@ class TrackWidget(QFrame):
 		action.setSeparator(True)
 		self.addAction(action)
 		action = QAction('Lock balance to ...', self)
-		action.triggered.connect(self.slot_lock_pan)
+		action.triggered.connect(self.slot_lock_balance)
 		self.addAction(action)
-		action = QAction('Unlock balance (isolate)', self)
-		action.triggered.connect(self.slot_unlock_pan)
-		action.setEnabled(not self.is_pan_group_orphan())
-		self.addAction(action)
+		self.unlock_balance_action = QAction('Unlock balance (isolate)', self)
+		self.unlock_balance_action.triggered.connect(self.slot_unlock_balance)
+		self.unlock_balance_action.setEnabled(not self.is_pan_group_orphan())
+		self.addAction(self.unlock_balance_action)
 		action = QAction('Center balance', self)
 		action.triggered.connect(self.slot_center_track)
 		self.addAction(action)
@@ -213,7 +213,7 @@ class TrackWidget(QFrame):
 		xdg_open(self.sfz_filename)
 
 	@pyqtSlot()
-	def slot_lock_pan(self):
+	def slot_lock_balance(self):
 		"""
 		Called from context menu.
 		Lock this track's pan / balance to another track.
@@ -221,16 +221,18 @@ class TrackWidget(QFrame):
 		bcwidget = main_window().balance_control_widget
 		groups = bcwidget.candidate_groups(self)
 		labels = [ group.long_text() for group in groups ]
-		selection, okay = QInputDialog().getItem(self,
-			f'{self.moniker}: Lock pan to ...',
-			'Track / group', labels, 0, False)
+		selection, okay = QInputDialog.getItem(self,
+			f'Lock "{self.moniker}" balance',
+			'Select the track or group of tracks\nto lock this track\'s balance to:',
+			labels, 0, False)
 		if okay:
 			idx = labels.index(selection)
 			bcwidget.join_group(groups[idx].key, self)
+			self.unlock_balance_action.setEnabled(True)
 			main_window().set_dirty()
 
 	@pyqtSlot()
-	def slot_unlock_pan(self):
+	def slot_unlock_balance(self):
 		"""
 		Called from context menu.
 		Allows the selected track's control its own pan / balance.
@@ -238,6 +240,7 @@ class TrackWidget(QFrame):
 		bcwidget = main_window().balance_control_widget
 		bcwidget.orphan(self)
 		bcwidget.make_new_group(self)
+		self.unlock_balance_action.setEnabled(False)
 		main_window().set_dirty()
 
 	@pyqtSlot()
