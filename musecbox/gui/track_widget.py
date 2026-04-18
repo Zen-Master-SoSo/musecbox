@@ -103,7 +103,7 @@ class TrackWidget(QFrame):
 
 		autofit(self.b_name)
 		self.b_name.setText(self.moniker)
-		self.b_name.clicked.connect(self.slot_select_sfz_click)
+		self.b_name.clicked.connect(self.slot_b_name_clicked)
 
 		# Setup custom volume indicator
 		self.led_midi = ActivityIndicator(self, 'led_midi')
@@ -146,6 +146,12 @@ class TrackWidget(QFrame):
 		del self.b_output_placeholder
 
 		# Setup this TrackWidget's actions:
+		action = QAction('Rename track', self)
+		action.triggered.connect(self.slot_rename)
+		self.addAction(action)
+		action = QAction(self)
+		action.setSeparator(True)
+		self.addAction(action)
 		action = QAction('Open SFZ in editor', self)
 		action.triggered.connect(self.slot_open_sfz_externally)
 		self.addAction(action)
@@ -182,6 +188,15 @@ class TrackWidget(QFrame):
 
 	# -----------------------------------------------------------------
 	# Handlers for internal signals:
+
+	@pyqtSlot()
+	def slot_rename(self):
+		new_moniker, ok = QInputDialog.getText(self,
+			'Rename track', f'Enter a name for "{self.moniker}"', text = self.moniker)
+		if ok and new_moniker != self.moniker:
+			self.moniker = new_moniker
+			self.b_name.setText(self.moniker)
+			main_window().set_dirty()
 
 	@pyqtSlot()
 	def slot_copy_sfz_path(self):
@@ -308,7 +323,7 @@ class TrackWidget(QFrame):
 		menu.exec(self.frm_plugins.mapToGlobal(position))
 
 	@pyqtSlot()
-	def slot_select_sfz_click(self):
+	def slot_b_name_clicked(self):
 		from musecbox.dialogs.sfz_file_dialog import SFZFileDialog
 		sfz_dialog = SFZFileDialog(self.voice_name)
 		if sfz_dialog.exec():

@@ -170,10 +170,12 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 
 	@pyqtSlot()
 	def slot_rename(self):
-		new_name, ok = QInputDialog.getText(self,
+		new_moniker, ok = QInputDialog.getText(self,
 			'Rename plugin', 'Enter a name for this plugin', text = self.moniker)
-		if ok:
-			self.moniker = new_name
+		if ok and new_moniker != self.moniker:
+			self.moniker = new_moniker
+			self.b_name.setText(self.moniker)
+			main_window().set_dirty()
 
 	@pyqtSlot(bool)
 	def slot_prefer_generic(self, checked):
