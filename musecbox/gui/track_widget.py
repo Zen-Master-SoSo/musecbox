@@ -67,6 +67,7 @@ from musecbox.gui.plugin_widgets import	TrackPluginWidget, \
 										ActivityIndicator, SmallSlider
 
 SPINNER_DEBOUNCE = 250
+MINIMUM_MONIKER_LENGTH = 3
 
 
 class TrackWidget(QFrame):
@@ -194,9 +195,12 @@ class TrackWidget(QFrame):
 		new_moniker, ok = QInputDialog.getText(self,
 			'Rename track', f'Enter a name for "{self.moniker}"', text = self.moniker)
 		if ok and new_moniker != self.moniker:
-			self.moniker = new_moniker
-			self.b_name.setText(self.moniker)
-			main_window().set_dirty()
+			if len(new_moniker) < MINIMUM_MONIKER_LENGTH:
+				DevilBox(f'Track name must be at least {MINIMUM_MONIKER_LENGTH} characters long')
+			else:
+				self.moniker = new_moniker
+				self.b_name.setText(self.moniker)
+				main_window().set_dirty()
 
 	@pyqtSlot()
 	def slot_copy_sfz_path(self):

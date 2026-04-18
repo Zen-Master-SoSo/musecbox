@@ -65,6 +65,8 @@ LINE_LUMINANCE_HL	= 120
 LABEL_ALPHA			= 90
 LABEL_PADDING		= 4		# Number of pixels to add to label text bounding rect left/right.
 
+TRACK_FOCUS_PORT_EXPAND_TIME = 200
+TRACK_FOCUS_HIGHLIGHT_TIME = 750
 
 class BalanceControlWidget(QWidget):
 
@@ -299,14 +301,16 @@ class BalanceControlWidget(QWidget):
 		track = port.track_widget(slot)
 		if port.is_collapsed():
 			port.implement_collapse(False)
-			QTimer.singleShot(200, partial(self.focus_exposed_track, track))
+			QTimer.singleShot(TRACK_FOCUS_PORT_EXPAND_TIME,
+				partial(self.focus_exposed_track, track))
 		else:
 			self.focus_exposed_track(track)
 
 	def focus_exposed_track(self, track):
 		main_window().scrl_ports.ensureWidgetVisible(track)
 		track.set_bcwidget_focus(True)
-		QTimer.singleShot(750, partial(track.set_bcwidget_focus, False))
+		QTimer.singleShot(TRACK_FOCUS_HIGHLIGHT_TIME,
+			partial(track.set_bcwidget_focus, False))
 
 	@pyqtSlot(bool)
 	def slot_hover_tracking(self, state):
