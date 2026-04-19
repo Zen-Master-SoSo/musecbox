@@ -270,8 +270,10 @@
     <addaction name="separator"/>
     <addaction name="action_open_project_folder"/>
     <addaction name="action_open_in_terminal"/>
+    <addaction name="action_copy_project_path"/>
     <addaction name="separator"/>
     <addaction name="action_auto_start"/>
+    <addaction name="separator"/>
     <addaction name="action_apply_to_score"/>
     <addaction name="separator"/>
     <addaction name="action_close"/>
@@ -861,6 +863,15 @@
    </property>
    <property name="text">
     <string>Copy SFZs to &amp;project folder</string>
+   </property>
+  </action>
+  <action name="action_copy_project_path">
+   <property name="icon">
+    <iconset theme="edit-copy">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Copy project path</string>
    </property>
   </action>
   <action name="action_copy_sfz_paths">

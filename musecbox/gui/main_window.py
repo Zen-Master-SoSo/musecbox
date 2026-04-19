@@ -46,7 +46,8 @@ from PyQt5.QtCore import	Qt, pyqtSignal, pyqtSlot, QThread, QPoint, QTimer, QEve
 							pyqtProperty, QPropertyAnimation, QAbstractAnimation, QFileSystemWatcher, \
 							QDir
 from PyQt5.QtWidgets import QWidget, QMainWindow, QMessageBox, QFileDialog, QInputDialog, \
-							QMenu, QLabel, QAction, QActionGroup, QSizePolicy, QVBoxLayout
+							QMenu, QLabel, QAction, QActionGroup, QSizePolicy, QVBoxLayout, \
+							QApplication
 from PyQt5.QtGui import		QPainter, QColor, QBrush, QPalette, QIcon
 
 # musecbox imports
@@ -204,6 +205,7 @@ class MainWindow(QMainWindow):
 		self.action_save_as.triggered.connect(self.slot_save_project_as)
 		self.action_revert.triggered.connect(self.slot_revert)
 		self.action_auto_start.toggled.connect(self.slot_set_autostart)
+		self.action_copy_project_path.triggered.connect(self.slot_copy_project_path)
 		self.action_open_project_folder.triggered.connect(self.slot_open_project_folder)
 		self.action_open_in_terminal.triggered.connect(self.slot_open_in_terminal)
 		self.action_apply_to_score.triggered.connect(self.slot_apply_to_score)
@@ -325,7 +327,9 @@ class MainWindow(QMainWindow):
 		self.action_revert.setEnabled(has_project)
 		self.action_close.setEnabled(has_project)
 		self.action_auto_start.setEnabled(has_project)
+		self.action_copy_project_path.setEnabled(has_project)
 		self.action_open_project_folder.setEnabled(has_project)
+		self.action_open_in_terminal.setEnabled(has_project)
 		self.action_apply_to_score.setEnabled(has_project)
 		self.action_watch_files.setEnabled(has_tracks)
 		self.action_show_project_info.setEnabled(has_project)
@@ -1094,6 +1098,13 @@ class MainWindow(QMainWindow):
 	def slot_show_project_info(self):
 		from musecbox.dialogs.project_info_dialog import ProjectInfoDialog
 		ProjectInfoDialog(self).exec()
+
+	@pyqtSlot()
+	def slot_copy_project_path(self):
+		"""
+		Copy project path to clipboard
+		"""
+		QApplication.instance().clipboard().setText(self.project_filename)
 
 	@pyqtSlot()
 	def slot_open_project_folder(self):
