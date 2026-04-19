@@ -467,15 +467,15 @@ class BCGroup(QLabel):
 		self.left = None
 		self.right = None
 		self.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-		self.setText(self.brief_text())
+		self.update_label()
 		# Set initial geometry which will may changed for "can_balance" groups:
 		self.resize(TRACK_WIDTH, TRACK_HEIGHT)
 
 	def add_track(self, track):
 		if track in self.tracks:
-			raise RuntimeError("Plugin already in BCGroup")
+			raise RuntimeError("Track already in BCGroup")
 		if self.can_balance != track.synth.can_balance or self.can_pan != track.synth.can_pan:
-			raise RuntimeError("Track capabilities mismatch pan group")
+			raise RuntimeError("Track capabilities (balance/pan) mismatch")
 		if self.can_pan:
 			track.synth.panning = self.tracks[0].synth.panning
 		if self.can_balance:
@@ -483,7 +483,7 @@ class BCGroup(QLabel):
 			track.synth.balance_right = self.tracks[0].synth.balance_right
 		self.tracks.append(track)
 		track.pan_group_key = self.key
-		self.setText(self.brief_text())
+		self.update_label()
 
 	def remove_track(self, track):
 		"""
@@ -492,7 +492,7 @@ class BCGroup(QLabel):
 		if track in self.tracks:
 			track.pan_group_key = None
 			del self.tracks[ self.tracks.index(track) ]
-		self.setText(self.brief_text())
+			self.update_label()
 
 	def reposition(self):
 		bcwidget = main_window().balance_control_widget
@@ -515,28 +515,26 @@ class BCGroup(QLabel):
 		"""
 		Descriptive text enumerating all track's voice names.
 		"""
-		if len(self.tracks) == 1:
-			return str(self.tracks[0].voice_name)
-		return ', '.join('{} ({})'.format(instrument_name,
-			', '.join(
-				track.voice_name.voice for track in self.tracks \
-				if track.voice_name.instrument_name == instrument_name
-			)) for instrument_name in set(
-				track.voice_name.instrument_name for track in self.tracks
-			))
+		return ', '.join(track.moniker for track in self.tracks)
 
 	def brief_text(self):
 		"""
 		Short text showing only instrument names / count
 		"""
 		if len(self.tracks) == 1:
-			return str(self.tracks[0].voice_name)
+			return self.tracks[0].moniker
 		return ', '.join('{} ({})'.format(instrument_name, len(
 			[ track for track in self.tracks \
 			if track.voice_name.instrument_name == instrument_name ]
 		)) for instrument_name in set(
 				track.voice_name.instrument_name for track in self.tracks
 		))
+
+	def update_label(self):
+		"""
+		Update the parent QLabel class' text property with this class' "brief_text"
+		"""
+		self.setText(self.brief_text())
 
 	def match_track(self, track):
 		"""

@@ -200,6 +200,8 @@ class TrackWidget(QFrame):
 			else:
 				self.moniker = new_moniker
 				self.b_name.setText(self.moniker)
+				if group := self.bcwidget_group():
+					group.update_label()
 				main_window().set_dirty()
 
 	@pyqtSlot()
@@ -571,6 +573,13 @@ class TrackWidget(QFrame):
 		self.synth.balance_right = 1.0
 		main_window().set_dirty()
 		main_window().balance_control_widget.update()
+
+	def bcwidget_group(self):
+		"""
+		Returns the BalanceControlWidget group (object of class BCGroup) that this
+		track is a member of. Will return None if not a member of a group (orphan).
+		"""
+		return main_window().balance_control_widget.group(self.pan_group_key)
 
 	def is_pan_group_orphan(self):
 		group = main_window().balance_control_widget.group(self.pan_group_key)
