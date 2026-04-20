@@ -131,7 +131,7 @@ class BalanceControlWidget(QWidget):
 
 		action = QAction("Spread out evenly", self)
 		action.triggered.connect(self.slot_spread)
-		action.setEnabled(bool(main_window().track_widget_count()))
+		action.setEnabled(main_window().track_widget_count() > 1)
 		menu.addAction(action)
 
 		menu.exec(event.globalPos())
@@ -363,8 +363,6 @@ class BalanceControlWidget(QWidget):
 
 	def _create_group(self, key, track):
 		self._groups[key] = BCGroup(self, key, track)
-		if self.isVisible():
-			self._groups[key].reposition()
 		self._groups[key].show()
 
 	def orphan(self, track):
@@ -464,12 +462,11 @@ class BCGroup(QLabel):
 			or 'bcwidget' not in pdef \
 			or key not in pdef['bcwidget'] \
 			else pdef['bcwidget'][key]
-		self.left = None
-		self.right = None
 		self.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 		self.update_label()
 		# Set initial geometry which will may changed for "can_balance" groups:
 		self.resize(TRACK_WIDTH, TRACK_HEIGHT)
+		self.reposition()
 
 	def add_track(self, track):
 		if track in self.tracks:
@@ -495,7 +492,7 @@ class BCGroup(QLabel):
 			self.update_label()
 
 	def reposition(self):
-		bcwidget = main_window().balance_control_widget
+		bcwidget = self.parent()
 		top = self.bcwidget_line * TRACK_HEIGHT
 		if self.can_balance:
 			self.left = bcwidget.float_to_screen_x(self.balance_left) - TRACK_HALF_WIDTH
