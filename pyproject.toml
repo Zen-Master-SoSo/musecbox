@@ -24,6 +24,7 @@ Home = "https://github.com/Zen-Master-SoSo/musecbox"
 musecbox = "musecbox.__main__:main"
 mbx-apply = "musecbox.scripts.mbx_apply:main"
 mbx-project-info = "musecbox.scripts.mbx_project_info:main"
+mbx-project-check = "musecbox.scripts.mbx_project_check:main"
 mbx-track-setup = "musecbox.scripts.mbx_track_setup:main"
 
 [build-system]
