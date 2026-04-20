@@ -77,7 +77,7 @@ from simple_carla.qt import CarlaQt
 from qt_extras import DevilBox
 from log_soso import StreamToLogger
 
-__version__ = "0.11.0"
+__version__ = "0.11.1"
 
 APPLICATION_NAME		= 'MusecBox'
 APP_PATH				= dirname(abspath(__file__))
