@@ -22,7 +22,7 @@ Provides a dialog for selecting SFZ files from either the file system or the
 integrated database.
 """
 import logging, glob
-from os.path import join, dirname, basename, abspath
+from os.path import join, dirname, basename, abspath, exists
 from functools import partial
 from qt_extras import DevilBox, ShutUpQT
 from qt_extras.list_button import QtListButton
@@ -197,7 +197,9 @@ class SFZFileDialog(QDialog):
 
 	@pyqtSlot(QListWidgetItem, QListWidgetItem)
 	def slot_sfz_selection_changed(self, current, _):
-		ok = not current is None and not current.data(Qt.UserRole) is None
+		ok = not current is None \
+			and not current.data(Qt.UserRole) is None \
+			and exists(current.data(Qt.UserRole).path)
 		self.buttons.button(QDialogButtonBox.Ok).setEnabled(ok)
 		self.sfz_filename = current.data(Qt.UserRole).path if ok else None
 		if ok and self.previewer:
