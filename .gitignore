@@ -1,0 +1,10 @@
+*.pyc
+*.log
+*.geany
+__pycache__
+temp
+temp.*
+debug.*
+TODO
+/venv
+/dist

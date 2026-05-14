@@ -1,0 +1,279 @@
+QWidget {
+/*
+	font-family: "Densia Sans", "DejaVu Sans", "Nimbus Sans", "Ubuntu Condensed";
+*/
+}
+
+QPushButton {
+}
+
+
+QToolBar {
+	border: none;
+}
+
+
+QtListButton, #b_name {
+	font-family: "Nimbus Sans Narrow", "Liberation Sans Narrow", "Ubuntu Condensed", "sans serif";
+	font-size: 9pt;
+	padding: 2px 4px;
+}
+
+QtListButtonMenu::item {
+	font-size: 12px;
+	padding: 2px 4px 2px 4px;
+}
+
+QtListButtonMenu::item:selected {
+	color: #FFF;
+	background: #F18559;
+}
+
+
+
+QTableView {
+	font-size: 10pt;
+}
+
+QHeaderView::section {
+	font-size: 10pt;
+	text-align: center;
+}
+
+QTableView::item {
+	padding: 2px 5px;
+}
+
+
+QFrame#frm_port_widget_top QLabel {
+	background: #444;
+	color: #FFF;
+	font-weight: bold;
+}
+
+QFrame#port1 #frm_port_widget_top QLabel {
+	background: #AD0000;
+}
+
+QFrame#port2 #frm_port_widget_top QLabel {
+	background: #3646D9;
+}
+
+QFrame#port3 #frm_port_widget_top QLabel {
+	background: #08A34B;
+}
+
+QFrame#port4 #frm_port_widget_top QLabel {
+	background: #968D00;
+}
+
+QFrame#port5 #frm_port_widget_top QLabel {
+	background: #9900B3;
+}
+
+QFrame#port6 #frm_port_widget_top QLabel {
+	background: #0082B3;
+}
+
+QFrame#port7 #frm_port_widget_top QLabel {
+	background: #B30000;
+}
+
+QFrame#port8 #frm_port_widget_top QLabel {
+	background: #B30000;
+}
+
+QFrame#port9 #frm_port_widget_top QLabel {
+	background: #B30000;
+}
+
+
+
+QPushButton#b_mute:checked {
+	background: #5AD5FA;
+}
+
+QPushButton#b_solo:checked {
+	color: #FFFFFF;
+	background: #FC3232;
+}
+
+
+
+QFrame#frm_channels QPushButton {
+	font-size: 8pt;
+}
+
+QFrame#frm_channels QPushButton:checked {
+	background: #92F20C;
+}
+
+
+
+#frm_volume QLabel,
+#frm_wet QLabel {
+	font-size: 10px;
+}
+
+
+SmallSlider, SmallBalanceControl {
+	background-color: #C6C8CF;
+}
+
+
+SmallSlider {
+	font-size: 11px;
+}
+
+
+SmallBalanceControl {
+	color: #858585;
+	border: 1px solid #A3A3A3;
+	border-radius: 3px;
+}
+
+SmallBalanceControl QLabel {
+	font-size: 11px;
+	color: #FFFFFF;
+	margin: 4px;
+}
+
+SmallBalanceControl #inner_bar {
+	background: qlineargradient(
+		x1:0,
+		y1:0,
+		x2:0,
+		y2:1,
+		stop:0 #38A4E8,
+		stop:1 #318FCA
+	);
+}
+
+
+BalanceControlWidget {
+}
+
+BalanceControlWidget QLabel {
+	font-size: 9pt;
+	color: #FFFFFF;
+	border-style: solid;
+	border-width: 1px;
+}
+
+/*
+Labels inside the BalanceControlWidget are colored to match the port of the
+track that they are in, to make them easer to find. They are normally in a
+"disabled" state, and only become "enabled" when hovered over and ready for
+the mouse to "grab" them.
+*/
+
+QLabel#bcwidget_port_1 {
+	background: rgba(173, 0, 0, 180);
+	border-color: #AD0000;
+}
+
+QLabel#bcwidget_port_2 {
+	background: rgba(54, 70, 217, 180);
+	border-color: #3646D9;
+}
+
+QLabel#bcwidget_port_3 {
+	background: rgba(8, 163, 75, 180);
+	border-color: #08A34B;
+}
+
+QLabel#bcwidget_port_4 {
+	background: rgba(150, 141, 0, 180);
+	border-color: #968D00;
+}
+
+QLabel#bcwidget_port_5 {
+	background: rgba(153, 0, 179, 180);
+	border-color: #9900B3;
+}
+
+QLabel#bcwidget_port_6 {
+	background: rgba(0, 130, 179, 180);
+	border-color: #0082B3;
+}
+
+QLabel#bcwidget_port_7 {
+	background: rgba(179, 0, 0, 180);
+	border-color: #B30000;
+}
+
+QLabel#bcwidget_port_8 {
+	background: rgba(179, 0, 0, 180);
+	border-color: #B30000;
+}
+
+QLabel#bcwidget_port_9 {
+	background: rgba(179, 0, 0, 180);
+	border-color: #B30000;
+}
+
+
+QLabel#bcwidget_port_1:disabled {
+	background: rgba(173, 0, 0, 100);
+}
+
+QLabel#bcwidget_port_2:disabled {
+	background: rgba(54, 70, 217, 100);
+}
+
+QLabel#bcwidget_port_3:disabled {
+	background: rgba(8, 163, 75, 100);
+}
+
+QLabel#bcwidget_port_4:disabled {
+	background: rgba(150, 141, 0, 100);
+}
+
+QLabel#bcwidget_port_5:disabled {
+	background: rgba(153, 0, 179, 100);
+}
+
+QLabel#bcwidget_port_6:disabled {
+	background: rgba(0, 130, 179, 100);
+}
+
+QLabel#bcwidget_port_7:disabled {
+	background: rgba(179, 0, 0, 100);
+}
+
+QLabel#bcwidget_port_8:disabled {
+	background: rgba(179, 0, 0, 100);
+}
+
+QLabel#bcwidget_port_9:disabled {
+	background: rgba(179, 0, 0, 100);
+}
+
+
+
+QFrame#frm_shared_plugins {
+	background: #B5B5B5;
+}
+
+
+#frm_statusbar QLabel,
+#frm_statusbar QPushButton {
+}
+
+
+
+QListWidget::item {
+	padding: 2px;
+}
+
+
+CopySFZPathsDialog QLabel {
+	background: #FFF;
+	padding: 4px;
+}
+
+
+InfoDialogTab QLabel {
+	margin: 2px 4px;
+}
+

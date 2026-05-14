@@ -1,0 +1,43 @@
+// Sfz exported from a sf2 file with Polyphone
+// Name      : 
+// Author    : Nick Fox-Gieg
+// Copyright : ©1999 Nick Fox-Gieg
+// Date      : 2024/05/05
+// Comment   : www.rkhive.com
+
+<group>
+loop_mode=loop_continuous
+ampeg_attack=0.001
+amplfo_freq=8.176
+fillfo_freq=8.176
+pitchlfo_freq=8.176
+fil_type=lpf_2p
+cutoff=19913
+
+<region>
+sample=samples\U-sinewave.wav
+lokey=12 hikey=107
+pitch_keycenter=60
+amplfo_depth=-0.1
+effect1=0
+pan=40
+amplfo_freq=6.47058
+fillfo_freq=6.47058
+pitchlfo_freq=6.47058
+pitcheg_attack=0.001
+fileg_attack=0.001
+fileg_sustain=100
+pitcheg_sustain=100
+ampeg_attack=0.00599996
+ampeg_hold=0.001
+ampeg_decay=0.001
+ampeg_sustain=100
+ampeg_release=3.95177
+volume=-2.05646
+transpose=-4
+tune=0
+offset=0
+end=139
+loop_start=69
+loop_end=134
+pitchlfo_depth=103
