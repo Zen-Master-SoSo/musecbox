@@ -31,7 +31,7 @@ from PyQt5 import uic
 from PyQt5.QtCore import	pyqtSlot
 from PyQt5.QtWidgets import QApplication, QDialog, QRadioButton, QVBoxLayout
 
-from sfzen import	SAMPLES_ABSPATH, SAMPLES_RESOLVE, SAMPLES_COPY, \
+from sfzen import	SAMPLES_ABSPATH, SAMPLES_RELPATH, SAMPLES_COPY, \
 					SAMPLES_SYMLINK, SAMPLES_HARDLINK
 
 from musecbox import setting, set_application_style, KEY_CLEAN_SFZS, KEY_SAMPLES_MODE, \
@@ -68,7 +68,7 @@ class CopySFZsDialog(QDialog):
 
 		if self.samples_mode == SAMPLES_ABSPATH:
 			self.r_abspath.setChecked(True)
-		elif self.samples_mode == SAMPLES_RESOLVE:
+		elif self.samples_mode == SAMPLES_RELPATH:
 			self.r_resolve.setChecked(True)
 		elif self.samples_mode == SAMPLES_COPY:
 			self.r_copy.setChecked(True)
@@ -81,7 +81,7 @@ class CopySFZsDialog(QDialog):
 		self.chk_clean.setChecked(self.clean_sfzs)
 
 		self.r_abspath.clicked.connect(partial(self.slot_set_mode, SAMPLES_ABSPATH))
-		self.r_resolve.clicked.connect(partial(self.slot_set_mode, SAMPLES_RESOLVE))
+		self.r_resolve.clicked.connect(partial(self.slot_set_mode, SAMPLES_RELPATH))
 		self.r_copy.clicked.connect(partial(self.slot_set_mode, SAMPLES_COPY))
 		self.r_symlink.clicked.connect(partial(self.slot_set_mode, SAMPLES_SYMLINK))
 		self.r_hardlink.clicked.connect(partial(self.slot_set_mode, SAMPLES_HARDLINK))
