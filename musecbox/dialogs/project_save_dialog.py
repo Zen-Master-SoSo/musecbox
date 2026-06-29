@@ -18,7 +18,7 @@
 #  MA 02110-1301, USA.
 #
 """
-Provides a dialog used for importing MuseScore3 files
+Provides a custom file dialog with added option for choosing samples_mode.
 """
 
 import logging

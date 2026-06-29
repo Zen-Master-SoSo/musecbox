@@ -18,7 +18,7 @@
 #  MA 02110-1301, USA.
 #
 """
- rovides a dialog which loads a project and displays its progress.
+Provides a dialog which loads a project and displays its progress.
 """
 import logging
 from os.path import join, dirname

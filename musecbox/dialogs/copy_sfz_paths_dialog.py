@@ -17,6 +17,9 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+"""
+Provides CopySFZPathsDialog.
+"""
 import logging
 from PyQt5.QtCore import	Qt, pyqtSlot, QSize
 from PyQt5.QtWidgets import	QApplication, QDialog, QHBoxLayout, QVBoxLayout, QSizePolicy, \
@@ -28,6 +31,9 @@ from musecbox import set_application_style, LOG_FORMAT
 class CopySFZPathsDialog(QDialog):
 
 	def __init__(self, parent, text):
+		"""
+		A popup window which displays text and copies it to the clipboard.
+		"""
 		super().__init__(parent)
 		self.restore_geometry()
 		self.finished.connect(self.save_geometry)

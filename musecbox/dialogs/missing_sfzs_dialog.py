@@ -18,7 +18,7 @@
 #  MA 02110-1301, USA.
 #
 """
-Shows missing SFZ files and gives the user the opportunity to hunt for them
+Provides MissingSFZsDialog.
 """
 import logging
 from os.path import dirname
@@ -37,6 +37,9 @@ TEXT_CLOSE = 'Close'
 
 
 class MissingSFZsDialog(QDialog):
+	"""
+	Shows missing SFZ files and gives the user the opportunity to hunt for them
+	"""
 
 	def __init__(self, parent, tracks_missing_sfzs):
 		super().__init__(parent)
