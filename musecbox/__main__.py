@@ -18,7 +18,7 @@
 #  MA 02110-1301, USA.
 #
 """
-Application entry point
+musecbox hosts multiple LiquidSFZ instances for real-time music generation.
 """
 import sys, logging, argparse
 from os import environ, unlink
@@ -37,9 +37,7 @@ from musecbox.gui.main_window import MainWindow
 
 def main():
 	p = argparse.ArgumentParser()
-	p.epilog = """
-	Hosts multiple LiquidSFZ instances for real-time music generation.
-	"""
+	p.epilog = __doc__
 	p.add_argument('Filename', type = str, nargs = '?',
 		help = 'MuseScore score to use for port setup, or saved port setup')
 	p.add_argument("--horizontal-layout", "-H", action = "store_true",
