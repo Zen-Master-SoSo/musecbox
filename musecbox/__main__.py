@@ -28,8 +28,7 @@ from traceback import print_tb
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QErrorMessage
 from PyQt5.QtGui import QGuiApplication
-from qt_extras import DevilBox
-from log_soso import StreamToLogger
+from qt_extras import DevilBox, exceptions_hook
 from simple_carla import EngineInitFailure
 from musecbox import carla, SOCKET_PATH, CARRIAGE_RETURN, LOG_FORMAT
 from musecbox.gui.main_window import MainWindow
@@ -126,21 +125,6 @@ def main():
 	unlink(SOCKET_PATH)
 	carla().delete()
 	return return_value
-
-
-# -------------------------------------------------------------------
-# Exception hook
-
-def exceptions_hook(exception_type, value, traceback):
-	if not QApplication.instance() is None:
-		msg = QErrorMessage.qtHandler()
-		msg.setWindowModality(Qt.ApplicationModal)
-		msg.showMessage(
-			f'{exception_type.__name__}: "{value}"',
-			exception_type.__name__)
-	logging.error('Exception "%s": %s', exception_type.__name__, value)
-	with StreamToLogger() as log:
-		print_tb(traceback, file = log)
 
 
 if __name__ == "__main__":
