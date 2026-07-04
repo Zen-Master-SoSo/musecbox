@@ -76,7 +76,7 @@ from simple_carla import (
 from simple_carla.qt import CarlaQt
 from qt_extras import DevilBox
 
-__version__ = "0.11.6"
+__version__ = "0.12.0"
 
 APPLICATION_NAME		= 'MusecBox'
 APP_PATH				= dirname(abspath(__file__))
