@@ -30,12 +30,9 @@ from appdirs import user_config_dir
 from mscore import CHANNEL_NAMES, DEFAULT_VOICE, VoiceName
 from mscore.fuzzy import FuzzyVoice, FuzzyVoiceCandidate
 
-SPLIT_WORDS_REGEX		= '[^\w]'
-ACCEPT_WORD_REGEX		= '[a-zA-Z][a-zA-Z]+'
-
 
 def single_spaced(s):
-	return re.sub('\s+', ' ', s).strip()
+	return re.sub(r'\s+', ' ', s).strip()
 
 
 class SFZDatabase:
@@ -372,7 +369,7 @@ class SFZRecord:
 		"""
 		Returns a VoiceName tuple interpreted from the file title
 		"""
-		instrument_name = re.sub('\W', ' ', self.title)
+		instrument_name = re.sub(r'\W', ' ', self.title)
 		for voice in SFZDatabase().all_voices():
 			if re.search(voice, instrument_name, flags = re.I):
 				instrument_name = re.sub(voice, '', instrument_name, flags = re.I)

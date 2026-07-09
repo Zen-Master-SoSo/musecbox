@@ -27,7 +27,7 @@ import logging, argparse, sys, json
 from os import access, R_OK
 from os.path import dirname, abspath, join, exists
 from rich import print as rprint
-from sfzen import SFZ, SFZDecodeError
+from sfzen import SFZ
 from musecbox import LOG_FORMAT
 
 ERR_MISSING_PROJECT	= 0b000000001
@@ -65,12 +65,12 @@ def main():
 		if not exists(filename):
 			retval |= ERR_MISSING_PROJECT
 			if not options.quiet:
-				rprint(' [red]\[missing project][/red]')
+				rprint(r' [red]\[missing project][/red]')
 			continue
 		if not access(filename, R_OK):
 			retval |= ERR_PROJECT_ACCESS
 			if not options.quiet:
-				rprint(' [red]\[project not readable][/red]')
+				rprint(r' [red]\[project not readable][/red]')
 			continue
 		try:
 			with open(filename, 'r') as fh:
@@ -78,7 +78,7 @@ def main():
 		except json.JSONDecodeError as e:
 			retval |= ERR_PROJECT_DECODE
 			if not options.quiet:
-				rprint(f' [red]\[JSON decode error: {e}][/red]')
+				rprint(fr' [red]\[JSON decode error: {e}][/red]')
 			continue
 		if not options.quiet:
 			print()
@@ -89,32 +89,29 @@ def main():
 				if not exists(sfz_abspath):
 					retval |= ERR_MISSING_SFZ
 					if not options.quiet:
-						rprint(f'[black]{sfz_abspath}[/black] [red]\[missing SFZ][/red]')
+						rprint(fr'[black]{sfz_abspath}[/black] [red]\[missing SFZ][/red]')
 					continue
 				if not access(sfz_abspath, R_OK):
 					retval |= ERR_SFZ_ACCESS
 					if not options.quiet:
-						rprint(f'[black]{sfz_abspath}[/black] [red]\[SFZ not readable][/red]')
+						rprint(fr'[black]{sfz_abspath}[/black] [red]\[SFZ not readable][/red]')
 					continue
-				try:
-					sfz = SFZ(sfz_abspath)
-				except SFZDecodeError as e:
+				sfz = SFZ(sfz_abspath)
+				if sfz.error:
 					retval |= ERR_SFZ_DECODE_ERR
 					if not options.quiet:
-						rprint(f'[black]{sfz_abspath}[/black] [red]\[SFZ decode error: {e}][/red]')
-					continue
-
+						rprint(fr'[black]{sfz_abspath}[/black] [red]\[SFZ error: {sfz.error}][/red]')
 				if options.check_samples:
 					for sample in sfz.samples():
 						if not exists(sample.abspath):
 							retval |= ERR_MISSING_SAMPLE
 							if not options.quiet:
-								rprint(f'[black]{sample.abspath}[/black] [red]\[missing sample][/red]')
+								rprint(fr'[black]{sample.abspath}[/black] [red]\[missing sample][/red]')
 							continue
 						if not access(sample.abspath, R_OK):
 							retval |= ERR_SAMPLE_ACCESS
 							if not options.quiet:
-								rprint(f'[black]{sample.abspath}[/black] [red]\[sample not readable][/red]')
+								rprint(fr'[black]{sample.abspath}[/black] [red]\[sample not readable][/red]')
 
 		if not options.quiet and len(options.Filename) > 1:
 			print()

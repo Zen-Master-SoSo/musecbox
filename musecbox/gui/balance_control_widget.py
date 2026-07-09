@@ -21,7 +21,6 @@
 Provides an integrated balanced control widget, which you can use to
 graphically locate instruments in the stereo space.
 """
-import logging, time
 from math import floor
 from functools import partial
 from operator import attrgetter, itemgetter
@@ -29,10 +28,10 @@ from uuid import uuid4
 from qt_extras.autofit import autofit
 
 # PyQt5 imports
-from PyQt5.QtCore import	Qt, pyqtSlot, QObject, QRect, QEvent, QTimer
+from PyQt5.QtCore import	Qt, pyqtSlot, QRect, QEvent, QTimer
 from PyQt5.QtCore import	QPoint
-from PyQt5.QtGui import		QPainter, QColor, QPen, QBrush, QPalette, QFontMetrics
-from PyQt5.QtWidgets import	QWidget, QLabel, QMenu, QAction, QSizePolicy
+from PyQt5.QtGui import		QPainter, QPen, QPalette, QFontMetrics
+from PyQt5.QtWidgets import	QWidget, QLabel, QMenu, QAction
 
 from musecbox import		setting, set_setting, main_window, \
 							KEY_BCWIDGET_LINES, KEY_BCWIDGET_TRACKING
@@ -81,6 +80,8 @@ class BalanceControlWidget(QWidget):
 		self.nearest_feature = None
 		self.grabbed_feature = None
 		self.focused_group = None
+		self.center_x = None
+		self.f_scale = None
 		self.hover_tracking = setting(KEY_BCWIDGET_TRACKING, bool, True)
 		self.lines = setting(KEY_BCWIDGET_LINES, int, 2)
 		self.last_line = self.lines - 1
@@ -92,7 +93,7 @@ class BalanceControlWidget(QWidget):
 	# -----------------------------------------------------------------
 	# Styles
 
-	@pyqtSlot()
+	@pyqtSlot()	# pylint: disable-next = invalid-name
 	def changeEvent(self, event):
 		if event.type() == QEvent.StyleChange:
 			self.set_styles()
@@ -102,6 +103,7 @@ class BalanceControlWidget(QWidget):
 		self.metrics = QFontMetrics(self.font())
 		self.lines_pen.setColor(self.palette().color(QPalette.WindowText))
 
+	# pylint: disable-next = invalid-name
 	def contextMenuEvent(self, event):
 		menu = QMenu()
 		menu.addAction(main_window().action_show_balance)
@@ -139,6 +141,7 @@ class BalanceControlWidget(QWidget):
 	# -----------------------------------------------------------------
 	# Screen / internal plugin value conversions
 
+	# pylint: disable-next = invalid-name
 	def resizeEvent(self, event):
 		self.bounds_rect = QRect(QPoint(0, 0), event.size()).adjusted(
 			TRACK_HALF_WIDTH + 1, 1, -TRACK_HALF_WIDTH - 1, -1)
@@ -157,6 +160,7 @@ class BalanceControlWidget(QWidget):
 	# -----------------------------------------------------------------
 	# Events
 
+	# pylint: disable-next = invalid-name
 	def paintEvent(self, event):
 		painter = QPainter(self)
 		painter.setPen(self.lines_pen)
@@ -165,6 +169,7 @@ class BalanceControlWidget(QWidget):
 		painter.end()
 		super().paintEvent(event)
 
+	# pylint: disable-next = invalid-name
 	def mouseMoveEvent(self, event):
 		x = event.x()
 		float_x = self.screen_x_to_float(x)
@@ -179,7 +184,7 @@ class BalanceControlWidget(QWidget):
 			min_right = x - GRAB_RANGE	# right >= min_right
 
 			min_left = x - GRAB_RANGE
-			max_right = x + GRAB_RANGE
+			max_right = x + GRAB_RANGE	# pylint: disable = unused-variable
 
 			near = []
 			for group in self._groups.values():
@@ -239,18 +244,21 @@ class BalanceControlWidget(QWidget):
 
 		#self.update()
 
-	def mousePressEvent(self, event):
+	# pylint: disable-next = invalid-name
+	def mousePressEvent(self, _):
 		if self.nearest_feature is not None:
 			self.grabbed_feature = self.nearest_feature
 			self.grabbed_feature.grabbed()
 			if self.grabbed_feature.feature == GRAB_CENTER:
 				self.setCursor(Qt.ClosedHandCursor)
 
+	# pylint: disable-next = invalid-name
 	def mouseReleaseEvent(self, _):
 		if self.grabbed_feature is not None and self.grabbed_feature.feature == GRAB_CENTER:
 			self.setCursor(Qt.OpenHandCursor)
 		self.grabbed_feature = None
 
+	# pylint: disable-next = invalid-name
 	def leaveEvent(self, _):
 		self.grabbed_feature = None
 		self.change_focused_group(None, self.hover_tracking)
@@ -412,6 +420,9 @@ class GrabEvent:
 		self.distance = distance
 		self.initial_x = float_x
 		self.initial_line = line
+		self.initial_panning = None
+		self.initial_balance_left = None
+		self.initial_balance_right = None
 
 	def grabbed(self):
 		self.initial_balance_left = self.group.balance_left
@@ -520,6 +531,7 @@ class BCGroup(QLabel):
 		"""
 		if len(self.tracks) == 1:
 			return self.tracks[0].moniker
+		# pylint: disable-next = consider-using-f-string
 		return ', '.join('{} ({})'.format(instrument_name, len(
 			[ track for track in self.tracks \
 			if track.voice_name.instrument_name == instrument_name ]

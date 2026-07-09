@@ -24,9 +24,8 @@ import sys, logging, argparse
 from os import environ, unlink
 from os.path import abspath, expanduser
 from socket import socket, AF_UNIX, SOCK_DGRAM, error as sock_error
-from traceback import print_tb
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QErrorMessage
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QGuiApplication
 from qt_extras import DevilBox, exceptions_hook
 from simple_carla import EngineInitFailure
@@ -109,6 +108,7 @@ def main():
 		try:
 			nice(-10)
 		except PermissionError:
+			logging.warning('Unable to set process priority')
 			pass
 
 	application = QApplication([])

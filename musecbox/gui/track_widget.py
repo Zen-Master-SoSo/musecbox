@@ -20,7 +20,7 @@
 """
 Provides vertical and horizontal track widgets.
 """
-import logging, os
+import logging
 from os.path import join, dirname, relpath, abspath, exists
 from math import floor
 from functools import partial
@@ -29,9 +29,7 @@ from qt_extras import SigBlock, ShutUpQT, DevilBox
 from qt_extras.autofit import autofit
 from qt_extras.list_button import QtListButton
 from qt_extras.list_layout import HListLayout, VListLayout
-from sfzen import SFZ
-from sfzen.cleaners.liquidsfz import clean as liquid_clean
-from simple_carla.qt import Plugin, Parameter, PatchbayPort, AbstractQtPlugin
+from simple_carla.qt import Plugin, PatchbayPort
 try:
 	from simple_carla.plugin_dialog import CarlaPluginDialog
 except ModuleNotFoundError:
@@ -40,9 +38,9 @@ except ModuleNotFoundError:
 # PyQt5 imports
 from PyQt5 import uic
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QVariant, QTimer, QPoint
-from PyQt5.QtWidgets import QApplication, QInputDialog, QMessageBox, QPushButton, QFrame, \
-							QAction, QMenu, QHBoxLayout, QGraphicsColorizeEffect
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QVariant, QTimer, QPoint
+from PyQt5.QtWidgets import QApplication, QInputDialog, QPushButton, QFrame, \
+							QAction, QMenu, QGraphicsColorizeEffect
 
 # musecbox imports
 from musecbox import (
@@ -58,13 +56,12 @@ from musecbox import (
 	KEY_SHOW_CHANNELS,
 	KEY_SHOW_INDICATORS,
 	KEY_SHOW_PLUGIN_VOLUME,
-	KEY_AUTO_CONNECT,
-	SFZ_FILE_TYPE
+	KEY_AUTO_CONNECT
 )
 from musecbox.liquidsfz import LiquidSFZ
 from musecbox.gui.plugin_widgets import	TrackPluginWidget, \
 										VerticalTrackPluginWidget, HorizontalTrackPluginWidget, \
-										ActivityIndicator, SmallSlider
+										ActivityIndicator
 
 SPINNER_DEBOUNCE = 250
 MINIMUM_MONIKER_LENGTH = 3
@@ -88,6 +85,8 @@ class TrackWidget(QFrame):
 		self.moniker = moniker or str(voice_name)
 		self.sfz_filename = self._get_abspath(sfz_filename)
 		self.setVisible(False)
+		self.balance_left = 0.0
+		self.balance_right = 0.0
 		if saved_state is None:
 			synth_def = None
 			self.channel = 0
@@ -588,9 +587,11 @@ class TrackWidget(QFrame):
 	def color(self):
 		return main_window().port_widget(self.port).color()
 
+	# pylint: disable-next = invalid-name
 	def enterEvent(self, _):
 		main_window().balance_control_widget.hover_in(self.pan_group_key)
 
+	# pylint: disable-next = invalid-name
 	def leaveEvent(self, _):
 		main_window().balance_control_widget.hover_out()
 
@@ -605,7 +606,7 @@ class TrackWidget(QFrame):
 			plugin_widget.show_plugin_volume(state)
 
 	def update_output_connection_ui(self):
-		clients = [ client for client in self.last_plugin().output_clients() ]
+		clients = list(self.last_plugin().output_clients())
 		if len(clients) == 0:
 			self.b_output.setText(TEXT_NO_CONN)
 		elif len(clients) == 1:
