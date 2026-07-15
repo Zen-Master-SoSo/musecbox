@@ -638,7 +638,8 @@ class MainWindow(QMainWindow):
 					sfz_copy = SFZ(op.current_realpath)
 					if clean_sfzs:
 						liquid_clean(sfz_copy)
-					sfz_copy.save_as(op.new_realpath, samples_mode, overwrite = True)
+					sfz_copy.save_as(op.new_realpath,
+						samples_mode = samples_mode, overwrite = True)
 					op.track_widget.load_sfz(op.new_realpath)
 				except Exception as err:
 					logging.exception(err)
@@ -813,6 +814,7 @@ class MainWindow(QMainWindow):
 	# -----------------------------------------------------------------
 	# QMainWindow overloads - system calls
 
+	# pylint: disable-next = invalid-name
 	def closeEvent(self, event):
 		logging.debug('closeEvent')
 		if self.okay_to_clear():
@@ -993,7 +995,8 @@ class MainWindow(QMainWindow):
 		menu = QMenu()
 		clicked_plugin_widget = self.scr_shared_plugins.viewport().childAt(position)
 		if clicked_plugin_widget is not None:
-			while not isinstance(clicked_plugin_widget, Plugin) and clicked_plugin_widget.parent() is not None:
+			while not isinstance(clicked_plugin_widget, Plugin) \
+				and clicked_plugin_widget.parent() is not None:
 				clicked_plugin_widget = clicked_plugin_widget.parent()
 			if isinstance(clicked_plugin_widget, Plugin):
 				if clicked_plugin_widget.has_custom_ui:
@@ -1424,7 +1427,8 @@ class MainWindow(QMainWindow):
 			self._cancel_action_dialog.setIcon(QMessageBox.Information)
 			self._cancel_action_dialog.setWindowTitle(self.tr("Action in progress"))
 			self._cancel_action_dialog.setText(action)
-			self._cancel_action_dialog.setInformativeText(self.tr("An action is in progress, please wait..."))
+			self._cancel_action_dialog.setInformativeText(
+				self.tr("An action is in progress, please wait..."))
 			self._cancel_action_dialog.setStandardButtons(QMessageBox.Cancel)
 			self._cancel_action_dialog.setDefaultButton(QMessageBox.Cancel)
 			self._cancel_action_dialog.buttonClicked.connect(self.slot_cancel_action_click)
@@ -1494,7 +1498,6 @@ class LoadIndicator(QWidget):
 
 	def __init__(self, parent):
 		super().__init__(parent)
-		self.__value = 0
 		self.label = QLabel(self)
 		self.label.setAlignment(Qt.AlignHCenter | Qt.AlignBaseline)
 		self.label.setText('0%')
@@ -1509,6 +1512,7 @@ class LoadIndicator(QWidget):
 		self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 		self.bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
+	# pylint: disable-next = invalid-name
 	def setEnabled(self, state):
 		super().setEnabled(state)
 		if not state:
@@ -1536,6 +1540,7 @@ class LoadIndicatorBar(QWidget):
 		self.anim.setDuration(self.anim_duration)
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.set_bg_color)
 
+	# pylint: disable-next = invalid-name
 	def changeEvent(self, event):
 		if event.type() == QEvent.StyleChange:
 			self.set_bg_color()
@@ -1564,9 +1569,11 @@ class LoadIndicatorBar(QWidget):
 		self.__display_value = value
 		self.update()
 
+	# pylint: disable-next = invalid-name
 	def resizeEvent(self, event):
 		self.__scaling = event.size().width() / 100
 
+	# pylint: disable-next = invalid-name
 	def paintEvent(self, _):
 		painter = QPainter(self)
 		x = int(self.__display_value * self.__scaling)

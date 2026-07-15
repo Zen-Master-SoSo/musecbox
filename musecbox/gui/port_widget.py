@@ -35,7 +35,7 @@ from mscore import VoiceName
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QVariant, QPoint
 from PyQt5.QtGui import QPalette, QIcon, QMouseEvent
-from PyQt5.QtWidgets import QSizePolicy, QFrame, QAction, QMenu, QInputDialog, QMessageBox
+from PyQt5.QtWidgets import QSizePolicy, QFrame, QAction, QMenu, QMessageBox
 
 from musecbox import (
 	carla,
@@ -105,8 +105,10 @@ class PortWidget(QFrame):
 		return {
 			"port"				: self.port,
 			"splitter"			: self.channel_splitter.encode_saved_state(),
-			"source_port_names"	: [ patchbay_port.jack_name() for patchbay_port in self.input_connections() ],
-			"tracks"			: [ track.encode_saved_state() for track in self.track_layout ],
+			"source_port_names"	: [ patchbay_port.jack_name()
+									for patchbay_port in self.input_connections() ],
+			"tracks"			: [ track.encode_saved_state()
+									for track in self.track_layout ],
 			"collapsed"			: self.is_collapsed()
 		}
 
@@ -187,8 +189,7 @@ class PortWidget(QFrame):
 		"""
 		Returns a list of PatchbayPort connected to this Port's channel splitter.
 		"""
-		return [ patchbay_port \
-			for patchbay_port in self.midi_input_port().connected_ports() ]
+		return list(self.midi_input_port().connected_ports())
 
 	def add_track(self, voice_name, sfz_filename, *, moniker = None):
 		"""
@@ -243,7 +244,7 @@ class PortWidget(QFrame):
 				except IndexError:
 					logging.debug('Previously connected port "%s" not found', source_port_name)
 				else:
-					logging.debug(f'Connecting %s to port %s', source_port_name, self.port)
+					logging.debug('Connecting %s to port %s', source_port_name, self.port)
 					patchbay_port.connect_to(self.channel_splitter.midi_input_port)
 		self.update_input_connection_ui()
 
@@ -455,10 +456,10 @@ class HorizontalPortWidget(PortWidget):
 	def update_input_connection_ui(self):
 		ports = self.input_connections()
 		self.input_select_widget.setText(TEXT_MULTI_CONN % len(ports) if len(ports) > 1 \
-			else ports[0].jack_name() if len(ports) \
-			else TEXT_NO_CONN)
-		self.input_select_widget.setToolTip("\n".join([ patchbay_port.jack_name() for patchbay_port in ports ]) \
-			if len(ports) else TEXT_NO_CONN)
+			else ports[0].jack_name() if ports else TEXT_NO_CONN)
+		self.input_select_widget.setToolTip("\n".join([
+			patchbay_port.jack_name() for patchbay_port in ports ])
+			if ports else TEXT_NO_CONN)
 
 
 class VerticalPortWidget(PortWidget):
@@ -509,10 +510,10 @@ class VerticalPortWidget(PortWidget):
 	def update_input_connection_ui(self):
 		ports = self.input_connections()
 		text = "\n".join([ patchbay_port.jack_name() for patchbay_port in ports ]) \
-			if len(ports) else TEXT_NO_CONN
+			if ports else TEXT_NO_CONN
 		self.lbl_port.setToolTip(text)
 		self.input_select_widget.setToolTip(text)
-		self.input_select_widget.setText('➲' if len(ports) else '-')
+		self.input_select_widget.setText('➲' if ports else '-')
 
 # -------------------------------------------------------------------
 # MIDISplitter

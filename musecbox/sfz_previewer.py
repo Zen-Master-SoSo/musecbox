@@ -20,7 +20,6 @@
 """
 Provides a synth used for previewing SFZ files in SFZFileDialog.
 """
-import logging
 from os.path import join
 from PyQt5.QtCore import Qt, pyqtSlot
 from musecbox import	carla, setting, set_setting, APP_PATH, \

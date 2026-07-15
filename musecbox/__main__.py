@@ -18,18 +18,16 @@
 #  MA 02110-1301, USA.
 #
 """
-Application entry point
+musecbox hosts multiple LiquidSFZ instances for real-time music generation.
 """
 import sys, logging, argparse
 from os import environ, unlink
 from os.path import abspath, expanduser
 from socket import socket, AF_UNIX, SOCK_DGRAM, error as sock_error
-from traceback import print_tb
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QErrorMessage
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QGuiApplication
-from qt_extras import DevilBox
-from log_soso import StreamToLogger
+from qt_extras import DevilBox, exceptions_hook
 from simple_carla import EngineInitFailure
 from musecbox import carla, SOCKET_PATH, CARRIAGE_RETURN, LOG_FORMAT
 from musecbox.gui.main_window import MainWindow
@@ -37,9 +35,7 @@ from musecbox.gui.main_window import MainWindow
 
 def main():
 	p = argparse.ArgumentParser()
-	p.epilog = """
-	Hosts multiple LiquidSFZ instances for real-time music generation.
-	"""
+	p.epilog = __doc__
 	p.add_argument('Filename', type = str, nargs = '?',
 		help = 'MuseScore score to use for port setup, or saved port setup')
 	p.add_argument("--horizontal-layout", "-H", action = "store_true",
@@ -112,6 +108,7 @@ def main():
 		try:
 			nice(-10)
 		except PermissionError:
+			logging.warning('Unable to set process priority')
 			pass
 
 	application = QApplication([])
@@ -128,21 +125,6 @@ def main():
 	unlink(SOCKET_PATH)
 	carla().delete()
 	return return_value
-
-
-# -------------------------------------------------------------------
-# Exception hook
-
-def exceptions_hook(exception_type, value, traceback):
-	if not QApplication.instance() is None:
-		msg = QErrorMessage.qtHandler()
-		msg.setWindowModality(Qt.ApplicationModal)
-		msg.showMessage(
-			f'{exception_type.__name__}: "{value}"',
-			exception_type.__name__)
-	logging.error('Exception "%s": %s', exception_type.__name__, value)
-	with StreamToLogger() as log:
-		print_tb(traceback, file = log)
 
 
 if __name__ == "__main__":

@@ -28,7 +28,7 @@ from itertools import chain
 from qt_extras import ShutUpQT, SigBlock
 from qt_extras.list_button import QtListButton
 from qt_extras.autofit import autofit
-from simple_carla import SystemPatchbayClient, PatchbayPort, Plugin, Parameter
+from simple_carla import PatchbayPort, Plugin, Parameter
 from simple_carla.qt import AbstractQtPlugin
 
 # PyQt5 imports
@@ -83,6 +83,8 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 			self.setFixedWidth(self.fixed_width)
 
 		self.generic_dialog = None
+		self.has_custom_ui = False
+		self.prefer_generic_dialog = False
 
 		autofit(self.b_name)
 		self.b_name.setText(self.moniker)
@@ -209,7 +211,7 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 		"""
 
 	def inline_display_redraw(self):
-		retval = carla().render_inline_display(self.plugin_id,
+		_ = carla().render_inline_display(self.plugin_id,
 			self.fixed_width, self.fixed_height)
 
 	@pyqtSlot(bool)
@@ -410,6 +412,7 @@ class SharedPluginWidget(PluginWidget):
 		self.update_output_connection_ui()
 		self.w_balance.update()
 
+	# pylint: disable-next = method-hidden
 	def _update_audio_led(self):
 		"""
 		Dummy function, replaced with either _update_audio_led_stereo or
@@ -510,6 +513,7 @@ class ActivityIndicator(QWidget):
 			self._lit = state
 			self.update()
 
+	# pylint: disable-next = invalid-name
 	def paintEvent(self, _):
 		painter = QPainter(self)
 		painter.drawPixmap(QPoint(0,0), self.on_pixmap if self._lit else self.off_pixmap)
@@ -528,6 +532,18 @@ class SmallBalanceControl(QWidget):
 			__class__.zero_line_pen.setWidth(1)
 		self.plugin_widget = plugin_widget
 		self.grabbed_feature = None
+		self.nearest_element = None
+		self.initial_x = None
+		self.initial_balance_left = None
+		self.initial_balance_right = None
+		self.initial_panning = None
+		self.centerline_top = None
+		self.centerline_bottom = None
+		self.f_scale = None
+		self.center_x = None
+		self.inner_bounds_rect = None
+		self.bounds_rect = None
+
 		self.setAttribute(Qt.WA_StyledBackground, True)
 
 		self.inner_bar = QWidget(self)
@@ -550,6 +566,7 @@ class SmallBalanceControl(QWidget):
 			widget.setMouseTracking(True)
 		self.set_styles()
 
+	# pylint: disable-next = invalid-name
 	def changeEvent(self, event):
 		if event.type() == QEvent.StyleChange:
 			self.set_styles()
@@ -559,6 +576,7 @@ class SmallBalanceControl(QWidget):
 		self.metrics = QFontMetrics(self.font())
 		self.zero_line_pen.setColor(self.palette().color(QPalette.WindowText))
 
+	# pylint: disable-next = invalid-name
 	def resizeEvent(self, event):
 		self.bounds_rect = QRect(QPoint(0, 0), event.size()).adjusted(0, 0, -1, -1)
 		self.inner_bounds_rect = self.bounds_rect.adjusted(2, 1, 1, 0)
@@ -576,6 +594,7 @@ class SmallBalanceControl(QWidget):
 	def float_to_screen_x(self, float_x):
 		return round(float_x * self.f_scale + self.center_x)
 
+	# pylint: disable-next = invalid-name
 	def mousePressEvent(self, event):
 		float_x = self.screen_x_to_float(event.x())
 		self.grabbed_feature = self.nearest_element
@@ -588,14 +607,17 @@ class SmallBalanceControl(QWidget):
 			self.initial_panning = self.plugin_widget.balance_right
 		self.initial_x = float_x
 
+	# pylint: disable-next = invalid-name
 	def mouseReleaseEvent(self, _):
 		self.grabbed_feature = None
 		self.unsetCursor()
 
+	# pylint: disable-next = invalid-name
 	def leaveEvent(self, _):
 		self.grabbed_feature = None
 		self.unsetCursor()
 
+	# pylint: disable-next = invalid-name
 	def mouseMoveEvent(self, event):
 		float_x = self.screen_x_to_float(event.x())
 		if self.grabbed_feature:
@@ -605,9 +627,13 @@ class SmallBalanceControl(QWidget):
 				self.plugin_widget.balance_right = min(1.0, max(-1.0, self.initial_balance_right + shift_x))
 			else:
 				if self.grabbed_feature.feature == GRAB_LEFT_BALANCE:
-					self.plugin_widget.balance_left = min(self.plugin_widget.balance_right, max(-1.0, self.initial_x + shift_x))
+					self.plugin_widget.balance_left = min(
+						self.plugin_widget.balance_right, max(
+							-1.0, self.initial_x + shift_x))
 				elif self.grabbed_feature.feature == GRAB_RIGHT_BALANCE:
-					self.plugin_widget.balance_right = min(1.0, max(self.plugin_widget.balance_left, self.initial_x + shift_x))
+					self.plugin_widget.balance_right = min(
+						1.0, max(
+							self.plugin_widget.balance_left, self.initial_x + shift_x))
 				elif self.grabbed_feature.feature == GRAB_PANNING:
 					self.plugin_widget.panning = float_x
 			self.resize_inner_bar()
@@ -628,6 +654,7 @@ class SmallBalanceControl(QWidget):
 			else:
 				self.setCursor(Qt.PointingHandCursor)
 
+	# pylint: disable-next = invalid-name
 	def paintEvent(self, event):
 		painter = QPainter(self)
 		painter.setPen(self.zero_line_pen)
@@ -681,19 +708,23 @@ class SmallSlider(QProgressBar):
 		self.setMaximum(100)
 		self.mouse_down = False
 
+	# pylint: disable-next = invalid-name
 	def wheelEvent(self, event):
 		ctrl = bool(event.modifiers() & Qt.ControlModifier)
 		value = self.value() + (event.angleDelta().y() // 12 if ctrl else event.angleDelta().y() // 120)
 		self.setValue(max(0, min(100, value)))
 		event.accept()
 
+	# pylint: disable-next = invalid-name
 	def mousePressEvent(self, event):
 		self._set_value(event)
 		self.mouse_down = True
 
+	# pylint: disable-next = invalid-name
 	def mouseReleaseEvent(self, _):
 		self.mouse_down = False
 
+	# pylint: disable-next = invalid-name
 	def mouseMoveEvent(self, event):
 		if self.mouse_down:
 			self._set_value(event)
@@ -737,7 +768,9 @@ class MonoPeakMeter(PeakMeter):
 		self.anim = QPropertyAnimation(self, b"_display_value")
 		self.anim.setEndValue(0.0)
 		self.anim.setDuration(self.anim_duration)
+		self.bar_width = None
 
+	# pylint: disable-next = invalid-name
 	def setValue(self, value):
 		if value == self.__value:
 			return
@@ -758,13 +791,18 @@ class MonoPeakMeter(PeakMeter):
 	def _display_value(self, value):
 		self.__display_value = value
 
+	# pylint: disable-next = invalid-name
 	def resizeEvent(self, event):
 		self.bar_width = event.size().width()
 
+	# pylint: disable-next = invalid-name
 	def paintEvent(self, _):
 		painter = QPainter(self)
 		painter.drawPixmap(0, 0, self.meter_bg)
-		painter.fillRect(0, 0, self.bar_width, (1.0 - self.__display_value) * self.fixed_height, self.fill_brush)
+		painter.fillRect(0, 0,
+			self.bar_width,
+			(1.0 - self.__display_value) * self.fixed_height,
+			self.fill_brush)
 		painter.end()
 
 
@@ -785,7 +823,10 @@ class StereoPeakMeter(PeakMeter):
 		self.anim_right = QPropertyAnimation(self, b"_display_value_right")
 		self.anim_right.setEndValue(0.0)
 		self.anim_right.setDuration(self.anim_duration)
+		self.bar_width = None
+		self.bar_right_x = None
 
+	# pylint: disable-next = invalid-name
 	def setValues(self, left_value, right_value):
 		if left_value != self.__value_left:
 			self.__value_left = left_value
@@ -822,10 +863,12 @@ class StereoPeakMeter(PeakMeter):
 	def _display_value_right(self, value):
 		self.__display_value_right = value
 
+	# pylint: disable-next = invalid-name
 	def resizeEvent(self, event):
 		self.bar_width = floor((event.size().width() - 2) / 2)
 		self.bar_right_x = self.bar_width + 2
 
+	# pylint: disable-next = invalid-name
 	def paintEvent(self, _):
 		painter = QPainter(self)
 		painter.drawPixmap(0, 0, self.meter_bg, 0, 0, self.bar_width, 125)

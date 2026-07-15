@@ -35,9 +35,7 @@ def main():
 		help = "Do not make changes - just show what would be changed.")
 	p.add_argument("--verbose", "-v", action = "store_true",
 		help = "Show more detailed debug information")
-	p.epilog = """
-	Applies the port/channel assignments in a MusecBox project to a MuseScore3 score.
-	"""
+	p.epilog = __doc__
 	options = p.parse_args()
 	log_level = logging.DEBUG if options.verbose else logging.ERROR
 	logging.basicConfig(level = log_level, format = LOG_FORMAT)

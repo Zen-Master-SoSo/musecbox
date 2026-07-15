@@ -32,9 +32,9 @@ def print_sfz(sfz_path):
 		if access(sfz_path, R_OK):
 			print()
 		else:
-			rprint(' [red]\[not readable\][/red]')
+			rprint(r' [red]\[not readable\][/red]')
 	else:
-		rprint(' [red]\[missing][/red]')
+		rprint(r' [red]\[missing][/red]')
 
 def main():
 	p = argparse.ArgumentParser()
@@ -58,10 +58,10 @@ def main():
 				project_definition = json.load(fh)
 
 		except FileNotFoundError:
-			rprint(f'{filename} [red]\[not a file][/red]')
+			rprint(fr'{filename} [red]\[not a file][/red]')
 
 		except json.JSONDecodeError as e:
-			rprint(f'{filename} [red]\[JSON decode error: {e}][/red]')
+			rprint(fr'{filename} [red]\[JSON decode error: {e}][/red]')
 
 		else:
 
@@ -111,7 +111,10 @@ def main():
 				fmt = ' {0:%ds}: {1}' % max(len(key) for key in PROJECT_OPTION_KEYS)
 				for key in PROJECT_OPTION_KEYS:
 					if key in project_definition['options']:
-						print(fmt.format(key, project_definition['options'][key]))
+						if key == 'RecentPlugins':
+							print(fmt.format(key, f'{len(project_definition["options"][key])} items'))
+						else:
+							print(fmt.format(key, project_definition['options'][key]))
 
 			if len(options.Filename) > 1:
 				print()
