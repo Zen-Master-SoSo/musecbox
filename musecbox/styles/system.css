@@ -89,6 +89,25 @@ QFrame#port9 #frm_port_widget_top QLabel {
 
 
 
+QSpinBox#spn_channel,
+QPushButton#b_mute,
+QPushButton#b_solo {
+	max-height: 20px;
+}
+
+HorizontalTrackWidget QPushButton#b_mute,
+HorizontalTrackWidget QPushButton#b_solo {
+	max-width: 20px;
+}
+
+VerticalTrackWidget QPushButton#b_mute,
+VerticalTrackWidget QPushButton#b_solo {
+	max-width: 23px;
+}
+
+
+
+
 QPushButton#b_mute:checked {
 	background: #5AD5FA;
 }
@@ -96,16 +115,6 @@ QPushButton#b_mute:checked {
 QPushButton#b_solo:checked {
 	color: #FFFFFF;
 	background: #FC3232;
-}
-
-
-
-QFrame#frm_channels QPushButton {
-	font-size: 8pt;
-}
-
-QFrame#frm_channels QPushButton:checked {
-	background: #92F20C;
 }
 
 

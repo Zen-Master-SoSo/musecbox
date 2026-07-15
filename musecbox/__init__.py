@@ -136,7 +136,6 @@ KEY_RECENT_INST_DIR		= 'Dirs/RecentInstrumentDir'
 KEY_RECENT_EXPORT_DIR	= 'Dirs/RecentExport'
 KEY_SFZ_DIR				= 'Dirs/SFZFiles'
 KEY_SCORES_DIR			= 'Dirs/Scores'
-KEY_SHOW_CHANNELS		= 'TrackWidget/ShowChannels'
 KEY_SHOW_INDICATORS		= 'TrackWidget/ShowIndicators'
 KEY_SHOW_TOOLBAR		= 'MainWindow/ShowToolbar'
 KEY_SHOW_PORT_INPUTS	= 'MainWindow/ShowPortInputs'
@@ -168,7 +167,6 @@ PROJECT_OPTION_KEYS = [
 	KEY_RECENT_EXPORT_DIR,
 	KEY_SFZ_DIR,
 	KEY_SCORES_DIR,
-	KEY_SHOW_CHANNELS,
 	KEY_SHOW_INDICATORS,
 	KEY_SHOW_TOOLBAR,
 	KEY_SHOW_PORT_INPUTS,

@@ -60,7 +60,7 @@ from musecbox import 		carla, set_main_window, \
 							SUPPORTED_FILE_TYPES, MUSESCORE_FILE_TYPES, RENDER_FILE_TYPE, \
 							PROJECT_OPTION_KEYS, DEFAULT_STYLE, KEY_STYLE, \
 							KEY_RECENT_PROJECT_DIR, KEY_RECENT_SCORE_DIR, \
-							KEY_SHOW_CHANNELS, KEY_SHOW_PORT_INPUTS, KEY_SHOW_INDICATORS, \
+							KEY_SHOW_PORT_INPUTS, KEY_SHOW_INDICATORS, \
 							KEY_SHOW_PLUGIN_VOLUME, KEY_SHOW_BALANCE, \
 							KEY_SHOW_SHARED_PLUGINS, KEY_SHOW_TOOLBAR, KEY_SHOW_STATUSBAR, \
 							KEY_AUTO_CONNECT, KEY_AUTO_START, KEY_WATCH_FILES, KEY_VERTICAL_LAYOUT, \
@@ -225,7 +225,6 @@ class MainWindow(QMainWindow):
 		self.menu_view.aboutToShow.connect(self.slot_view_menu_show)
 		self.action_show_toolbar.toggled.connect(self.slot_show_toolbar)
 		self.action_show_port_inputs.toggled.connect(self.slot_show_port_inputs)
-		self.action_show_channels.toggled.connect(self.slot_show_channels)
 		self.action_show_indicators.toggled.connect(self.slot_show_indicators)
 		self.action_show_balance.toggled.connect(self.slot_show_balance_control)
 		self.action_show_shared_plugins.toggled.connect(self.slot_show_shared_plugins)
@@ -884,12 +883,6 @@ class MainWindow(QMainWindow):
 		set_setting(KEY_SHOW_PORT_INPUTS, state)
 
 	@pyqtSlot(bool)
-	def slot_show_channels(self, state):
-		for track_widget in self.iterate_track_widgets():
-			track_widget.show_channels(state)
-		set_setting(KEY_SHOW_CHANNELS, state)
-
-	@pyqtSlot(bool)
 	def slot_show_track_volume(self, state):
 		for track_widget in self.iterate_track_widgets():
 			track_widget.show_track_volume(state)
@@ -1166,7 +1159,6 @@ class MainWindow(QMainWindow):
 		with SigBlock(
 			self.action_show_toolbar,
 			self.action_show_port_inputs,
-			self.action_show_channels,
 			self.action_show_indicators,
 			self.action_show_balance,
 			self.action_show_shared_plugins,
@@ -1175,7 +1167,6 @@ class MainWindow(QMainWindow):
 		):
 			self.action_show_toolbar.setChecked(setting(KEY_SHOW_TOOLBAR, bool, True))
 			self.action_show_port_inputs.setChecked(setting(KEY_SHOW_PORT_INPUTS, bool, True))
-			self.action_show_channels.setChecked(setting(KEY_SHOW_CHANNELS, bool, True))
 			self.action_show_indicators.setChecked(setting(KEY_SHOW_INDICATORS, bool, True))
 			self.action_show_balance.setChecked(setting(KEY_SHOW_BALANCE, bool, True))
 			self.action_show_shared_plugins.setChecked(setting(KEY_SHOW_SHARED_PLUGINS, bool, True))

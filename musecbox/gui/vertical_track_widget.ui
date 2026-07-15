@@ -81,23 +81,8 @@
    </item>
    <item>
     <widget class="QSpinBox" name="spn_channel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>42</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>42</width>
-       <height>16777215</height>
-      </size>
+     <property name="toolTip">
+      <string>Sets the MIDI channel that incoming messages are routed from</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -131,18 +116,6 @@
    </item>
    <item>
     <widget class="QPushButton" name="b_solo">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>24</width>
-       <height>24</height>
-      </size>
-     </property>
      <property name="toolTip">
       <string>Solo</string>
      </property>
@@ -156,18 +129,6 @@
    </item>
    <item>
     <widget class="QPushButton" name="b_mute">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>24</width>
-       <height>24</height>
-      </size>
-     </property>
      <property name="toolTip">
       <string>Mute</string>
      </property>

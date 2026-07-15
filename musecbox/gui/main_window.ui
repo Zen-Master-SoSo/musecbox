@@ -308,7 +308,6 @@
     </widget>
     <addaction name="action_show_toolbar"/>
     <addaction name="action_show_port_inputs"/>
-    <addaction name="action_show_channels"/>
     <addaction name="action_show_indicators"/>
     <addaction name="action_show_balance"/>
     <addaction name="action_show_shared_plugins"/>
@@ -474,23 +473,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
-   </property>
-  </action>
-  <action name="action_show_channels">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Channels</string>
-   </property>
-   <property name="toolTip">
-    <string>Show/hide track channels</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+C</string>
    </property>
   </action>
   <action name="action_expand_all_ports">
@@ -933,7 +915,8 @@
   </action>
   <action name="action_open_in_terminal">
    <property name="icon">
-    <iconset theme="utilities-terminal"/>
+    <iconset theme="utilities-terminal">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Open project folder in terminal</string>

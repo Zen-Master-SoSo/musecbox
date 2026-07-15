@@ -53,7 +53,6 @@ from musecbox import (
 	APP_PATH,
 	TEXT_NO_CONN,
 	TEXT_MULTI_CONN,
-	KEY_SHOW_CHANNELS,
 	KEY_SHOW_INDICATORS,
 	KEY_SHOW_PLUGIN_VOLUME,
 	KEY_AUTO_CONNECT
@@ -105,12 +104,20 @@ class TrackWidget(QFrame):
 		self.b_name.setText(self.moniker)
 		self.b_name.clicked.connect(self.slot_b_name_clicked)
 
+		# Setup channel spinner
+		self.spin_debounce = QTimer(self)
+		self.spin_debounce.setSingleShot(True)
+		self.spin_debounce.timeout.connect(self.debounce_timer_timeout)
+		self.spn_channel.valueChanged.connect(self.slot_spinner_changed)
+
 		# Setup custom volume indicator
 		self.led_midi = ActivityIndicator(self, 'led_midi')
+		self.led_midi.setToolTip('Shows MIDI activity in the synth')
 		self.layout().replaceWidget(self.led_placeholder, self.led_midi)
 		self.led_placeholder.setVisible(False)
 		self.led_placeholder.deleteLater()
 		del self.led_placeholder
+		self.show_indicators(setting(KEY_SHOW_INDICATORS, bool, True))
 
 		# Setup mute/solo buttons
 		self.b_mute.setIcon(QIcon(join(APP_PATH, 'res', 'mute.svg')))
@@ -182,9 +189,6 @@ class TrackWidget(QFrame):
 		# Setup track plugins context menu
 		self.frm_plugins.setContextMenuPolicy(Qt.CustomContextMenu)
 		self.frm_plugins.customContextMenuRequested.connect(self.slot_plugins_context_menu)
-
-		self.show_channels(setting(KEY_SHOW_CHANNELS, bool, True))
-		self.show_indicators(setting(KEY_SHOW_INDICATORS, bool, True))
 
 	# -----------------------------------------------------------------
 	# Handlers for internal signals:
@@ -598,6 +602,22 @@ class TrackWidget(QFrame):
 	def set_bcwidget_focus(self, state):
 		self.setGraphicsEffect(QGraphicsColorizeEffect() if state else None)
 
+	# -----------------------------------------------------------------
+	# Core UI functions:
+
+	@pyqtSlot(int)
+	def slot_spinner_changed(self, _):
+		self.spin_debounce.start(SPINNER_DEBOUNCE)
+
+	@pyqtSlot()
+	def debounce_timer_timeout(self):
+		self.channel = self.spn_channel.value()
+		self.sig_channel_set.emit(self.port, self.slot, self.channel)
+
+	def display_channel_selection(self):
+		with SigBlock(self.spn_channel):
+			self.spn_channel.setValue(self.channel)
+
 	def show_indicators(self, state):
 		self.led_midi.setVisible(state)
 
@@ -630,45 +650,6 @@ class HorizontalTrackWidget(TrackWidget):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.setFixedWidth(self.fixed_width)
-		self.frm_channels.setFixedHeight(84)
-		self.channel_buttons = []
-		channel_grid = self.frm_channels.layout()
-		channel_grid.setContentsMargins(0,0,0,0)
-		channel_grid.setSpacing(1)
-		for chan in range(16):
-			channel = chan + 1
-			button = QPushButton(self)
-			button.setText(str(channel))
-			button.setCheckable(True)
-			button.toggled.connect(partial(self.slot_channel_click, channel))
-			channel_grid.addWidget(button, floor(chan / 4), chan % 4)
-			self.channel_buttons.append(button)
-			setattr(self, f'b_chan_{channel:d}', button)
-		self.frm_channels.setVisible(setting(KEY_SHOW_CHANNELS, bool, True))
-
-	# -----------------------------------------------------------------
-	# Channel button / selection funcs:
-
-	@pyqtSlot(bool)
-	def slot_channel_click(self, button_channel, checked):
-		if checked:
-			with SigBlock(* self.channel_buttons):
-				for chan in range(16):
-					channel = chan + 1
-					if channel != button_channel and self.channel_buttons[chan].isChecked():
-						self.channel_buttons[chan].setChecked(False)
-			self.channel = button_channel
-		else:
-			self.channel = 0
-		self.sig_channel_set.emit(self.port, self.slot, self.channel)
-
-	def display_channel_selection(self):
-		button = self.channel_buttons[self.channel - 1]
-		with SigBlock(button):
-			button.setChecked(True)
-
-	def show_channels(self, state):
-		self.frm_channels.setVisible(state)
 
 	def create_plugin_widget(self, parent, plugin_def, *, saved_state = None):
 		return HorizontalTrackPluginWidget(parent, plugin_def, saved_state = saved_state)
@@ -687,26 +668,6 @@ class VerticalTrackWidget(TrackWidget):
 		super().__init__(*args, **kwargs)
 		self.setFixedHeight(self.fixed_height)
 		self.setMinimumWidth(self.minimum_width)
-		self.spin_debounce = QTimer(self)
-		self.spin_debounce.setSingleShot(True)
-		self.spin_debounce.timeout.connect(self.debounce_timer_timeout)
-		self.spn_channel.valueChanged.connect(self.slot_spinner_changed)
-
-	@pyqtSlot(int)
-	def slot_spinner_changed(self, _):
-		self.spin_debounce.start(SPINNER_DEBOUNCE)
-
-	@pyqtSlot()
-	def debounce_timer_timeout(self):
-		self.channel = self.spn_channel.value()
-		self.sig_channel_set.emit(self.port, self.slot, self.channel)
-
-	def display_channel_selection(self):
-		with SigBlock(self.spn_channel):
-			self.spn_channel.setValue(self.channel)
-
-	def show_channels(self, state):
-		self.spn_channel.setVisible(state)
 
 	def create_plugin_widget(self, parent, plugin_def, *, saved_state = None):
 		return VerticalTrackPluginWidget(parent, plugin_def, saved_state = saved_state)

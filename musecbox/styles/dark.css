@@ -230,6 +230,7 @@ QFrame#port10 #frm_port_widget_top QLabel {
 	margin: 1px;
 }
 
+
 #b_mute:checked {
 	background: #297781;
 }
@@ -240,16 +241,15 @@ QFrame#port10 #frm_port_widget_top QLabel {
 
 
 
-QFrame#frm_channels QPushButton {
-	font-size: 8pt;
-	font-weight: bold;
-	background: #444;
-	color: #888;
+QSpinBox#spn_channel,
+QPushButton#b_mute,
+QPushButton#b_solo {
+	max-height: 20px;
 }
 
-QFrame#frm_channels QPushButton:checked {
-	background: #549454;
-	color: #000;
+HorizontalTrackWidget QPushButton#b_mute,
+HorizontalTrackWidget QPushButton#b_solo {
+	max-width: 20px;
 }
 
 

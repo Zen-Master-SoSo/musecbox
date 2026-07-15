@@ -219,18 +219,15 @@ QPushButton#b_solo:checked {
 
 
 
-QFrame#frm_channels QPushButton {
-	font-size: 8pt;
-	background: #EBEBEB;
-	color: #888;
-	border: 1px solid #CCC;
-	border-radius: 0;
-	margin: 0;
+QSpinBox#spn_channel,
+QPushButton#b_mute,
+QPushButton#b_solo {
+	max-height: 20px;
 }
 
-QFrame#frm_channels QPushButton:checked {
-	background: #85D911;
-	color: #FFF;
+HorizontalTrackWidget QPushButton#b_mute,
+HorizontalTrackWidget QPushButton#b_solo {
+	max-width: 20px;
 }
 
 
