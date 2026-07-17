@@ -128,12 +128,8 @@ QListWidget::item {
 }
 
 
-QtListButton, #b_name {
-	font-family: "Liberation Sans Narrow", "Nimbus Sans Narrow", "Ubuntu Condensed", "sans serif";
+QtListButton {
 	font-size: 10pt;
-	font-weight: bold;
-	padding: 2px 4px;
-	color: #757575;
 }
 
 QtListButtonMenu::item {
@@ -204,25 +200,41 @@ QFrame#port10 #frm_port_widget_top QLabel {
 
 
 
-QPushButton#b_name:checked {
+#b_name:checked {
 	background: #C8DCEB;
 	border: 1px solid #0083DB;
 }
 
-QPushButton#b_mute:checked {
+#b_mute:checked {
 	background: #93E6E2;
 }
 
-QPushButton#b_solo:checked {
+#b_solo:checked {
 	background: #FA9696;
 }
 
 
+#spn_channel,
+#b_name {
+	font-family: "Liberation Sans Narrow", "Nimbus Sans Narrow", "Ubuntu Condensed", "sans serif";
+	font-size: 10pt;
+	font-weight: bold;
+	color: #757575;
+}
 
-QSpinBox#spn_channel,
+#spn_channel {
+	max-height: 16px;
+}
+
+#b_name {
+	padding: 5px;
+}
+
 QPushButton#b_mute,
 QPushButton#b_solo {
-	max-height: 20px;
+	max-height: 14px;
+	padding: 2px 2px;
+	icon-size: 14px;
 }
 
 HorizontalTrackWidget QPushButton#b_mute,

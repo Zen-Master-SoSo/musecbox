@@ -144,6 +144,7 @@ class TrackWidget(QFrame):
 
 		# Setup output select button:
 		self.b_output = QtListButton(self, self.track_targets)
+		self.b_output.setObjectName('b_output')
 		autofit(self.b_output)
 		self.b_output.setText(TEXT_NO_CONN)
 		self.b_output.sig_item_selected.connect(self.slot_output_client_selected)

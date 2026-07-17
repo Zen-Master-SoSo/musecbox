@@ -4,13 +4,16 @@ QWidget {
 }
 
 QWidget:hover {
-	background: #2E2828;
 	color: #E0CFCF;
 }
 
 QPushButton {
-	background: #343434;
+	background: #2E2E2E;
 	padding: 2px 3px;
+}
+
+QPushButton:hover {
+	background: #363636;
 }
 
 QWidget:disabled, QPushButton:disabled {
@@ -142,11 +145,12 @@ QDialog * {
 }
 
 
-QtListButton, #b_name, BalanceControlWidget QLabel {
+#b_name,
+#spn_channel,
+QtListButton,
+BalanceControlWidget QLabel {
 	font-family: "Liberation Sans Narrow", "Nimbus Sans Narrow", "Ubuntu Condensed", "sans serif";
-	font-size: 10pt;
 	font-weight: bold;
-	padding: 2px 4px;
 }
 
 QtListButtonMenu::item {
@@ -214,9 +218,10 @@ QFrame#port10 #frm_port_widget_top QLabel {
 
 
 #b_name {
-	background: #444;
+	background: #363030;
 	border: 1px solid #595959;
 	border-radius: 4px;
+	padding: 5px;
 }
 
 #b_name:checked {
@@ -235,22 +240,30 @@ QFrame#port10 #frm_port_widget_top QLabel {
 }
 
 #b_solo:checked {
-	background: #B40909;
+	background: #9C1919;
 }
 
 
 
-QSpinBox#spn_channel,
-QPushButton#b_mute,
-QPushButton#b_solo {
+#spn_channel {
+	font-size: 14px;
+}
+
+#spn_channel,
+#b_mute,
+#b_solo {
 	max-height: 20px;
 }
 
-HorizontalTrackWidget QPushButton#b_mute,
-HorizontalTrackWidget QPushButton#b_solo {
+HorizontalTrackWidget #b_mute,
+HorizontalTrackWidget #b_solo {
 	max-width: 20px;
 }
 
+VerticalTrackWidget #b_output {
+	font-size: 12px;
+	padding: 5px;
+}
 
 SmallSlider, SmallBalanceControl {
 	background-color: #2E2E2E;
@@ -403,10 +416,11 @@ QLabel#bcwidget_port_10:disabled {
 }
 
 
-
-
-PluginDialog, PluginDialog * {
-	background: #444444;
+SFZFileDialog,
+SFZFileDialog *,
+PluginDialog,
+PluginDialog * {
+	background: #3B3B3B;
 }
 
 PluginDialog ParameterGroup > * {
