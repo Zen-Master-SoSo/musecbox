@@ -1,20 +1,20 @@
 QWidget {
-	background: #363636;
-	color: #C0C0C0;
+	background: #292323;
+	color: #D4BEBE;
 }
 
 QWidget:hover {
-	color: #CCCCCC;
+	background: #2E2828;
+	color: #E0CFCF;
 }
 
 QPushButton {
 	background: #343434;
-	color:#D1D1D1;
 	padding: 2px 3px;
 }
 
 QWidget:disabled, QPushButton:disabled {
-	color: #707070;
+	color: #BAADAD;
 }
 
 
@@ -147,7 +147,6 @@ QtListButton, #b_name, BalanceControlWidget QLabel {
 	font-size: 10pt;
 	font-weight: bold;
 	padding: 2px 4px;
-	color: #999999;
 }
 
 QtListButtonMenu::item {

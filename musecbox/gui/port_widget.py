@@ -35,7 +35,7 @@ from mscore import VoiceName
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QVariant, QPoint
 from PyQt5.QtGui import QPalette, QIcon, QMouseEvent
-from PyQt5.QtWidgets import QSizePolicy, QFrame, QAction, QMenu, QMessageBox
+from PyQt5.QtWidgets import QSizePolicy, QFrame, QAction, QMenu, QMessageBox, QLayout
 
 from musecbox import (
 	carla,
@@ -66,8 +66,7 @@ class PortWidget(QFrame):
 			else []
 		self.setObjectName(f'port{port}')	# allow for styling per port number using style sheets
 
-		# Save "collapse_state" until layout is finalized:
-		self.collapse_state = False if saved_state is None \
+		self.is_collapsed = False if saved_state is None \
 			else "collapsed" in saved_state and saved_state["collapsed"]
 
 		# Create channel splitter
@@ -87,8 +86,11 @@ class PortWidget(QFrame):
 
 		# Setup input_select_widget
 		self.input_select_widget = QtListButton(self, self.port_sources)
+		self.input_select_widget.setMaximumWidth(22)
 		self.input_select_widget.sig_item_selected.connect(self.slot_input_selected)
-		self.layout.replaceWidget(self.input_select_placeholder, self.input_select_widget)
+		parent = self.input_select_placeholder.parent()
+		layout = parent.layout if isinstance(parent.layout, QLayout) else parent.layout()
+		layout.replaceWidget(self.input_select_placeholder, self.input_select_widget)
 		self.input_select_placeholder.setVisible(False)
 		self.input_select_placeholder.deleteLater()
 		del self.input_select_placeholder
@@ -109,7 +111,7 @@ class PortWidget(QFrame):
 									for patchbay_port in self.input_connections() ],
 			"tracks"			: [ track.encode_saved_state()
 									for track in self.track_layout ],
-			"collapsed"			: self.is_collapsed()
+			"collapsed"			: self.is_collapsed
 		}
 
 	@pyqtSlot(Plugin)
@@ -285,8 +287,11 @@ class PortWidget(QFrame):
 	def show_input(self, state):
 		self.input_select_widget.setVisible(state)
 
-	def is_collapsed(self):
-		return not self.frm_tracks.isVisible()
+	def implement_collapse(self, checked):
+		self.is_collapsed = bool(checked)
+		for track_widget in self.track_layout:
+			track_widget.setVisible(not checked)
+		main_window().set_dirty()
 
 	@pyqtSlot(TrackWidget)
 	def slot_remove_track(self, track_widget):
@@ -383,7 +388,7 @@ class PortWidget(QFrame):
 
 	@pyqtSlot(QMouseEvent)
 	def slot_port_lbl_dblclk(self, _):
-		self.implement_collapse(not self.is_collapsed())
+		self.implement_collapse(not self.is_collapsed)
 
 	def color(self):
 		return self.lbl_port.palette().color(QPalette.Background)
@@ -408,18 +413,10 @@ class HorizontalPortWidget(PortWidget):
 		self.track_layout = HListLayout(end_space = 10)
 		self.track_layout.setContentsMargins(0,0,0,0)
 		self.track_layout.setSpacing(0)
+		self.track_layout.setSizeConstraint(QLayout.SetNoConstraint)
 		self.frm_tracks.setLayout(self.track_layout)
-		# bottom spacer used when collapsing:
-		self.spc_bottom = QFrame()
-		self.spc_bottom.setVisible(False)
-		self.spc_bottom.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-		self.spc_bottom.setFrameShadow(self.frm_tracks.frameShadow())
-		self.spc_bottom.setFrameShape(self.frm_tracks.frameShape())
-		self.spc_bottom.setFrameStyle(self.frm_tracks.frameStyle())
-		self.layout.addWidget(self.spc_bottom)
 		# expand / collapse based on saved state:
-		self.setMinimumWidth(86)
-		self.implement_collapse(self.collapse_state)
+		self.implement_collapse(self.is_collapsed)
 
 	def _construct_track(self, slot, voice_name, sfz_filename, **kwargs):
 		return self._append_track(HorizontalTrackWidget(
@@ -442,16 +439,14 @@ class HorizontalPortWidget(PortWidget):
 
 	@pyqtSlot(bool)
 	def slot_collapse_click(self, checked):
-		if self.is_collapsed() != checked:
+		if self.is_collapsed != checked:
 			self.implement_collapse(checked)
 
 	def implement_collapse(self, checked):
-		self.frm_tracks.setVisible(not checked)
-		self.spc_bottom.setVisible(checked)
+		super().implement_collapse(checked)
 		self.b_collapse.setIcon(self.icon_expand if checked else self.icon_collapse)
 		with SigBlock(self.b_collapse):
 			self.b_collapse.setChecked(checked)
-		main_window().set_dirty()
 
 	def update_input_connection_ui(self):
 		ports = self.input_connections()
@@ -468,44 +463,20 @@ class VerticalPortWidget(PortWidget):
 	"""
 
 	ui				= 'vertical_port_widget.ui'
-	minimum_height	= 48
 
 	def __init__(self, parent, port, *, saved_state = None):
 		super().__init__(parent, port, saved_state = saved_state)
 		self.lbl_port.setText(str(self.port))
-		self.input_select_widget.setFixedHeight(22)
-		self.input_select_widget.setFixedWidth(22)
 		self.track_layout = GListLayout(8, VERTICAL_FLOW)
 		self.track_layout.setContentsMargins(0,0,0,0)
 		self.track_layout.setSpacing(0)
-		self.track_layout.sig_len_changed.connect(self.slot_layout_len_changed)
+		self.track_layout.setSizeConstraint(QLayout.SetNoConstraint)
 		self.frm_tracks.setLayout(self.track_layout)
-		# expand / collapse based on saved state:
-		self.implement_collapse(self.collapse_state)
+		self.implement_collapse(self.is_collapsed)
 
 	def _construct_track(self, slot, voice_name, sfz_filename, **kwargs):
 		return self._append_track(VerticalTrackWidget(
 			self, self.port, slot, voice_name, sfz_filename, **kwargs))
-
-	@pyqtSlot()
-	def slot_layout_len_changed(self):
-		"""
-		Triggered by track_layout.sig_len_changed
-		Sets the height of this VerticalPortWidget
-		"""
-		if self.frm_tracks.isVisible():
-			self.setFixedHeight(self._expanded_height())
-
-	def implement_collapse(self, checked):
-		self.frm_tracks.setVisible(not checked)
-		self.setFixedHeight(self.minimum_height if checked else self._expanded_height())
-		main_window().set_dirty()
-
-	def _expanded_height(self):
-		return max(
-			self.minimum_height,
-			VerticalTrackWidget.fixed_height * min(len(self.track_layout), 8)
-		)
 
 	def update_input_connection_ui(self):
 		ports = self.input_connections()

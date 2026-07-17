@@ -64,13 +64,8 @@
         <property name="maximumSize">
          <size>
           <width>23</width>
-          <height>23</height>
+          <height>16777215</height>
          </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
         </property>
         <property name="text">
          <string>C</string>

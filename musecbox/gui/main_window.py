@@ -47,7 +47,7 @@ from PyQt5.QtCore import	Qt, pyqtSignal, pyqtSlot, QThread, QPoint, QTimer, QEve
 							QDir
 from PyQt5.QtWidgets import QWidget, QMainWindow, QMessageBox, QFileDialog, QInputDialog, \
 							QMenu, QLabel, QAction, QActionGroup, QSizePolicy, QVBoxLayout, \
-							QApplication
+							QLayout, QApplication
 from PyQt5.QtGui import		QPainter, QColor, QBrush, QPalette, QIcon
 
 # musecbox imports
@@ -158,8 +158,9 @@ class MainWindow(QMainWindow):
 		self.frm_ports.setContextMenuPolicy(Qt.CustomContextMenu)
 		self.frm_ports.customContextMenuRequested.connect(self.slot_ports_context_menu)
 
-		if self.startup_options.vertical_layout and not self.startup_options.horizontal_layout \
-			or setting(KEY_VERTICAL_LAYOUT, bool):
+		vertical_layout = self.startup_options.vertical_layout or \
+			(setting(KEY_VERTICAL_LAYOUT, bool) and not self.startup_options.horizontal_layout)
+		if vertical_layout:
 			self.action_vertical_layout.setChecked(True)
 			self.port_layout = VListLayout(end_space = 10)
 			self.scrl_ports.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -170,6 +171,7 @@ class MainWindow(QMainWindow):
 
 		self.port_layout.setContentsMargins(0,0,0,0)
 		self.port_layout.setSpacing(0)
+		self.port_layout.setSizeConstraint(QLayout.SetNoConstraint)
 		self.frm_ports.setLayout(self.port_layout)
 
 		self.shared_plugin_layout = HListLayout(end_space = 10)
@@ -598,7 +600,6 @@ class MainWindow(QMainWindow):
 									for plugin in self.shared_plugin_layout ],
 			"bcwidget"			: self.balance_control_widget.encode_saved_state()
 		}
-
 
 	def sfz_copy_ops(self):
 		"""
@@ -1146,10 +1147,10 @@ class MainWindow(QMainWindow):
 		has_tracks = self.track_widget_count() > 0
 		self.action_collapse_all_ports.setEnabled(
 			has_ports and \
-			not all(port.is_collapsed() for port in self.port_layout))
+			not all(port.is_collapsed for port in self.port_layout))
 		self.action_expand_all_ports.setEnabled(
 			has_ports and \
-			any(port.is_collapsed() for port in self.port_layout))
+			any(port.is_collapsed for port in self.port_layout))
 		self.action_rollup_all_plugins.setEnabled(
 			has_tracks and \
 			not all(plugin.is_rolled_up() for plugin in self.iterate_track_plugin_widgets()))

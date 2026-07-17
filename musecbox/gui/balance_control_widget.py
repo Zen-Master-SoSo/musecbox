@@ -307,7 +307,7 @@ class BalanceControlWidget(QWidget):
 	def slot_focus_track(self, port, slot):
 		port = main_window().port_widget(port)
 		track = port.track_widget(slot)
-		if port.is_collapsed():
+		if port.is_collapsed:
 			port.implement_collapse(False)
 			QTimer.singleShot(TRACK_FOCUS_PORT_EXPAND_TIME,
 				partial(self.focus_exposed_track, track))
