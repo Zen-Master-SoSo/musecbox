@@ -19,12 +19,12 @@ QtListButton, #b_name {
 	padding: 2px 4px;
 }
 
-QtListButtonMenu::item {
+QtListButton QMenu::item {
 	font-size: 12px;
 	padding: 2px 4px 2px 4px;
 }
 
-QtListButtonMenu::item:selected {
+QtListButton QMenu::item:selected {
 	color: #FFF;
 	background: #F18559;
 }
@@ -89,32 +89,49 @@ QFrame#port9 #frm_port_widget_top QLabel {
 
 
 
-QSpinBox#spn_channel,
-QPushButton#b_mute,
-QPushButton#b_solo {
-	max-height: 20px;
+MIDIIndicator {
+	background: #D9D9D9;
+	border: 3px solid #CCD1D4;
 }
 
-HorizontalTrackWidget QPushButton#b_mute,
-HorizontalTrackWidget QPushButton#b_solo {
-	max-width: 20px;
-}
-
-VerticalTrackWidget QPushButton#b_mute,
-VerticalTrackWidget QPushButton#b_solo {
-	max-width: 23px;
+MIDIIndicator:enabled {
+	background: #96D0F2;
+	border: 3px solid #A4BFCF;
 }
 
 
-
-
-QPushButton#b_mute:checked {
-	background: #5AD5FA;
+AudioIndicator {
+	background: #CFCFCF;
+	border: 3px solid #C4C4B9;
 }
 
-QPushButton#b_solo:checked {
-	color: #FFFFFF;
-	background: #FC3232;
+AudioIndicator:enabled {
+	background: #ECF283;
+	border: 3px solid #CED19B;
+}
+
+
+
+HorizontalTrackWidget #spn_channel {
+	max-width: 40px;
+}
+
+
+
+VerticalTrackWidget #b_name {
+	width: 88px;
+}
+
+VerticalTrackWidget #frm_activity {
+	min-width: 24px;
+}
+
+VerticalTrackWidget #b_rollup {
+	width: 20px;
+}
+
+VerticalTrackWidget #b_output {
+	width: 60px;
 }
 
 
@@ -263,6 +280,11 @@ QLabel#bcwidget_port_9:disabled {
 QFrame#frm_shared_plugins {
 	background: #B5B5B5;
 }
+
+SharedPluginWidget AudioIndicator {
+	max-height: 16px;
+}
+
 
 
 #frm_statusbar QLabel,

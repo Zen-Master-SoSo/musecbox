@@ -30,7 +30,7 @@
   <property name="frameShadow">
    <enum>QFrame::Raised</enum>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,100,0">
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,100,0">
    <property name="spacing">
     <number>1</number>
    </property>
@@ -48,24 +48,6 @@
    </property>
    <item>
     <widget class="QPushButton" name="b_name">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>140</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>140</width>
-       <height>16777215</height>
-      </size>
-     </property>
      <property name="font">
       <font>
        <pointsize>9</pointsize>
@@ -99,43 +81,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="led_placeholder" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>22</width>
-       <height>22</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="b_solo">
-     <property name="toolTip">
-      <string>Solo</string>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="b_mute">
-     <property name="toolTip">
-      <string>Mute</string>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-    </widget>
+    <widget class="QFrame" name="frm_activity"/>
    </item>
    <item>
     <widget class="QFrame" name="frm_plugins">
@@ -149,24 +95,6 @@
    </item>
    <item>
     <widget class="QPushButton" name="b_output_placeholder">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>88</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>88</width>
-       <height>16777215</height>
-      </size>
-     </property>
      <property name="text">
       <string>Output client</string>
      </property>

@@ -358,7 +358,7 @@ class MainWindow(QMainWindow):
 		self.lbl_sample_rate.setText(f'{rate:.0f}')
 
 	def start_timers(self):
-		if self.action_show_indicators.isChecked():
+		if setting(KEY_SHOW_INDICATORS, bool, True):
 			self._update_indicator_timer.start()
 		self._update_xrun_timer.start()
 		self._update_load_timer.start()

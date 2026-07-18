@@ -209,6 +209,7 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 			if self.peak_out.isVisible():
 				self._update_peak_meter()
 		"""
+		logging.warning('not implemented')
 
 	def inline_display_redraw(self):
 		_ = carla().render_inline_display(self.plugin_id,
@@ -330,42 +331,29 @@ class SharedPluginWidget(PluginWidget):
 	ui = 'shared_plugin_widget.ui'
 	fixed_height		= 152
 	fixed_width			= 116
-	balance_width		= 110
-	balance_height		= 22
 	progressbar_width	= 84
 	min_led_audio_peak	= 0.001
 
 	def __init__(self, parent, plugin_def, *, saved_state = None):
 		super().__init__(parent, plugin_def, saved_state = saved_state)
 
-		# Setup indicators
-		lo_indicators = QHBoxLayout()
-		lo_indicators.setContentsMargins(0,0,0,0)
-		lo_indicators.setSpacing(1)
-		lo_indicators.setSizeConstraint(QLayout.SetMinimumSize)
-		self.frm_activity.setLayout(lo_indicators)
-		policy = QSizePolicy()
-		policy.setHorizontalStretch(5)
-		for name in ["led_audio", "led_midi"]:
-			setattr(self, name, ActivityIndicator(self, name))
-			getattr(self, name).setSizePolicy(policy)
-			lo_indicators.addWidget(getattr(self, name))
-
-		# Setup mute/solo buttons
-		self.b_mute.setIcon(QIcon(join(APP_PATH, 'res', 'mute.svg')))
-		self.b_solo.setIcon(QIcon(join(APP_PATH, 'res', 'solo.svg')))
+		# Setup audio activity indicator:
+		self.led_audio = AudioIndicator(self)
+		self.led_audio.setToolTip('Shows incoming audio activity')
+		lo = QHBoxLayout()
+		lo.setContentsMargins(0,0,0,0)
+		lo.addWidget(self.led_audio)
+		self.frm_activity.setLayout(lo)
 
 		# Setup balance control widget:
 		self.w_balance = SmallBalanceControl(self)
-		self.w_balance.setFixedWidth(self.balance_width)
-		self.w_balance.setFixedHeight(self.balance_height)
 		self.layout().replaceWidget(self.w_balance_placeholder, self.w_balance)
 		self.w_balance_placeholder.setVisible(False)
 		self.w_balance_placeholder.deleteLater()
 		del self.w_balance_placeholder
 
 		# Do initial fill of b_output items:
-		self.b_output = QtListButton(self, self.available_out_clients)
+		self.b_output = QtListButton(self, fill_callback = self.available_out_clients)
 		autofit(self.b_output)
 		self.b_output.setText(TEXT_NO_CONN)
 		self.b_output.sig_item_selected.connect(self.slot_output_client_selected)
@@ -379,12 +367,12 @@ class SharedPluginWidget(PluginWidget):
 
 	def finalize_init(self):
 		super().finalize_init()
-		# Stero / mono input "LED" indicator (sets "_update_audio_led" func):
+		# Stero / mono input "LED" indicator (sets "update_audio_led" func):
 		if self._audio_in_count > 0:
 			if self._audio_in_count > 1:
-				self._update_audio_led = self._update_audio_led_stereo
+				self.update_audio_led = self._update_audio_led_stereo
 			else:
-				self._update_audio_led = self._update_audio_led_mono
+				self.update_audio_led = self._update_audio_led_mono
 
 	def available_out_clients(self):
 		return [ (client.moniker, client) for client in chain(
@@ -413,7 +401,7 @@ class SharedPluginWidget(PluginWidget):
 		self.w_balance.update()
 
 	# pylint: disable-next = method-hidden
-	def _update_audio_led(self):
+	def update_audio_led(self):
 		"""
 		Dummy function, replaced with either _update_audio_led_stereo or
 		_update_audio_led_mono, depending on the number of audio outputs.
@@ -429,12 +417,12 @@ class SharedPluginWidget(PluginWidget):
 	def update_indicators(self):
 		"""
 		Called only when the indicator timer is started.
-		If / when you decide to use peak meters, use this:
-			if self.peak_out.isVisible():
-				self._update_peak_meter()
 		"""
 		if not self.removing_from_carla:
-			self._update_audio_led()
+			self.update_audio_led()
+
+	def show_indicators(self, state):
+		self.frm_activity.setVisible(state)
 
 	@pyqtSlot(str, QVariant)
 	def slot_output_client_selected(self, _, client):
@@ -473,52 +461,38 @@ class SharedPluginWidget(PluginWidget):
 		self.panning = 0.0
 		self.w_balance.update()
 
-	def midi_active(self, state):
-		self.led_midi.light(state)
 
-	def show_indicators(self, state):
-		self.frm_activity.setVisible(state)
+# -----------------------------------------------------------------
+# Indicators (Audio, MIDI) for plugin widgets:
+
+class ActivityIndicator(QLabel):
+	"""
+	Base class of MIDIIndicator and AudioIndicator
+	"""
+
+	def __init__(self, parent):
+		super().__init__(parent)
+		self.setEnabled(False)
+		self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+
+	def light(self, state):
+		self.setEnabled(state)
+
+
+class MIDIIndicator(ActivityIndicator):
+	"""
+	Class used for css name selector
+	"""
+
+
+class AudioIndicator(ActivityIndicator):
+	"""
+	Class used for css name selector
+	"""
 
 
 # -----------------------------------------------------------------
-# Indicators (Audio, MIDI, CV) for plugin widgets:
-
-class ActivityIndicator(QWidget):
-
-	led_ctrl_off = None
-	led_ctrl_on = None
-	led_audio_off = None
-	led_audio_on = None
-	led_midi_off = None
-	led_midi_on = None
-
-	def __init__(self, parent, name):
-		super().__init__(parent)
-		if __class__.led_ctrl_off is None:
-			__class__.led_ctrl_off = QPixmap(join(APP_PATH, 'res', 'control-icon-off.png'))
-			__class__.led_ctrl_on = QPixmap(join(APP_PATH, 'res', 'control-icon-on.png'))
-			__class__.led_audio_off = QPixmap(join(APP_PATH, 'res', 'audio-icon-off.png'))
-			__class__.led_audio_on = QPixmap(join(APP_PATH, 'res', 'audio-icon-on.png'))
-			__class__.led_midi_off = QPixmap(join(APP_PATH, 'res', 'midi-icon-off.png'))
-			__class__.led_midi_on = QPixmap(join(APP_PATH, 'res', 'midi-icon-on.png'))
-		self.name = name
-		self.setFixedHeight(20)
-		self.setFixedWidth(20)
-		self.off_pixmap = getattr(__class__, self.name + '_off')
-		self.on_pixmap = getattr(__class__, self.name + '_on')
-		self._lit = False
-
-	def light(self, state):
-		if state != self._lit:
-			self._lit = state
-			self.update()
-
-	# pylint: disable-next = invalid-name
-	def paintEvent(self, _):
-		painter = QPainter(self)
-		painter.drawPixmap(QPoint(0,0), self.on_pixmap if self._lit else self.off_pixmap)
-		painter.end()
-
+# Small balance control for plugin widgets:
 
 class SmallBalanceControl(QWidget):
 

@@ -85,8 +85,7 @@ class PortWidget(QFrame):
 		self.frm_tracks.customContextMenuRequested.connect(self.slot_tracks_context_menu)
 
 		# Setup input_select_widget
-		self.input_select_widget = QtListButton(self, self.port_sources)
-		self.input_select_widget.setMaximumWidth(22)
+		self.input_select_widget = QtListButton(self, fill_callback = self.port_sources)
 		self.input_select_widget.sig_item_selected.connect(self.slot_input_selected)
 		parent = self.input_select_placeholder.parent()
 		layout = parent.layout if isinstance(parent.layout, QLayout) else parent.layout()

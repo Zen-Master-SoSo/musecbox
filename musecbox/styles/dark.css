@@ -140,28 +140,35 @@ QToolBar {
 }
 
 
+QListWidget::item {
+	padding: 4px;
+}
+
 QDialog * {
 	font-size: 13px;
 }
 
 
 #b_name,
+#b_output,
 #spn_channel,
 QtListButton,
+QtListButton QMenu,
 BalanceControlWidget QLabel {
 	font-family: "Liberation Sans Narrow", "Nimbus Sans Narrow", "Ubuntu Condensed", "sans serif";
-	font-weight: bold;
 }
 
-QtListButtonMenu::item {
+QtListButton {
 	font-size: 12px;
-	padding: 2px 4px 2px 4px;
 }
 
 
-QListWidget::item {
-	padding: 4px;
+QtListButton QMenu::item {
+	color: #E0D1D1;
+	font-size: 12px;
+	padding: 3px 6px 3px 6px;
 }
+
 
 QFrame#frm_port_widget_top QLabel {
 	background: #444;
@@ -210,6 +217,27 @@ QFrame#port10 #frm_port_widget_top QLabel {
 }
 
 
+MIDIIndicator {
+	background: #202430;
+	border: 3px solid #161B24;
+}
+
+MIDIIndicator:enabled {
+	background: #264DAB;
+	border: 3px solid #27375E;
+}
+
+
+AudioIndicator {
+	background: #292B10;
+	border: 3px solid #282913;
+}
+
+AudioIndicator:enabled {
+	background: #6B7300;
+	border: 3px solid #373B0D;
+}
+
 
 #frm_volume QLabel,
 #frm_wet QLabel {
@@ -229,53 +257,41 @@ QFrame#port10 #frm_port_widget_top QLabel {
 	border: 1px solid #850000;
 }
 
-#b_rollup {
-	height: 16px;
-	margin: 1px;
-}
-
-
-#b_mute:checked {
-	background: #297781;
-}
-
-#b_solo:checked {
-	background: #9C1919;
-}
-
-
-
 #spn_channel {
 	font-size: 14px;
 }
 
-#spn_channel,
-#b_mute,
-#b_solo {
+#spn_channel {
 	max-height: 20px;
 }
 
-HorizontalTrackWidget #b_mute,
-HorizontalTrackWidget #b_solo {
-	max-width: 20px;
+
+VerticalTrackWidget #b_name {
+	width: 80px;
+}
+
+VerticalTrackWidget #frm_activity {
+	min-width: 26px;
+}
+
+VerticalTrackWidget #b_rollup {
+	width: 20px;
 }
 
 VerticalTrackWidget #b_output {
-	font-size: 12px;
-	padding: 5px;
+	width: 60px;
 }
+
 
 SmallSlider, SmallBalanceControl {
 	background-color: #2E2E2E;
 }
-
 
 SmallSlider {
 	font-size: 9pt;
 	border-radius: 0;
 	text-align: center;
 }
-
 
 
 SmallBalanceControl {
@@ -414,6 +430,13 @@ QLabel#bcwidget_port_9:disabled {
 QLabel#bcwidget_port_10:disabled {
 	background: rgba(97, 97, 0, 160);
 }
+
+
+
+SharedPluginWidget #frm_activity {
+	max-height: 20px;
+}
+
 
 
 SFZFileDialog,

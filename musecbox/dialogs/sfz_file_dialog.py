@@ -114,7 +114,7 @@ class SFZFileDialog(QDialog):
 
 		# Setup input select button:
 		if self.previewer:
-			self.b_input = QtListButton(self, SFZPreviewer.midi_sources)
+			self.b_input = QtListButton(self, fill_callback = SFZPreviewer.midi_sources)
 			self.b_input.setText(setting(KEY_PREVIEWER_MIDI_SRC, str, TEXT_NO_CONN))
 			self.b_input.sig_item_selected.connect(self.slot_input_selected)
 			self.input_layout.replaceWidget(self.input_select_placeholder, self.b_input)
@@ -124,7 +124,7 @@ class SFZFileDialog(QDialog):
 
 		# Setup output select button:
 		if self.previewer:
-			self.b_output = QtListButton(self, SFZPreviewer.audio_targets)
+			self.b_output = QtListButton(self, fill_callback = SFZPreviewer.audio_targets)
 			self.b_output.setText(setting(KEY_PREVIEWER_AUDIO_TGT, str, TEXT_NO_CONN))
 			self.b_output.sig_item_selected.connect(self.slot_output_client_selected)
 			self.output_layout.replaceWidget(self.b_output_placeholder, self.b_output)

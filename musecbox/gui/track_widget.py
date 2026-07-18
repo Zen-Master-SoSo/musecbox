@@ -40,7 +40,7 @@ from PyQt5 import uic
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QVariant, QTimer, QPoint
 from PyQt5.QtWidgets import QApplication, QInputDialog, QPushButton, QFrame, \
-							QAction, QMenu, QGraphicsColorizeEffect
+							QHBoxLayout, QAction, QMenu, QGraphicsColorizeEffect
 
 # musecbox imports
 from musecbox import (
@@ -60,7 +60,7 @@ from musecbox import (
 from musecbox.liquidsfz import LiquidSFZ
 from musecbox.gui.plugin_widgets import	TrackPluginWidget, \
 										VerticalTrackPluginWidget, HorizontalTrackPluginWidget, \
-										ActivityIndicator
+										MIDIIndicator
 
 SPINNER_DEBOUNCE = 250
 MINIMUM_MONIKER_LENGTH = 3
@@ -111,17 +111,13 @@ class TrackWidget(QFrame):
 		self.spn_channel.valueChanged.connect(self.slot_spinner_changed)
 
 		# Setup custom volume indicator
-		self.led_midi = ActivityIndicator(self, 'led_midi')
-		self.led_midi.setToolTip('Shows MIDI activity in the synth')
-		self.layout().replaceWidget(self.led_placeholder, self.led_midi)
-		self.led_placeholder.setVisible(False)
-		self.led_placeholder.deleteLater()
-		del self.led_placeholder
+		self.led_midi = MIDIIndicator(self)
+		self.led_midi.setToolTip('Shows incoming MIDI activity')
+		lo = QHBoxLayout()
+		lo.setContentsMargins(0,0,0,0)
+		lo.addWidget(self.led_midi)
+		self.frm_activity.setLayout(lo)
 		self.show_indicators(setting(KEY_SHOW_INDICATORS, bool, True))
-
-		# Setup mute/solo buttons
-		self.b_mute.setIcon(QIcon(join(APP_PATH, 'res', 'mute.svg')))
-		self.b_solo.setIcon(QIcon(join(APP_PATH, 'res', 'solo.svg')))
 
 		# Setup track plugins layout
 		self.plugin_layout = VListLayout(end_space = 10) \
@@ -143,7 +139,7 @@ class TrackWidget(QFrame):
 		]: src.connect(tgt, type = Qt.QueuedConnection)
 
 		# Setup output select button:
-		self.b_output = QtListButton(self, self.track_targets)
+		self.b_output = QtListButton(self, fill_callback = self.track_targets)
 		self.b_output.setObjectName('b_output')
 		autofit(self.b_output)
 		self.b_output.setText(TEXT_NO_CONN)
@@ -620,7 +616,7 @@ class TrackWidget(QFrame):
 			self.spn_channel.setValue(self.channel)
 
 	def show_indicators(self, state):
-		self.led_midi.setVisible(state)
+		self.frm_activity.setVisible(state)
 
 	def show_plugin_volume(self, state):
 		for plugin_widget in self.plugin_layout:
@@ -662,12 +658,10 @@ class VerticalTrackWidget(TrackWidget):
 	"""
 
 	ui				= 'vertical_track_widget.ui'
-	fixed_height	= 28
 	minimum_width	= 300
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-		self.setFixedHeight(self.fixed_height)
 		self.setMinimumWidth(self.minimum_width)
 
 	def create_plugin_widget(self, parent, plugin_def, *, saved_state = None):
