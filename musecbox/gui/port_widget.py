@@ -423,12 +423,12 @@ class HorizontalPortWidget(PortWidget):
 
 	@pyqtSlot(TrackWidget)
 	def slot_move_track_previous(self, track_widget):
-		self.track_layout.move_up(track_widget)
+		self.track_layout.move_previous(track_widget)
 		self._renumber_tracks()
 
 	@pyqtSlot(TrackWidget)
 	def slot_move_track_next(self, track_widget):
-		self.track_layout.move_down(track_widget)
+		self.track_layout.move_next(track_widget)
 		self._renumber_tracks()
 
 	def _renumber_tracks(self):

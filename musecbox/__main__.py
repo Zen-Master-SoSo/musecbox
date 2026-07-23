@@ -21,7 +21,7 @@
 musecbox hosts multiple LiquidSFZ instances for real-time music generation.
 """
 import sys, logging, argparse
-from os import environ, unlink
+from os import environ, unlink, getlogin
 from os.path import abspath, expanduser
 from socket import socket, AF_UNIX, SOCK_DGRAM, error as sock_error
 from PyQt5.QtCore import Qt
@@ -31,23 +31,43 @@ from qt_extras import DevilBox, exceptions_hook
 from simple_carla import EngineInitFailure
 from musecbox import carla, SOCKET_PATH, CARRIAGE_RETURN, LOG_FORMAT
 from musecbox.gui.main_window import MainWindow
+from musecbox.install import main as install
 
 
 def main():
+	try:
+		sys.getwindowsversion()
+	except AttributeError:
+		is_windows = False
+	else:
+		is_windows = True
+
 	parser = argparse.ArgumentParser()
 	parser.epilog = __doc__
 	parser.add_argument('Filename', type = str, nargs = '?',
 		help = 'MuseScore score to use for port setup, or saved port setup')
 	layout_group = parser.add_mutually_exclusive_group()
-	layout_group.add_argument("--horizontal-layout", "-H", action = "store_true",
-		help = "Use standard (horizontal) layout")
-	layout_group.add_argument("--vertical-layout", "-V", action = "store_true",
-		help = "Use compact (vertical) layout")
-	parser.add_argument("--log-file", "-l", type = str,
-		help = "Log to this file")
-	parser.add_argument("--verbose", "-v", action = "store_true",
-		help = "Show more detailed debug information")
+	layout_group.add_argument('--horizontal-layout', '-H', action = 'store_true',
+		help = 'Use standard (horizontal) layout')
+	layout_group.add_argument('--vertical-layout', '-V', action = 'store_true',
+		help = 'Use compact (vertical) layout')
+	parser.add_argument('--log-file', '-l', type = str,
+		help = 'Log to this file')
+	if not is_windows:
+		username = getlogin()
+		parser.add_argument('--install', '-i', action = 'store_true',
+			help = """Install this application into your desktop
+environment. This will create a desktop launcher so you can start MusecBox from
+your menu or Dash, and associate MusecBox with MusecBox projects, MuseScore
+files, and SFZs.""")
+	parser.add_argument('--verbose', '-v', action = 'store_true',
+		help = 'Show more detailed debug information')
 	options = parser.parse_args()
+
+	if not is_windows and options.install:
+		install()
+		print(f'Successfully installed MusecBox for {username} on this machine.')
+		return 0
 
 	# Setup logging
 	if 'TERM' in environ:
@@ -93,12 +113,6 @@ def main():
 	except FileNotFoundError:
 		pass
 
-	try:
-		sys.getwindowsversion()
-	except AttributeError:
-		is_windows = False
-	else:
-		is_windows = True
 	if is_windows:
 		import win32api, win32process, win32con
 		pid = win32api.GetCurrentProcessId()
@@ -118,7 +132,7 @@ def main():
 	try:
 		main_window = MainWindow(options)
 	except EngineInitFailure as e:
-		DevilBox(f'<h2>{e.args[0]}</h2><p>Possible reason:<br/>{e.args[1]}<p>' \
+		DevilBox(f'<h2>{e.args[0]}</h2><p>Possible reason:<br/>{e.args[1]}</p>' \
 			if e.args[1] else e.args[0])
 		return 1
 	main_window.show()
@@ -129,7 +143,7 @@ def main():
 
 
 if __name__ == "__main__":
-	sys.exit(main())
+	sys.exit(main() or 0)
 
 
 #  end musecbox/__main__.py

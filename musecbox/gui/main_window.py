@@ -840,8 +840,8 @@ class MainWindow(QMainWindow):
 		port_widget = self.port_layout[self.port_assignments[port]]
 		if port_widget.is_removing:
 			self.port_layout.remove(port_widget)
-			self.resync_port_list()
 			port_widget.deleteLater()
+			self.resync_port_list()
 			self.set_dirty()
 
 	# -----------------------------------------------------------------

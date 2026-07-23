@@ -121,7 +121,7 @@ class TestApp(QApplication):
 		try:
 			carla().engine_init()
 		except EngineInitFailure as e:
-			DevilBox(f'<h2>{e.args[0]}</h2><p>Possible reason:<br/>{e.args[1]}<p>' \
+			DevilBox(f'<h2>{e.args[0]}</h2><p>Possible reason:<br/>{e.args[1]}</p>' \
 				if e.args[1] else e.args[0])
 			QTimer.singleShot(0, self.quit)	# Event loop hasn't started yet.
 

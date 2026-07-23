@@ -454,6 +454,7 @@ class PartWidget(QWidget):
 		if self.parent_dialog().get_edit_permission():
 			self.score_part.instrument().remove_channel(chan_widget.lbl_voice.text())
 			self.channel_widgets.remove(chan_widget)
+			chan_widget.deleteLater()
 			self.update_ui()
 			self.sig_channels_changed.emit()
 

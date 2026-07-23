@@ -407,7 +407,7 @@ class TestApp(QApplication):
 		try:
 			carla().engine_init()
 		except EngineInitFailure as e:
-			DevilBox(f'<h2>{e.args[0]}</h2><p>Possible reason:<br/>{e.args[1]}<p>' \
+			DevilBox(f'<h2>{e.args[0]}</h2><p>Possible reason:<br/>{e.args[1]}</p>' \
 				if e.args[1] else e.args[0])
 			# Start dialog using a timer, as the event loop hasn't started yet:
 			QTimer.singleShot(0, self.run_dialog)
