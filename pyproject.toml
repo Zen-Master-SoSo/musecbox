@@ -14,7 +14,7 @@ dependencies = [
 	"sfzen >= 2.3.1",
 	"recent_items_list >= 1.1.2",
 	"soso_qt_extras >= 1.10.0",
-	"xdg_soso >= 1.0.1"
+	"xdg_soso >= 1.0.2"
 ]
 
 [project.urls]
@@ -22,7 +22,6 @@ Home = "https://github.com/Zen-Master-SoSo/musecbox"
 
 [project.scripts]
 musecbox = "musecbox.__main__:main"
-musecbox-install = "musecbox.install:main"
 mbx-apply = "musecbox.scripts.mbx_apply:main"
 mbx-project-info = "musecbox.scripts.mbx_project_info:main"
 mbx-project-check = "musecbox.scripts.mbx_project_check:main"

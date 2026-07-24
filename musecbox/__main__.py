@@ -28,10 +28,10 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QGuiApplication
 from qt_extras import DevilBox, exceptions_hook
+from xdg_soso import is_xdg
 from simple_carla import EngineInitFailure
-from musecbox import carla, SOCKET_PATH, CARRIAGE_RETURN, LOG_FORMAT
+from musecbox import carla, MusecBoxSetup, SOCKET_PATH, CARRIAGE_RETURN, LOG_FORMAT
 from musecbox.gui.main_window import MainWindow
-from musecbox.install import main as install
 
 
 def main():
@@ -45,7 +45,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.epilog = __doc__
 	parser.add_argument('Filename', type = str, nargs = '?',
-		help = 'MuseScore score to use for port setup, or saved port setup')
+		help = 'MusecBox project, MuseScore score, MusecBox track setup, or SFZ')
 	layout_group = parser.add_mutually_exclusive_group()
 	layout_group.add_argument('--horizontal-layout', '-H', action = 'store_true',
 		help = 'Use standard (horizontal) layout')
@@ -53,21 +53,20 @@ def main():
 		help = 'Use compact (vertical) layout')
 	parser.add_argument('--log-file', '-l', type = str,
 		help = 'Log to this file')
-	if not is_windows:
-		username = getlogin()
+	if is_xdg():
 		parser.add_argument('--install', '-i', action = 'store_true',
 			help = """Install this application into your desktop
 environment. This will create a desktop launcher so you can start MusecBox from
 your menu or Dash, and associate MusecBox with MusecBox projects, MuseScore
 files, and SFZs.""")
+		parser.add_argument('--uninstall', '-u', action = 'store_true',
+			help = """Remove MusecBox from your desktop environment.
+The program will still be on your computer, and can be called from the command
+line as "musecbox", but you won't be able to see it in your desktop applications
+menu.""")
 	parser.add_argument('--verbose', '-v', action = 'store_true',
 		help = 'Show more detailed debug information')
 	options = parser.parse_args()
-
-	if not is_windows and options.install:
-		install()
-		print(f'Successfully installed MusecBox for {username} on this machine.')
-		return 0
 
 	# Setup logging
 	if 'TERM' in environ:
@@ -82,64 +81,72 @@ files, and SFZs.""")
 	else:
 		logging.basicConfig(level = log_level, format = LOG_FORMAT)
 
-	#-----------------------------------------------------------------------
-	# Annoyance fix per:
-	# https://stackoverflow.com/questions/986964/qt-session-management-error
-	try:
-		del environ['SESSION_MANAGER']
-	except KeyError:
-		pass
-	#-----------------------------------------------------------------------
-
-	# Connect to running instance:
-	sock = socket(AF_UNIX, SOCK_DGRAM)
-	try:
-		sock.connect(SOCKET_PATH)
-	except ConnectionRefusedError:
-		unlink(SOCKET_PATH)
-	except FileNotFoundError:
-		pass
-	except sock_error as e:
-		logging.error('%s: %s', e.__class__.__name__, str(e))
-		return 1
+	if options.install:
+		MusecBoxSetup().install()
+		print(f'Successfully installed MusecBox for {getlogin()} on this machine.')
+	elif options.uninstall:
+		MusecBoxSetup().uninstall()
+		print(f'Successfully uninstalled MusecBox for {getlogin()} on this machine.')
 	else:
-		sock.sendall(bytes(abspath(options.Filename) \
-			if options.Filename else '???', 'utf-8') + CARRIAGE_RETURN)
-		sock.close()
-		return 4
-	# Delete previous SOCKET_PATH hanging around
-	try:
-		unlink(SOCKET_PATH)
-	except FileNotFoundError:
-		pass
 
-	if is_windows:
-		import win32api, win32process, win32con
-		pid = win32api.GetCurrentProcessId()
-		handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
-		win32process.SetPriorityClass(handle, win32process.ABOVE_NORMAL_PRIORITY_CLASS)
-	else:
-		from os import nice
+		#-----------------------------------------------------------------------
+		# Annoyance fix per:
+		# https://stackoverflow.com/questions/986964/qt-session-management-error
 		try:
-			nice(-10)
-		except PermissionError:
-			logging.warning('Unable to set process priority')
+			del environ['SESSION_MANAGER']
+		except KeyError:
+			pass
+		#-----------------------------------------------------------------------
+
+		# Connect to running instance:
+		sock = socket(AF_UNIX, SOCK_DGRAM)
+		try:
+			sock.connect(SOCKET_PATH)
+		except ConnectionRefusedError:
+			unlink(SOCKET_PATH)
+		except FileNotFoundError:
+			pass
+		except sock_error as e:
+			logging.error('%s: %s', e.__class__.__name__, str(e))
+			return 1
+		else:
+			sock.sendall(bytes(abspath(options.Filename) \
+				if options.Filename else '???', 'utf-8') + CARRIAGE_RETURN)
+			sock.close()
+			return 4
+		# Delete previous SOCKET_PATH hanging around
+		try:
+			unlink(SOCKET_PATH)
+		except FileNotFoundError:
 			pass
 
-	application = QApplication([])
-	sys.excepthook = exceptions_hook
-	QGuiApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
-	try:
-		main_window = MainWindow(options)
-	except EngineInitFailure as e:
-		DevilBox(f'<h2>{e.args[0]}</h2><p>Possible reason:<br/>{e.args[1]}</p>' \
-			if e.args[1] else e.args[0])
-		return 1
-	main_window.show()
-	return_value = application.exec()
-	unlink(SOCKET_PATH)
-	carla().delete()
-	return return_value
+		if is_windows:
+			import win32api, win32process, win32con
+			pid = win32api.GetCurrentProcessId()
+			handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
+			win32process.SetPriorityClass(handle, win32process.ABOVE_NORMAL_PRIORITY_CLASS)
+		else:
+			from os import nice
+			try:
+				nice(-10)
+			except PermissionError:
+				logging.warning('Unable to set process priority')
+				pass
+
+		application = QApplication([])
+		sys.excepthook = exceptions_hook
+		QGuiApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+		try:
+			main_window = MainWindow(options)
+		except EngineInitFailure as e:
+			DevilBox(f'<h2>{e.args[0]}</h2><p>Possible reason:<br/>{e.args[1]}</p>' \
+				if e.args[1] else e.args[0])
+			return 1
+		main_window.show()
+		return_value = application.exec()
+		unlink(SOCKET_PATH)
+		carla().delete()
+		return return_value
 
 
 if __name__ == "__main__":

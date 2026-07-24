@@ -35,7 +35,7 @@ from mscore import VoiceName
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QVariant, QPoint
 from PyQt5.QtGui import QPalette, QIcon, QMouseEvent
-from PyQt5.QtWidgets import QSizePolicy, QFrame, QAction, QMenu, QMessageBox, QLayout
+from PyQt5.QtWidgets import QFrame, QAction, QMenu, QMessageBox, QLayout
 
 from musecbox import (
 	carla,

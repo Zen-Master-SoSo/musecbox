@@ -38,7 +38,7 @@ from PyQt5.QtCore import	Qt, pyqtSignal, pyqtSlot, QEvent, QVariant, \
 from PyQt5.QtGui import		QPainter, QColor, QBrush, QPen, QPalette, \
 							QPixmap, QIcon, QFontMetrics
 from PyQt5.QtWidgets import QWidget, QDialog, QInputDialog, QLabel, QFrame, QTabWidget, \
-							QProgressBar, QLayout, QHBoxLayout, QVBoxLayout, QGridLayout, \
+							QProgressBar, QHBoxLayout, QVBoxLayout, QGridLayout, \
 							QAction, QSizePolicy
 
 from musecbox import	carla, main_window, \

@@ -75,6 +75,7 @@ from simple_carla import (
 )
 from simple_carla.qt import CarlaQt
 from qt_extras import DevilBox
+from xdg_soso import XDGSetup, XDGMime
 
 __version__ = "0.13.0"
 
@@ -401,5 +402,31 @@ def unbold(widget):
 	font = widget.font()
 	font.setWeight(QFont.Normal)
 	widget.setFont(font)
+
+# -------------------------------------------------------------------
+# XDGSetup class
+
+class MusecBoxSetup(XDGSetup):
+
+	def __init__(self):
+		super().__init__('musecbox', 'MusecBox')
+		self._vendor_name = 'zensoso'
+		self._comment = 'A GUI application which hosts .sfz -based synthesizers ' + \
+			'designed to be tightly integrated with MuseScore.'
+		self._categories = ['AudioVideo', 'Audio']
+		self._keywords = ['Audio', 'Sound', 'jackd', 'lv2', 'MIDI', 'SFZ']
+		self._application_icon = join(APP_PATH, 'res', 'application_icon.svg')
+		self._file_icon = join(APP_PATH, 'res', 'file_icon.svg')
+		self._custom_mime_type = XDGMime('application/x-musecbox', '*.mbxp',
+			comment = 'MusecBox project', subclass_of = 'application/json')
+		self.append_mime_type(XDGMime('application/x-musecbox-tracks', '*.mbxt',
+			comment = 'MusecBox track definition', subclass_of = 'application/json'))
+		self.append_mime_type(XDGMime('application/x-musescore3+xml', '*.mscx',
+			comment = 'uncompressed MuseScore file', subclass_of = 'application/xml'))
+		self.append_mime_type(XDGMime('application/x-musescore3', '*.mscz',
+			comment = 'MuseScore file', subclass_of = 'application/zip'))
+		self.append_mime_type(XDGMime('audio/x-sfz', '*.sfz',
+			comment = 'SFZ instrument definition'))
+
 
 #  end musecbox/__init__.py

@@ -22,7 +22,6 @@ Provides vertical and horizontal track widgets.
 """
 import logging
 from os.path import join, dirname, relpath, abspath, exists
-from math import floor
 from functools import partial
 from itertools import chain
 from qt_extras import SigBlock, ShutUpQT, DevilBox
@@ -37,30 +36,17 @@ except ModuleNotFoundError:
 
 # PyQt5 imports
 from PyQt5 import uic
-from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QVariant, QTimer, QPoint
-from PyQt5.QtWidgets import QApplication, QInputDialog, QPushButton, QFrame, \
-							QHBoxLayout, QAction, QMenu, QGraphicsColorizeEffect
+from PyQt5.QtWidgets import (QApplication, QInputDialog, QFrame, QHBoxLayout,
+	QAction, QMenu, QGraphicsColorizeEffect)
 
 # musecbox imports
-from musecbox import (
-	carla,
-	main_window,
-	recent_plugins,
-	setting,
-	xdg_open,
-	plugin_display_name,
-	APP_PATH,
-	TEXT_NO_CONN,
-	TEXT_MULTI_CONN,
-	KEY_SHOW_INDICATORS,
-	KEY_SHOW_PLUGIN_VOLUME,
-	KEY_AUTO_CONNECT
-)
+from musecbox import (carla, main_window, recent_plugins, setting, xdg_open,
+	plugin_display_name, TEXT_NO_CONN, TEXT_MULTI_CONN, KEY_SHOW_INDICATORS,
+	KEY_SHOW_PLUGIN_VOLUME, KEY_AUTO_CONNECT)
+from musecbox.gui.plugin_widgets import	(TrackPluginWidget, VerticalTrackPluginWidget,
+	HorizontalTrackPluginWidget, MIDIIndicator)
 from musecbox.liquidsfz import LiquidSFZ
-from musecbox.gui.plugin_widgets import	TrackPluginWidget, \
-										VerticalTrackPluginWidget, HorizontalTrackPluginWidget, \
-										MIDIIndicator
 
 SPINNER_DEBOUNCE = 250
 MINIMUM_MONIKER_LENGTH = 3
