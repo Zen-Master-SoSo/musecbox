@@ -77,7 +77,7 @@ from simple_carla.qt import CarlaQt
 from qt_extras import DevilBox
 from xdg_soso import XDGSetup, XDGMime
 
-__version__ = "0.13.0"
+__version__ = "0.14.0"
 
 APPLICATION_NAME		= 'MusecBox'
 APP_PATH				= dirname(abspath(__file__))
