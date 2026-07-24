@@ -21,7 +21,7 @@
 musecbox hosts multiple LiquidSFZ instances for real-time music generation.
 """
 import sys, logging, argparse
-from os import environ, unlink, getlogin
+from os import environ, unlink
 from os.path import abspath, expanduser
 from socket import socket, AF_UNIX, SOCK_DGRAM, error as sock_error
 from PyQt5.QtCore import Qt
@@ -83,10 +83,8 @@ menu.""")
 
 	if options.install:
 		MusecBoxSetup().install()
-		print(f'Successfully installed MusecBox for {getlogin()} on this machine.')
 	elif options.uninstall:
 		MusecBoxSetup().uninstall()
-		print(f'Successfully uninstalled MusecBox for {getlogin()} on this machine.')
 	else:
 
 		#-----------------------------------------------------------------------

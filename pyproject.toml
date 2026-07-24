@@ -14,7 +14,7 @@ dependencies = [
 	"sfzen >= 2.3.1",
 	"recent_items_list >= 1.1.2",
 	"soso_qt_extras >= 1.10.0",
-	"xdg_soso >= 1.0.2"
+	"xdg_soso >= 1.1.0"
 ]
 
 [project.urls]
