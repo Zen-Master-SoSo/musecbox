@@ -27,7 +27,7 @@ from time import time
 from functools import cached_property
 from sqlite3 import connect
 from appdirs import user_config_dir
-from mscore import CHANNEL_NAMES, DEFAULT_VOICE, VoiceName
+from mscore import VENDOR_NAME, CHANNEL_NAMES, DEFAULT_VOICE, VoiceName
 from mscore.fuzzy import FuzzyVoice, FuzzyVoiceCandidate
 
 
@@ -51,10 +51,10 @@ class SFZDatabase:
 		Returns the (default) path to the sqlite3 database in the user's config dir.
 		"""
 		try:
-			mkdir(join(user_config_dir(), 'ZenSoSo'))
+			mkdir(join(user_config_dir(), VENDOR_NAME))
 		except FileExistsError:
 			pass
-		return join(user_config_dir(), 'ZenSoSo', 'musecbox-sfzs.db')
+		return join(user_config_dir(), VENDOR_NAME, 'musecbox-sfzs.db')
 
 	def __init__(self):
 		if self.conn is None:

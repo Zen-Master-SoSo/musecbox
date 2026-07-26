@@ -79,9 +79,11 @@ from xdg_soso import XDGSetup, XDGMime
 
 __version__ = "0.14.0"
 
+VENDOR_NAME				= 'ZenSoSo'
 APPLICATION_NAME		= 'MusecBox'
+PACKAGE_NAME			= 'musecbox'
 APP_PATH				= dirname(abspath(__file__))
-SOCKET_PATH				= join(tempdir(), 'musecbox.socket')
+SOCKET_PATH				= join(tempdir(), PACKAGE_NAME + '.socket')
 CARRIAGE_RETURN			= linesep.encode()
 DEFAULT_STYLE			= 'system'
 LAYOUT_COMPLETE_DELAY	= 50
@@ -259,7 +261,7 @@ def recent_files():
 def __settings():
 	global __SETTINGS
 	if __SETTINGS is None:
-		__SETTINGS = QSettings('ZenSoSo', 'musecbox')
+		__SETTINGS = QSettings(VENDOR_NAME, PACKAGE_NAME)
 	return __SETTINGS
 
 def sync_settings():
@@ -409,8 +411,8 @@ def unbold(widget):
 class MusecBoxSetup(XDGSetup):
 
 	def __init__(self):
-		super().__init__('musecbox', 'MusecBox')
-		self._vendor_name = 'zensoso'
+		super().__init__(PACKAGE_NAME, APPLICATION_NAME)
+		self._vendor_name = VENDOR_NAME
 		self._comment = 'A GUI application which hosts .sfz -based synthesizers ' + \
 			'designed to be tightly integrated with MuseScore.'
 		self._categories = ['AudioVideo', 'Audio']
