@@ -77,7 +77,7 @@ from simple_carla.qt import CarlaQt
 from qt_extras import DevilBox
 from xdg_soso import XDGSetup, XDGMime
 
-__version__ = "0.14.0"
+__version__ = "0.14.1"
 
 VENDOR_NAME				= 'ZenSoSo'
 APPLICATION_NAME		= 'MusecBox'
