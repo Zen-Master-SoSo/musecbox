@@ -87,7 +87,7 @@ SOCKET_PATH				= join(tempdir(), PACKAGE_NAME + '.socket')
 CARRIAGE_RETURN			= linesep.encode()
 DEFAULT_STYLE			= 'system'
 LAYOUT_COMPLETE_DELAY	= 50
-LOG_FORMAT				= "[%(filename)24s:%(lineno)4d] %(levelname)-8s %(message)s"
+LOG_FORMAT				= '[%(filename)24s:%(lineno)4d] %(levelname)-8s %(message)s'
 
 # -------------------------------------------------------------------
 # Plugin type lookup dict (see str
