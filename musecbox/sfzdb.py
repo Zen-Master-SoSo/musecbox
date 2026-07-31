@@ -27,7 +27,8 @@ from time import time
 from functools import cached_property
 from sqlite3 import connect
 from appdirs import user_config_dir
-from mscore import VENDOR_NAME, CHANNEL_NAMES, DEFAULT_VOICE, VoiceName
+from musecbox import VENDOR_NAME
+from mscore import CHANNEL_NAMES, DEFAULT_VOICE, VoiceName
 from mscore.fuzzy import FuzzyVoice, FuzzyVoiceCandidate
 
 
