@@ -588,7 +588,7 @@ class ChannelWidget(QWidget):
 
 	@pyqtSlot()
 	def slot_delete_clicked(self):
-		self.sig_remove_channel.emit(self)
+		self.sig_remove_channel.emit(self)	# TODO: You can use "sender()" instead
 
 	def set_sfz_filename(self, sfz_filename):
 		"""
