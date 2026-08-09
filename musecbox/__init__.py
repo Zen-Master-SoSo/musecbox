@@ -411,14 +411,14 @@ class MusecBoxSetup(XDGSetup):
 
 	def __init__(self):
 		super().__init__(__package__, APPLICATION_NAME)
-		self._vendor_name = VENDOR_NAME
-		self._comment = 'A GUI application which hosts .sfz -based synthesizers ' + \
+		self.vendor_name = VENDOR_NAME
+		self.comment = 'A GUI application which hosts .sfz -based synthesizers ' + \
 			'designed to be tightly integrated with MuseScore.'
-		self._categories = ['AudioVideo', 'Audio']
-		self._keywords = ['Audio', 'Sound', 'jackd', 'lv2', 'MIDI', 'SFZ']
-		self._application_icon = join(APP_PATH, 'res', 'application_icon.svg')
-		self._file_icon = join(APP_PATH, 'res', 'file_icon.svg')
-		self._custom_mime_type = XDGMime('application/x-musecbox', '*.mbxp',
+		self.categories = ['AudioVideo', 'Audio']
+		self.keywords = ['Audio', 'Sound', 'jackd', 'lv2', 'MIDI', 'SFZ']
+		self.application_icon = join(APP_PATH, 'res', 'application_icon.svg')
+		self.file_icon = join(APP_PATH, 'res', 'file_icon.svg')
+		self.custom_mime_type = XDGMime('application/x-musecbox', '*.mbxp',
 			comment = 'MusecBox project', subclass_of = 'application/json')
 		self.append_mime_type(XDGMime('application/x-musecbox-tracks', '*.mbxt',
 			comment = 'MusecBox track definition', subclass_of = 'application/json'))
