@@ -70,8 +70,7 @@ from simple_carla import (
 	PLUGIN_SF2,
 	PLUGIN_SFZ,
 	PLUGIN_JACK,
-	PLUGIN_JSFX,
-	PLUGIN_CLAP
+	PLUGIN_JSFX
 )
 from simple_carla.qt import CarlaQt
 from qt_extras import DevilBox
@@ -104,8 +103,7 @@ PLUGIN_TYPE_STRINGS = {
 	PLUGIN_SF2: 'SF2 (SoundFont)',
 	PLUGIN_SFZ: 'SFZ (Carla)',
 	PLUGIN_JACK: 'JACK app',
-	PLUGIN_JSFX: 'JSFX',
-	PLUGIN_CLAP: 'CLAP'
+	PLUGIN_JSFX: 'JSFX'
 }
 
 # -----------------------------------------------------------
