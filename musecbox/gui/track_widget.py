@@ -28,11 +28,8 @@ from qt_extras import SigBlock, ShutUpQT, DevilBox
 from qt_extras.autofit import autofit
 from qt_extras.list_button import QtListButton
 from qt_extras.list_layout import HListLayout, VListLayout
+from simple_carla import CarlaPluginDialog
 from simple_carla.qt import Plugin, PatchbayPort
-try:
-	from simple_carla.plugin_dialog import CarlaPluginDialog
-except ModuleNotFoundError:
-	pass
 
 # PyQt5 imports
 from PyQt5 import uic
@@ -135,6 +132,19 @@ class TrackWidget(QFrame):
 		self.b_output_placeholder.deleteLater()
 		del self.b_output_placeholder
 
+		# Setup track plugins context menu
+		self.frm_plugins.setContextMenuPolicy(Qt.CustomContextMenu)
+		self.frm_plugins.customContextMenuRequested.connect(self.slot_plugins_context_menu)
+
+	def synth_ready(self):
+		"""
+		Called from slot_plugin_ready after the synth has been added to Carla and its
+		properties and parameters set.
+
+		Creates actions which are dependent upon the synth's capabilities, adds this
+		track to the global balance control widget, and autoconnects outputs when not
+		loading a project.
+		"""
 		# Setup this TrackWidget's actions:
 		action = QAction('Rename track', self)
 		action.triggered.connect(self.slot_rename)
@@ -169,9 +179,22 @@ class TrackWidget(QFrame):
 		action.setEnabled(self.can_balance)
 		self.addAction(action)
 
-		# Setup track plugins context menu
-		self.frm_plugins.setContextMenuPolicy(Qt.CustomContextMenu)
-		self.frm_plugins.customContextMenuRequested.connect(self.slot_plugins_context_menu)
+		# Add to balance control widget:
+		bcwidget = main_window().balance_control_widget
+		if self.pan_group_key is None:
+			bcwidget.make_new_group(self)
+		else:
+			bcwidget.join_group(self.pan_group_key, self)
+
+		# Auto connect:
+		if not main_window().project_loading and setting(KEY_AUTO_CONNECT, bool):
+			for client in carla().system_audio_in_clients():
+				self.synth.connect_audio_outputs_to(client)
+				self.b_output.setText(client.moniker)
+				break
+		# Emit sig_ready
+		self.setVisible(True)
+		self.sig_ready.emit(self.port, self.slot)
 
 	# -----------------------------------------------------------------
 	# Handlers for internal signals:
@@ -327,24 +350,12 @@ class TrackWidget(QFrame):
 
 	@pyqtSlot()
 	def slot_sfz_loaded(self):
-		self.setToolTip(self.sfz_filename)
+		self.setToolTip(f'{self.voice_name}\n{self.sfz_filename}')
 
 	@pyqtSlot(Plugin)
 	def slot_plugin_ready(self, plugin):
-		bcwidget = main_window().balance_control_widget
 		if plugin is self.synth:
-			if self.pan_group_key is None:
-				bcwidget.make_new_group(self)
-			else:
-				bcwidget.join_group(self.pan_group_key, self)
-			if not main_window().project_loading:
-				if setting(KEY_AUTO_CONNECT, bool):
-					for client in carla().system_audio_in_clients():
-						self.synth.connect_audio_outputs_to(client)
-						self.b_output.setText(client.moniker)
-						break
-			self.setVisible(True)
-			self.sig_ready.emit(self.port, self.slot)
+			self.synth_ready()
 		elif not main_window().project_loading:
 			idx = self.plugin_layout.index(plugin)
 			previous_client = self.plugin_layout[idx - 1] if idx else self.synth

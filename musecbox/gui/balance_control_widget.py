@@ -21,6 +21,7 @@
 Provides an integrated balanced control widget, which you can use to
 graphically locate instruments in the stereo space.
 """
+import logging
 from math import floor
 from functools import partial
 from operator import attrgetter, itemgetter
@@ -475,7 +476,7 @@ class BCGroup(QLabel):
 			else pdef['bcwidget'][key]
 		self.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 		self.update_label()
-		# Set initial geometry which will may changed for "can_balance" groups:
+		# Set initial geometry (may change for "can_balance" groups):
 		self.resize(TRACK_WIDTH, TRACK_HEIGHT)
 		self.reposition()
 
@@ -504,6 +505,8 @@ class BCGroup(QLabel):
 
 	def reposition(self):
 		bcwidget = self.parent()
+		if bcwidget.f_scale is None:
+			return
 		top = self.bcwidget_line * TRACK_HEIGHT
 		if self.can_balance:
 			self.left = bcwidget.float_to_screen_x(self.balance_left) - TRACK_HALF_WIDTH

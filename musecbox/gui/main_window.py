@@ -33,12 +33,8 @@ from qt_extras.list_layout import HListLayout, VListLayout
 from sfzen import SFZ, SAMPLES_ABSPATH
 from sfzen.cleaners.liquidsfz import clean as liquid_clean
 from mscore import VoiceName
-from simple_carla import	Plugin, Parameter, \
-							ENGINE_TRANSPORT_MODE_DISABLED as TRANSPORT_DISABLED
-try:
-	from simple_carla.plugin_dialog import CarlaPluginDialog
-except ModuleNotFoundError:
-	pass
+from simple_carla import (Plugin, Parameter, CarlaPluginDialog,
+	ENGINE_TRANSPORT_MODE_DISABLED as TRANSPORT_DISABLED)
 
 # PyQt5 imports
 from PyQt5 import uic

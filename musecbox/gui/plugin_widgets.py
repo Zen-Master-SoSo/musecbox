@@ -499,12 +499,13 @@ class SmallBalanceControl(QWidget):
 	PAN_WIDTH = 2
 	zero_line_pen = None
 
-	def __init__(self, plugin_widget):
-		super().__init__(plugin_widget)
+	def __init__(self, parent):
+		super().__init__(parent)
 		if __class__.zero_line_pen is None:
 			__class__.zero_line_pen = QPen()
 			__class__.zero_line_pen.setWidth(1)
-		self.plugin_widget = plugin_widget
+		self.plugin_widget = parent
+		self.plugin_widget.sig_ready.connect(self.slot_plugin_ready)
 		self.grabbed_feature = None
 		self.nearest_element = None
 		self.initial_x = None
@@ -527,6 +528,13 @@ class SmallBalanceControl(QWidget):
 		self.lbl_right = QLabel('R', self)
 		self.lbl_right.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
 
+		self.setContextMenuPolicy(Qt.ActionsContextMenu)
+		for widget in [self, self.inner_bar, self.lbl_left, self.lbl_right]:
+			widget.setMouseTracking(True)
+		self.set_styles()
+
+	@pyqtSlot(Plugin)
+	def slot_plugin_ready(self, _):
 		if self.plugin_widget.can_balance:
 			action = QAction('Spread balance full stereo', self)
 			action.triggered.connect(self.plugin_widget.go_full_stereo)
@@ -535,10 +543,6 @@ class SmallBalanceControl(QWidget):
 			action = QAction('Center stereo panning', self)
 			action.triggered.connect(self.plugin_widget.center_panning)
 			self.addAction(action)
-		self.setContextMenuPolicy(Qt.ActionsContextMenu)
-		for widget in [self, self.inner_bar, self.lbl_left, self.lbl_right]:
-			widget.setMouseTracking(True)
-		self.set_styles()
 
 	# pylint: disable-next = invalid-name
 	def changeEvent(self, event):
