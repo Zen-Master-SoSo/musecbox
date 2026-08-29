@@ -63,7 +63,7 @@ class TrackCreationDialog(QDialog):
 	@pyqtSlot()
 	def sfz_select_click(self):
 		voice_name = VoiceName(self.cmb_instrument.currentText(), self.cmb_voice.currentText())
-		sfz_dialog = SFZFileDialog(voice_name)
+		sfz_dialog = SFZFileDialog(self, voice_name)
 		if sfz_dialog.exec():
 			self.sfz_filename = sfz_dialog.sfz_filename
 			self.b_sfz.setText(splitext(basename(self.sfz_filename))[0])

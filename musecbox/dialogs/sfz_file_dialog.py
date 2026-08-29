@@ -55,8 +55,8 @@ KEY_CURRENT_GROUP		= 'SFZFileDialog/CurrentGroup'
 
 class SFZFileDialog(QDialog):
 
-	def __init__(self, voice_name = None):
-		super().__init__()
+	def __init__(self, parent, voice_name = None):
+		super().__init__(parent)
 		with ShutUpQT():
 			uic.loadUi(join(dirname(__file__), 'sfz_file_dialog.ui'), self)
 		self.restore_geometry()
@@ -413,12 +413,12 @@ class TestApp(QApplication):
 			QTimer.singleShot(0, self.run_dialog)
 
 	@pyqtSlot(int, int, int, int, float, str)
-	def slot_engine_started(*_):
+	def slot_engine_started(self, *_):
 		logging.debug('======= Engine started ======== ')
 		self.run_dialog()
 
 	def run_dialog(self):
-		dialog = SFZFileDialog(VoiceName('Violins II', None))
+		dialog = SFZFileDialog(None, VoiceName('Violins II', None))
 		if dialog.exec():
 			print(dialog.sfz_filename)
 		carla().delete()

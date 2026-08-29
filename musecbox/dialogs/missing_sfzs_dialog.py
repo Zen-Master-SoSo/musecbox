@@ -128,7 +128,7 @@ class MissingSFZ(QFrame):
 
 	@pyqtSlot()
 	def slot_select(self):
-		sfz_dialog = SFZFileDialog(self.track_widget.voice_name)
+		sfz_dialog = SFZFileDialog(self, self.track_widget.voice_name)
 		if sfz_dialog.exec():
 			self.track_widget.load_sfz(sfz_dialog.sfz_filename)
 			self.lbl_filename.setText(self.track_widget.sfz_filename)

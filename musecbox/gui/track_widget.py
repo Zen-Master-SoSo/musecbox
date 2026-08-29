@@ -308,6 +308,7 @@ class TrackWidget(QFrame):
 					action = QAction('Prefer generic interface', self)
 					action.setCheckable(True)
 					action.setChecked(clicked_plugin_widget.prefer_generic_dialog)
+					action.setEnabled(clicked_plugin_widget.has_custom_ui)
 					action.triggered.connect(clicked_plugin_widget.slot_prefer_generic)
 					menu.addAction(action)
 					if not clicked_plugin_widget.prefer_generic_dialog:
@@ -343,7 +344,7 @@ class TrackWidget(QFrame):
 	@pyqtSlot()
 	def slot_b_name_clicked(self):
 		from musecbox.dialogs.sfz_file_dialog import SFZFileDialog
-		sfz_dialog = SFZFileDialog(self.voice_name)
+		sfz_dialog = SFZFileDialog(self, self.voice_name)
 		if sfz_dialog.exec():
 			self.load_sfz(sfz_dialog.sfz_filename)
 			main_window().set_dirty()

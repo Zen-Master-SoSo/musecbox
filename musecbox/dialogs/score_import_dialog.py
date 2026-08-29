@@ -539,7 +539,7 @@ class ChannelWidget(QWidget):
 
 	@pyqtSlot()
 	def slot_sfz_select_click(self):
-		sfz_dialog = SFZFileDialog(VoiceName(
+		sfz_dialog = SFZFileDialog(self, VoiceName(
 			self.part_widget().lbl_instrument_name.text(),
 			self.lbl_voice.text()
 		))
