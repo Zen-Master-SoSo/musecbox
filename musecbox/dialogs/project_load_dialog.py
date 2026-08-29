@@ -24,6 +24,7 @@ import logging
 from os.path import join, dirname
 from time import time
 from functools import partial
+from simple_carla import AddPluginFailure
 from simple_carla.qt import Plugin
 from qt_extras import ShutUpQT, DevilBox
 from collections import namedtuple
@@ -121,8 +122,8 @@ class ProjectLoadDialog(QDialog):
 		plugin.sig_ready.connect(self.slot_plugin_ready, type = Qt.QueuedConnection)
 		try:
 			plugin.add_to_carla()
-		except Exception as e:
-			DevilBox(f'Failed to add plugin "{saved_state["plugin_def"]["name"]}"')
+		except AddPluginFailure as e:
+			DevilBox(e)
 			QTimer.singleShot(PLUGIN_READY_DELAY, self.start_next_step)
 
 	def restore_shared_plugin(self, saved_state):
@@ -130,8 +131,8 @@ class ProjectLoadDialog(QDialog):
 		plugin.sig_ready.connect(self.slot_plugin_ready, type = Qt.QueuedConnection)
 		try:
 			plugin.add_to_carla()
-		except Exception as e:
-			DevilBox(f'Failed to add plugin "{saved_state["plugin_def"]["name"]}"')
+		except AddPluginFailure as e:
+			DevilBox(e)
 			QTimer.singleShot(PLUGIN_READY_DELAY, self.start_next_step)
 
 	@pyqtSlot(int)

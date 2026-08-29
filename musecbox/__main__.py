@@ -129,6 +129,20 @@ menu.""")
 				nice(-10)
 			except PermissionError:
 				logging.warning('Unable to set process priority')
+				print("""
+ Attempt to set the process priority using "nice" failed.
+
+ You can allow a specific group to set this using a file at "/etc/security/limits.d/"
+ The "jackd" package installs a file named "/etc/security/limits.d/audio.conf".
+ Make sure this line exists in the file (or create a new file with this line):
+
+	@audio   -  nice      -19
+
+ Then, make sure that you are a member of the "audio" group. You will have to
+ log out and log back in for changes to your group to take effect. You may have
+ to restart your computer for changes written to "/etc/security/limits.d/" to
+ take effect.
+""")
 				pass
 
 		application = QApplication([])
@@ -143,7 +157,6 @@ menu.""")
 		main_window.show()
 		return_value = application.exec()
 		unlink(SOCKET_PATH)
-		carla().delete()
 		return return_value
 
 

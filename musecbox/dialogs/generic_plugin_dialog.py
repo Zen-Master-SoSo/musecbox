@@ -251,8 +251,12 @@ class ParamWidgetSlider(QWidget):
 		self.slider.valueChanged.connect(self.slider_value_changed)
 
 	def internal_value_changed(self, value):
-		with SigBlock(self):
-			self.slider.setValue(round((value - self.param.min) * self._scaling))
+		if value is None or self.param.min is None:
+			from traceback import print_stack
+			print_stack()
+		else:
+			with SigBlock(self):
+				self.slider.setValue(round((value - self.param.min) * self._scaling))
 
 	@pyqtSlot(int)
 	def slider_value_changed(self, value):

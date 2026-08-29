@@ -41,11 +41,10 @@ from PyQt5.QtWidgets import QWidget, QDialog, QInputDialog, QLabel, QFrame, QTab
 							QProgressBar, QHBoxLayout, QVBoxLayout, QGridLayout, \
 							QAction, QSizePolicy
 
-from musecbox import	carla, main_window, \
-						APP_PATH, TEXT_NO_CONN, TEXT_MULTI_CONN
+from musecbox import carla, main_window, APP_PATH, TEXT_NO_CONN, TEXT_MULTI_CONN
 from musecbox.dialogs.generic_plugin_dialog import PluginDialog
-from musecbox.gui.balance_control_widget import \
-	GRAB_CENTER, GRAB_LEFT_BALANCE, GRAB_RIGHT_BALANCE, GRAB_PANNING
+from musecbox.gui.balance_control_widget import (GRAB_CENTER,
+	GRAB_LEFT_BALANCE, GRAB_RIGHT_BALANCE, GRAB_PANNING)
 
 
 # -----------------------------------------------------------------
@@ -111,8 +110,12 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 		self.pb_wet_placeholder.deleteLater()
 		del self.pb_wet_placeholder
 
+	def add_failed(self):
+		for widget in self.findChildren(QWidget):
+			widget.setEnabled(False)
+
 	def finalize_init(self):
-		self.prefer_generic_dialog = not self.has_custom_ui
+		self.prefer_generic_dialog = not self.has_custom_ui	# TODO: Should be a setting as well
 		self.pb_volume.setEnabled(self.can_volume)
 		self.pb_wet.setEnabled(self.can_drywet)
 
@@ -182,6 +185,15 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 	@pyqtSlot(bool)
 	def slot_prefer_generic(self, checked):
 		self.prefer_generic_dialog = checked
+		if checked:
+			self.show_custom_ui(False)	# hide custom ui
+		elif self.generic_dialog:
+			self.generic_dialog.hide()
+		if self.b_name.isChecked():
+			if checked:
+				self.slot_show_generic_dialog()
+			else:
+				self.show_custom_ui(True)
 
 	@pyqtSlot()
 	def slot_show_generic_dialog(self):
@@ -189,6 +201,23 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 			self.generic_dialog = PluginDialog(self)
 			self.generic_dialog.sig_closed.connect(self.generic_dialog_closed)
 		self.generic_dialog.show()
+		with SigBlock(self.b_name):
+			self.b_name.setChecked(True)
+
+	@pyqtSlot(bool)
+	def show_plugin_dialog(self, state):
+		if self.prefer_generic_dialog:
+			if state:
+				self.slot_show_generic_dialog()
+			elif not self.generic_dialog is None:
+				self.generic_dialog.hide()
+		else:
+			self.show_custom_ui(state)
+
+	@pyqtSlot()
+	def generic_dialog_closed(self):
+		with SigBlock(self.b_name):
+			self.b_name.setChecked(False)
 
 	def _update_peak_meter(self):
 		pass
@@ -209,27 +238,10 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 			if self.peak_out.isVisible():
 				self._update_peak_meter()
 		"""
-		logging.warning('not implemented')
 
 	def inline_display_redraw(self):
 		_ = carla().render_inline_display(self.plugin_id,
 			self.fixed_width, self.fixed_height)
-
-	@pyqtSlot(bool)
-	def show_plugin_dialog(self, state):
-		if state:
-			if self.prefer_generic_dialog or not self.has_custom_ui:
-				self.slot_show_generic_dialog()
-			else:
-				carla().show_custom_ui(self.plugin_id, state)
-		else:
-			if not self.generic_dialog is None:
-				self.generic_dialog.hide()
-
-	@pyqtSlot()
-	def generic_dialog_closed(self):
-		with SigBlock(self.b_name):
-			self.b_name.setChecked(False)
 
 	def ui_state_changed(self, state):
 		if state == 0:
@@ -237,7 +249,6 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 		else:
 			self.b_name.setChecked(True)
 			if state == -1:
-				logging.debug('SETTING has_custom_ui = False')
 				self.has_custom_ui = False
 
 	@pyqtSlot()

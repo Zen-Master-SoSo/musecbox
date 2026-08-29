@@ -21,8 +21,10 @@
 Provides the main application window.
 """
 import logging, json
-from os import mkdir, linesep
+from os import mkdir, chdir, getpid, linesep
 from os.path import join, dirname, basename, splitext, abspath, realpath, exists
+from tempfile import gettempdir
+from shutil import rmtree
 from functools import partial
 from itertools import chain
 from collections import namedtuple
@@ -87,6 +89,9 @@ class MainWindow(QMainWindow):
 		super().__init__()
 		set_main_window(self)
 		self.startup_options = options
+		self.temp_dir = join(gettempdir(), f'musecbox-{getpid()}')
+		mkdir(self.temp_dir)
+		chdir(self.temp_dir)
 
 		self.project_filename = None
 		self.project_definition = None
@@ -816,6 +821,8 @@ class MainWindow(QMainWindow):
 		if self.okay_to_clear():
 			self.save_geometry()
 			sync_settings()
+			carla().delete()
+			rmtree(self.temp_dir)
 			event.accept()
 		else:
 			event.ignore()
@@ -993,6 +1000,7 @@ class MainWindow(QMainWindow):
 					action = QAction('Prefer generic interface', self)
 					action.setCheckable(True)
 					action.setChecked(clicked_plugin_widget.prefer_generic_dialog)
+					action.setEnabled(clicked_plugin_widget.has_custom_ui)
 					action.triggered.connect(clicked_plugin_widget.slot_prefer_generic)
 					menu.addAction(action)
 					if not clicked_plugin_widget.prefer_generic_dialog:
