@@ -17,28 +17,31 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
+Provides InstrumentSelectionDialog class
 """
-import logging
-from os.path import join, dirname, abspath
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 from functools import lru_cache
 
 # PyQt5 imports
-from PyQt5 import			uic
-from PyQt5.QtCore import	Qt, pyqtSlot, QTimer, QDir, QModelIndex
-from PyQt5.QtGui import		QIcon
-from PyQt5.QtWidgets import QApplication, QDialog, QFileSystemModel, QAbstractItemView, \
-							QListWidgetItem
+from PyQt5 import uic
+from PyQt5.QtCore import Qt, pyqtSlot, QTimer, QDir, QModelIndex
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (QApplication, QDialog, QFileSystemModel,
+	QAbstractItemView, QListWidgetItem)
 
 from qt_extras import ShutUpQT
 from mscore import Score, Part
 from mscore.instruments import Instruments
 from mscore.fuzzy import FuzzyCandidate, FuzzyName
-from musecbox import	setting, set_setting, set_application_style, \
-						KEY_SCORES_DIR, KEY_RECENT_INST_DIR, LAYOUT_COMPLETE_DELAY, LOG_FORMAT
+from musecbox import (setting, set_setting, set_application_style,
+	KEY_SCORES_DIR, KEY_RECENT_INST_DIR, LAYOUT_COMPLETE_DELAY, LOG_FORMAT)
 
 TEXT_ANY = '[Any]'
-TEXT_NOTHING = '[nothing selected]'
+TEXT_NOTHING = ''
 
 class InstrumentSelectionDialog(QDialog):
 	"""
@@ -49,7 +52,7 @@ class InstrumentSelectionDialog(QDialog):
 	def __init__(self, parent, part):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'instrument_selection_dialog.ui'), self)
+			uic.loadUi(Path(__file__).parent.joinpath('instrument_selection_dialog.ui'), self)
 		self.restore_geometry()
 		self.finished.connect(self.save_geometry)
 		self.current_instrument = part.instrument()
@@ -59,7 +62,7 @@ class InstrumentSelectionDialog(QDialog):
 		self.setWindowTitle(f'Choose new instrument for "{part.name}"')
 		self.lbl_search_icon.setPixmap(QIcon.fromTheme('edit-find').pixmap(16,16))
 		self.lbl_old_instrument_name.setText(self.current_instrument.name)
-		self.lst_old_channels.addItems(list(self.current_instrument.channel_names()))
+		self.lbl_old_channels.setText(', '.join(self.current_instrument.channel_names()))
 
 		# Setup MScore selection page:
 		self.msdb = Instruments()
@@ -77,20 +80,21 @@ class InstrumentSelectionDialog(QDialog):
 		self.file_model.setFilter(QDir.AllDirs | QDir.Files | QDir.NoDotAndDotDot)
 		self.file_model.setNameFilters(['*.mscz', '*.mscx'])
 		self.file_model.setRootPath(QDir.rootPath())
-		root_path = abspath(setting(KEY_SCORES_DIR, str, QDir.rootPath()))
+		root_path = Path(setting(KEY_SCORES_DIR, str, QDir.rootPath())).resolve()
 		logging.debug('root_path: %s', root_path)
 		self.tree_scores.setModel(self.file_model)
-		self.tree_scores.setRootIndex(self.file_model.index(root_path))
+		self.tree_scores.setRootIndex(self.file_model.index(str(root_path)))
 		self.tree_scores.hideColumn(1)
 		self.tree_scores.hideColumn(2)
 		self.tree_scores.hideColumn(3)
 		self.tree_scores.selectionModel().currentChanged.connect(self.slot_file_current_changed)
-		self.current_directory = setting(KEY_RECENT_INST_DIR, str, QDir.homePath())
-		logging.debug('current_directory: %s', self.current_directory)
-		index = self.file_model.index(self.current_directory)
+		self.current_dirpath = Path(setting(KEY_RECENT_INST_DIR, str, QDir.homePath()))
+		logging.debug('current_directory: %s', self.current_dirpath)
+		index = self.file_model.index(str(self.current_dirpath))
 		self.tree_scores.setCurrentIndex(index)
 
 		self.lbl_new_instrument_name.setText(TEXT_NOTHING)
+		self.lbl_new_channels.setText(TEXT_NOTHING)
 		self.ed_mscore_search.textChanged.connect(self.search_changed)
 		self.b_search.clicked.connect(self.clear_search)
 		self.lst_instruments.currentItemChanged.connect(self.slot_inst_list_selection_changed)
@@ -98,7 +102,7 @@ class InstrumentSelectionDialog(QDialog):
 
 	@pyqtSlot()
 	def layout_complete(self):
-		index = self.file_model.index(self.current_directory)
+		index = self.file_model.index(str(self.current_dirpath))
 		if self.file_model.canFetchMore(index):
 			QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
 			self.file_model.fetchMore(index)
@@ -134,9 +138,9 @@ class InstrumentSelectionDialog(QDialog):
 	def slot_file_current_changed(self, current, _):
 		path = self.file_model.filePath(current)
 		if self.file_model.isDir(current):
-			self.current_directory = path
+			self.current_dirpath = Path(path)
 		else:
-			self.current_directory = dirname(path)
+			self.current_dirpath = Path(path).parent
 			self.selected_score = self.get_score(path)
 			self.fill_sorted(self.selected_score.instruments())
 
@@ -159,13 +163,13 @@ class InstrumentSelectionDialog(QDialog):
 
 	@pyqtSlot(QListWidgetItem, QListWidgetItem)
 	def slot_inst_list_selection_changed(self, current, _):
-		self.lst_new_channels.clear()
 		if current:
 			self.new_instrument = current.data(Qt.UserRole)
 			self.lbl_new_instrument_name.setText(self.new_instrument.name)
-			self.lst_new_channels.addItems(list(self.new_instrument.channel_names()))
+			self.lbl_new_channels.setText(', '.join(self.new_instrument.channel_names()))
 		else:
 			self.lbl_new_instrument_name.setText(TEXT_NOTHING)
+			self.lbl_new_channels.setText(TEXT_NOTHING)
 
 	@lru_cache
 	def get_score(self, path):
@@ -174,7 +178,7 @@ class InstrumentSelectionDialog(QDialog):
 	@pyqtSlot()
 	def accept(self):
 		logging.debug('accept')
-		set_setting(KEY_RECENT_INST_DIR, abspath(self.current_directory))
+		set_setting(KEY_RECENT_INST_DIR, str(self.current_dirpath))
 		super().accept()
 
 
@@ -182,7 +186,7 @@ if __name__ == "__main__":
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()
-	part = Part.from_string("""
+	PART = Part.from_string("""
 <Part>
 	<Staff id="5">
 		<StaffType group="pitched">
@@ -279,7 +283,7 @@ if __name__ == "__main__":
 	</Instrument>
 </Part>
 	""")
-	dialog = InstrumentSelectionDialog(None, part)
+	dialog = InstrumentSelectionDialog(None, PART)
 	if dialog.exec_():
 		print(dialog.new_instrument)
 

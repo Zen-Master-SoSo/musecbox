@@ -17,24 +17,24 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides a dialog which shows Jack connections relevant to the current project.
 """
-import logging
-from os.path import join, dirname
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 from itertools import chain
 from qt_extras import SigBlock, ShutUpQT
 
-from PyQt5 import 			uic
-from PyQt5.QtCore import	Qt, pyqtSlot, QPointF
-from PyQt5.QtGui import		QBrush, QPen, QIcon, QPainter, QColor, QLinearGradient, QPainterPath
-from PyQt5.QtWidgets import	QGraphicsScene, QGraphicsView, \
-							QGraphicsItem, QGraphicsItemGroup, \
-							QGraphicsPathItem, QGraphicsSimpleTextItem, \
-							QDialog, QListWidgetItem
+from PyQt5 import uic
+from PyQt5.QtCore import Qt, pyqtSlot, QPointF
+from PyQt5.QtGui import QBrush, QPen, QIcon, QPainter, QColor, QLinearGradient, QPainterPath
+from PyQt5.QtWidgets import (QGraphicsScene, QGraphicsView, QGraphicsItem, QGraphicsItemGroup,
+	QGraphicsPathItem, QGraphicsSimpleTextItem, QDialog, QListWidgetItem)
 
 from simple_carla import SystemPatchbayClient
-from musecbox.gui.track_widget import LiquidSFZ
+
 
 MARGIN = 80
 CELL_SPACING_X = 40
@@ -52,7 +52,7 @@ class ConnectionsDialog(QDialog):
 	def __init__(self, parent):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'connection_dialog.ui'), self)
+			uic.loadUi(Path(__file__).parent.joinpath('connection_dialog.ui'), self)
 		self.restore_geometry()
 		self.finished.connect(self.save_geometry)
 
@@ -202,6 +202,7 @@ class ConnectionsDialog(QDialog):
 	def connector_press_event(self, connector, event):
 		pass
 
+	# pylint: disable-next = invalid-name
 	def mousePressEvent(self, event):
 		super().mousePressEvent(event)
 		if self.first_selected_cell:
@@ -217,6 +218,7 @@ class ZoomingView(QGraphicsView):
 		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 		self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 
+	# pylint: disable-next = invalid-name
 	def wheelEvent(self, event):
 		ctrl = event.modifiers() & Qt.ControlModifier
 		shift = event.modifiers() & Qt.ShiftModifier
@@ -376,10 +378,12 @@ class Cell(QGraphicsItemGroup):
 	def output_connection_point(self):
 		return self.mapToScene(QPointF(self.boundingRect().right(), self.boundingRect().center().y()))
 
+	# pylint: disable-next = invalid-name
 	def mousePressEvent(self, event):
 		super().mousePressEvent(event)
 		self.scene().parent().cell_press_event(self, event)
 
+	# pylint: disable-next = invalid-name
 	def mouseMoveEvent(self, event):
 		super().mouseMoveEvent(event)
 		for connector in chain(self.out_connectors, self.in_connectors):
@@ -449,6 +453,7 @@ class Connector(QGraphicsPathItem):
 			if self.selected_state == SELECTED \
 			else __class__.pen)
 
+	# pylint: disable-next = invalid-name
 	def mousePressEvent(self, event):
 		super().mousePressEvent(event)
 		self.scene().parent().connector_press_event(self, event)

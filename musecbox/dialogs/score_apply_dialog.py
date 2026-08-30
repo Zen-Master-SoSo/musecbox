@@ -17,17 +17,18 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides a dialog used for verifying channel assignments when applying a score to a MuseScore3 file.
 """
-
-import logging
-from os.path import join, dirname
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 
 # PyQt5 imports
-from PyQt5 import			uic
-from PyQt5.QtCore import	Qt, pyqtSlot, QTimer
-from PyQt5.QtGui import		QPalette
+from PyQt5 import uic
+from PyQt5.QtCore import Qt, pyqtSlot, QTimer
+from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import QApplication, QDialog, QTableWidgetItem, QHeaderView, QStyle
 
 from qt_extras import ShutUpQT
@@ -61,7 +62,7 @@ class ApplyScoreDialog(QDialog):
 	def __init__(self, parent, project_definition, mscore_filename):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'score_apply_dialog.ui'), self)
+			uic.loadUi(Path(__file__).parent.joinpath('score_apply_dialog.ui'), self)
 
 		self.resize(100, 100)
 		self.tbl.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)

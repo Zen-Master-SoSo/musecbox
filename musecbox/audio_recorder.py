@@ -20,9 +20,8 @@
 """
 Provides AudioRecorder class
 """
-import logging
-from os.path import join
-from glob import glob
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 from shutil import move
 from simple_carla.qt import QtPlugin
 from PyQt5.QtCore import QDir
@@ -41,21 +40,23 @@ class AudioRecorder(QtPlugin):
 
 	def __init__(self):
 		super().__init__()
-		self.directory = join(QDir.homePath(), 'lv2record')
+		self.directory_path = Path(QDir.homePath()) / 'lv2record'
 		self.startup_files = None
 
 	def record(self):
 		self.parameter('FORM').value = 0.0
 		self.parameter('REC').value = 1.0
-		self.startup_files = set(glob(f'{self.directory}/*'))
+		self.startup_files = set(self.directory_path.iterdir()) \
+			if self.directory_path.exists() else []
 
 	def save_as(self, filename):
 		self.parameter('REC').value = 0.0
-		new_files = set(glob(f'{self.directory}/*')) - self.startup_files
-		if len(new_files) == 0:
+		new_paths = set(self.directory_path.iterdir()) - self.startup_files
+		if len(new_paths) == 0:
 			raise RuntimeError('Nothing saved by lv2record')
-		if len(new_files) > 1:
-			raise RuntimeError('Multiple files saved by lv2record')
-		move(new_files.pop(), filename)
+		if len(new_paths) > 1:
+			raise RuntimeWarning('Multiple files saved by lv2record')
+		move(new_paths.pop(), filename)
+
 
 #  end musecbox/audio_recorder.py

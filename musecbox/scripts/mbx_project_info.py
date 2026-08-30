@@ -17,18 +17,20 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code, too-many-nested-blocks
+#
 """
 Displays information about a saved MusecBox project.
 """
 import logging, argparse, sys, json
 from os import access, R_OK
-from os.path import dirname, abspath, join, exists
+from pathlib import Path
 from rich import print as rprint
 from musecbox import PROJECT_OPTION_KEYS, LOG_FORMAT
 
 def print_sfz(sfz_path):
 	print(sfz_path, end='')
-	if exists(sfz_path):
+	if sfz_path.exists():
 		if access(sfz_path, R_OK):
 			print()
 		else:
@@ -52,21 +54,22 @@ def main():
 	log_level = logging.DEBUG if options.verbose else logging.ERROR
 	logging.basicConfig(level = log_level, format = LOG_FORMAT)
 
-	for filename in options.Filename:
+	for path in options.Filename:
+		path = Path(path)
+
 		try:
-			with open(filename, 'r') as fh:
-				project_definition = json.load(fh)
+			project_definition = json.loads(path.read_text(encoding = 'utf-8'))
 
 		except FileNotFoundError:
-			rprint(fr'{filename} [red]\[not a file][/red]')
+			rprint(fr'{path} [red]\[not a file][/red]')
 
 		except json.JSONDecodeError as e:
-			rprint(fr'{filename} [red]\[JSON decode error: {e}][/red]')
+			rprint(fr'{path} [red]\[JSON decode error: {e}][/red]')
 
 		else:
 
 			if len(options.Filename) > 1:
-				rprint(f'[bold black]{filename}[/bold black]')
+				rprint(f'[bold black]{path}[/bold black]')
 
 			show_channels = options.show_channels or \
 				options.show_sfzs or \
@@ -84,12 +87,12 @@ def main():
 
 				for portdef in project_definition["ports"]:
 					for trackdef in portdef["tracks"]:
-						sfz_path = join(dirname(filename), trackdef["sfz"])
+						sfz_path = path.parent.joinpath(trackdef["sfz"])
 						if options.show_channels or options.show_plugins and trackdef["plugins"]:
 							print(f' Port {portdef["port"]}', end='\t')
 							print(f'Channel {trackdef["channel"]}', end='\t')
 							print(f'{trackdef["instrument_name"]} ({trackdef["voice"]})', end='\t')
-						print_sfz(abspath(sfz_path) if options.abspath else sfz_path)
+						print_sfz(sfz_path.absolute() if options.abspath else sfz_path)
 						if options.show_plugins:
 							for saved_state in trackdef["plugins"]:
 								print(f'     Plugin {saved_state["vars"]["moniker"]}', end='\t')

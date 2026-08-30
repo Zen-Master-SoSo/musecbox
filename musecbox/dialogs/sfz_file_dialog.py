@@ -17,12 +17,14 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides a dialog for selecting SFZ files from either the file system or the
 integrated database.
 """
-import logging, glob
-from os.path import join, dirname, basename, abspath, exists
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 from functools import partial
 from qt_extras import DevilBox, ShutUpQT
 from qt_extras.list_button import QtListButton
@@ -30,18 +32,18 @@ from simple_carla import EngineInitFailure
 
 # PyQt5 imports
 from PyQt5 import uic
-from PyQt5.QtCore import	Qt, pyqtSlot, QVariant, QDir, QPoint, QModelIndex
-from PyQt5.QtCore import	QTimer
-from PyQt5.QtWidgets import	QApplication, QDialog, QFileSystemModel, QAbstractItemView, \
-							QDialogButtonBox, QListWidgetItem, QMenu
+from PyQt5.QtCore import Qt, pyqtSlot, QVariant, QDir, QPoint, QModelIndex
+from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import (QApplication, QDialog, QFileSystemModel,
+	QAbstractItemView, QDialogButtonBox, QListWidgetItem, QMenu)
 
 # musecbox imports
 from mscore import VoiceName
-from musecbox import 	carla, previewer, setting, set_setting, set_application_style, \
-						xdg_open, bold, \
-						TEXT_NO_CONN, TEXT_NO_GROUP, TEXT_NEW_GROUP, KEY_SFZ_DIR, \
-						KEY_PREVIEW_FILES, KEY_PREVIEWER_MIDI_SRC, KEY_PREVIEWER_AUDIO_TGT, \
-						LAYOUT_COMPLETE_DELAY, LOG_FORMAT
+from musecbox import (carla, previewer, setting, set_setting, sync_settings,
+	set_application_style, xdg_open, bold,
+	TEXT_NO_CONN, TEXT_NO_GROUP, TEXT_NEW_GROUP,
+	KEY_SFZ_DIR, KEY_PREVIEW_FILES, KEY_PREVIEWER_MIDI_SRC, KEY_PREVIEWER_AUDIO_TGT,
+	LAYOUT_COMPLETE_DELAY, LOG_FORMAT)
 from musecbox.dialogs.add_group_dialog import AddGroupDialog
 from musecbox.sfz_previewer import SFZPreviewer
 from musecbox.sfzdb import SFZDatabase
@@ -58,7 +60,7 @@ class SFZFileDialog(QDialog):
 	def __init__(self, parent, voice_name = None):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'sfz_file_dialog.ui'), self)
+			uic.loadUi(Path(__file__).parent.joinpath('sfz_file_dialog.ui'), self)
 		self.restore_geometry()
 		self.finished.connect(self.save_geometry)
 		self.accepted.connect(self.slot_accepted)
@@ -70,9 +72,8 @@ class SFZFileDialog(QDialog):
 		self.voice_name = voice_name
 		if self.voice_name is not None:
 			self.setWindowTitle(f'Select SFZ for "{self.voice_name}"')
-		self.sfz_filename = None
+		self.sfz_path = None
 
-		self.initializing = True
 		self.buttons.button(QDialogButtonBox.Ok).setEnabled(False)
 		self.db = SFZDatabase()
 
@@ -80,17 +81,15 @@ class SFZFileDialog(QDialog):
 		self.directory_model.setFilter(QDir.Dirs | QDir.NoDotAndDotDot)
 		self.directory_model.setRootPath(QDir.rootPath())
 		self.tree_directories.setModel(self.directory_model)
-		root_path = setting(KEY_SFZ_DIR, str, QDir.rootPath())
-		self.tree_directories.setRootIndex(self.directory_model.index(root_path))
+		# This next line forces the directory tree to set the root path:
+		self.sfz_root_path = self.sfz_root_path
 		self.tree_directories.hideColumn(1)
 		self.tree_directories.hideColumn(2)
 		self.tree_directories.hideColumn(3)
-		self.tree_directories.selectionModel().currentChanged.connect(self.slot_directory_current_changed)
 		self.tree_directories.setContextMenuPolicy(Qt.CustomContextMenu)
 		self.tree_directories.customContextMenuRequested.connect(self.slot_directory_context_menu)
 
 		self.fill_group_list()
-		self.lst_groups.currentItemChanged.connect(self.slot_groups_current_changed)
 		self.lst_groups.setContextMenuPolicy(Qt.CustomContextMenu)
 		self.lst_groups.customContextMenuRequested.connect(self.slot_group_context_menu)
 
@@ -101,16 +100,6 @@ class SFZFileDialog(QDialog):
 
 		self.txt_search.textChanged.connect(self.slot_search_box_changed)
 		self.b_clear_search.clicked.connect(self.slot_clear_search_clicked)
-
-		self.current_directory = setting(KEY_CURRENT_DIRECTORY, str, QDir.homePath())
-		index = self.directory_model.index(self.current_directory)
-		self.tree_directories.setCurrentIndex(index)
-
-		for item in self.lst_groups.findItems(self.current_group, Qt.MatchExactly):
-			item.setSelected(True)
-			if self.current_source == SOURCE_TYPE_GROUP:
-				self.select_group(item)
-			break
 
 		# Setup input select button:
 		if self.previewer:
@@ -145,19 +134,30 @@ class SFZFileDialog(QDialog):
 			self.frm_preview_settings.deleteLater()
 			del self.frm_preview_settings
 
-
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
 
 	@pyqtSlot()
 	def layout_complete(self):
-		index = self.directory_model.index(self.current_directory)
+		index = self.directory_model.index(str(self.current_path))
 		if self.directory_model.canFetchMore(index):
 			QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
 			self.directory_model.fetchMore(index)
 		else:
+			selection_model = self.tree_directories.selectionModel()
+			self.tree_directories.expand(index)
 			self.tree_directories.scrollTo(index, QAbstractItemView.PositionAtTop)
+			selection_model.select(index, selection_model.Current)
+			if self.current_source == SOURCE_TYPE_GROUP:
+				for item in self.lst_groups.findItems(self.current_group, Qt.MatchExactly):
+					item.setSelected(True)
+					self.select_group(item)
+					break
+			else:
+				selection_model.select(index, selection_model.Current | selection_model.Select)
+				self.slot_directory_current_changed(index)
 			self.lst_sfzs.setFocus()
-			self.initializing = False
+			selection_model.currentChanged.connect(self.slot_directory_current_changed)
+			self.lst_groups.currentItemChanged.connect(self.slot_groups_current_changed)
 
 	@pyqtSlot(str, QVariant)
 	def slot_input_selected(self, _, midi_src):
@@ -179,34 +179,54 @@ class SFZFileDialog(QDialog):
 
 	@pyqtSlot(QModelIndex)
 	def slot_directory_current_changed(self, index):
-		self.current_directory = self.directory_model.filePath(index)
-		self.lbl_selection.setText('Directory "%s"' % basename(self.current_directory))
-		self.lbl_directory.setText(self.current_directory)
-		if not self.initializing or self.current_source == SOURCE_TYPE_DIR:
-			entries = glob.glob('%s/*.sfz' % self.current_directory)
-			if entries:
-				self.fill_sfz_list(self.db.sfzs_by_paths(entries), None, False)
-			else:
-				self.lst_sfzs.clear()
-			self.current_source = SOURCE_TYPE_DIR
+		self.current_path = self.directory_model.filePath(index)
+		self.lbl_selection.setText(f'Directory "{self.current_path.name}"')
+		entries = [ path for path in self.current_path.iterdir() if path.suffix == '.sfz' ]
+		if entries:
+			self.fill_sfz_list(self.db.sfzs_by_paths(entries), None)
+		else:
+			self.lst_sfzs.clear()
+		self.current_source = SOURCE_TYPE_DIR
+		for row in range(self.lst_groups.count()):
+			self.lst_groups.item(row).setSelected(False)
 
 	@pyqtSlot(QListWidgetItem)
 	def slot_groups_current_changed(self, item):
-		if self.lst_groups.hasFocus() and not item is None:
+		if not item is None:
 			self.select_group(item)
 
 	@pyqtSlot(QListWidgetItem, QListWidgetItem)
 	def slot_sfz_selection_changed(self, current, _):
 		ok = not current is None \
 			and not current.data(Qt.UserRole) is None \
-			and exists(current.data(Qt.UserRole).path)
+			and current.data(Qt.UserRole).path.exists()
 		self.buttons.button(QDialogButtonBox.Ok).setEnabled(ok)
-		self.sfz_filename = current.data(Qt.UserRole).path if ok else None
+		self.sfz_path = current.data(Qt.UserRole).path if ok else None
 		if ok and self.previewer:
-			self.previewer.load_sfz(self.sfz_filename)
+			self.previewer.load_sfz(self.sfz_path)
 
 	# -------------------------------------------------
 	# Properties which are directly mapped to settings:
+
+	@property
+	def sfz_root_path(self):
+		return Path(setting(KEY_SFZ_DIR, str, QDir.homePath()))
+
+	@sfz_root_path.setter
+	def sfz_root_path(self, value):
+		value = str(value)
+		set_setting(KEY_SFZ_DIR, value)
+		index = self.directory_model.index(value)
+		if index.isValid():
+			self.tree_directories.setRootIndex(index)
+
+	@property
+	def current_path(self):
+		return Path(setting(KEY_CURRENT_DIRECTORY, str, QDir.homePath()))
+
+	@current_path.setter
+	def current_path(self, value):
+		set_setting(KEY_CURRENT_DIRECTORY, str(value))
 
 	@property
 	def current_group(self):
@@ -231,10 +251,10 @@ class SFZFileDialog(QDialog):
 	def slot_directory_context_menu(self, position):
 		menu = QMenu(self)
 		index = self.tree_directories.rootIndex()
-		root_path = self.directory_model.filePath(index)
+		path = Path(self.directory_model.filePath(index))
 		set_root_action = menu.addAction('Set as directory root')
 		up_level_action = menu.addAction('Up to parent directory')
-		up_level_action.setEnabled(root_path != QDir.rootPath())
+		up_level_action.setEnabled(str(path) != QDir.rootPath())
 		collapse_action = menu.addAction('Collapse All')
 		menu.addSeparator()	# ---------------------
 		group_menu = menu.addMenu('Add all to group:')
@@ -249,14 +269,9 @@ class SFZFileDialog(QDialog):
 				if group_name := self.show_add_group():
 					self.assign_dir_to_group(group_name)
 			elif action is set_root_action:
-				set_setting(KEY_SFZ_DIR, self.current_directory)
-				self.tree_directories.setRootIndex(self.tree_directories.currentIndex())
+				self.sfz_root_path = path
 			elif action is up_level_action:
-				root_path = dirname(root_path)
-				set_setting(KEY_SFZ_DIR, abspath(root_path))
-				self.lbl_directory.setText(root_path)
-				index = self.directory_model.index(root_path)
-				self.tree_directories.setRootIndex(index)
+				self.sfz_root_path = self.sfz_root_path.parent
 			else:
 				self.assign_dir_to_group(action.text())
 
@@ -276,7 +291,7 @@ class SFZFileDialog(QDialog):
 					self.lst_groups.setCurrentItem(item)
 					self.select_group(item)
 					break
-		elif action:
+		elif action is remove_group_action:
 			self.db.remove_group(item.text())
 			self.lst_sfzs.clear()
 			self.fill_group_list()
@@ -331,35 +346,35 @@ class SFZFileDialog(QDialog):
 		self.lst_groups.addItem(TEXT_NO_GROUP)
 		self.lst_groups.addItems(self.db.group_names())
 
-	def fill_sfz_list(self, sfzs, group_name, show_dirs):
+	def fill_sfz_list(self, sfzs, group_name):
 		self.lst_sfzs.clear()
 		if self.voice_name:
 			mapped, unmapped = self.db.ranked_sfzs(self.voice_name, sfzs, group_name = group_name)
 			for sfz in mapped:
-				self._append_sfz(sfz, True, show_dirs)
+				self._append_sfz(sfz, True)
 			for sfz in unmapped:
-				self._append_sfz(sfz, False, show_dirs)
+				self._append_sfz(sfz, False)
 		else:
 			for sfz in sfzs:
-				self._append_sfz(sfz, False, show_dirs)
+				self._append_sfz(sfz, False)
 		self.filter_sfz_list(self.txt_search.text())
 
 	def select_group(self, item):
 		group_name = item.text()
 		if group_name == TEXT_NO_GROUP:
-			self.fill_sfz_list(self.db.sfzs(), None, True)
+			self.fill_sfz_list(self.db.sfzs(), None)
 			self.lbl_selection.setText('All SFZs')
 		else:
-			self.fill_sfz_list(self.db.sfzs(group_name), group_name, True)
+			self.fill_sfz_list(self.db.sfzs(group_name), group_name)
 			self.lbl_selection.setText('Group "%s"' % group_name)
 		self.current_group = group_name
 		self.current_source = SOURCE_TYPE_GROUP
+		self.tree_directories.selectionModel().clearSelection()
 
-	def _append_sfz(self, sfz, mapped, show_dirs):
+	def _append_sfz(self, sfz, mapped):
 		sfz_list_item = QListWidgetItem(self.lst_sfzs)
-		sfz_list_item.setToolTip(sfz.path)
-		sfz_list_item.setText(f'{sfz.dirname} / {sfz.title}' \
-			if show_dirs else sfz.title)
+		sfz_list_item.setToolTip(str(sfz.path))
+		sfz_list_item.setText(sfz.title)
 		sfz_list_item.setData(Qt.UserRole, sfz)
 		if mapped:
 			bold(sfz_list_item)
@@ -369,7 +384,8 @@ class SFZFileDialog(QDialog):
 		return dlg.group_name if dlg.exec() else None
 
 	def assign_dir_to_group(self, group_name):
-		entries = glob.glob('%s/**/*.sfz' % self.current_directory, recursive = True)
+		entries = self.current_path.rglob('*.sfz')
+		logging.debug(entries)
 		self.db.insert_sfzs(entries)
 		self.db.assign_group(group_name, entries)
 		self.lst_groups.clear()
@@ -384,16 +400,16 @@ class SFZFileDialog(QDialog):
 
 	@pyqtSlot(QListWidgetItem)
 	def slot_sfz_double_click(self, item):
-		self.sfz_filename = item.data(Qt.UserRole).path
+		self.sfz_path = item.data(Qt.UserRole).path
 		self.accept()
 
 	@pyqtSlot()
 	def slot_accepted(self):
-		set_setting(KEY_CURRENT_DIRECTORY, abspath(self.current_directory))
 		if self.voice_name is not None:
-			self.db.map_instrument(self.voice_name, self.sfz_filename)
+			self.db.map_instrument(self.voice_name, self.sfz_path)
 
 	@pyqtSlot()
+	# pylint: disable-next = invalid-name
 	def closeEvent(self, _):
 		pass
 
@@ -420,7 +436,8 @@ class TestApp(QApplication):
 	def run_dialog(self):
 		dialog = SFZFileDialog(None, VoiceName('Violins II', None))
 		if dialog.exec():
-			print(dialog.sfz_filename)
+			print(dialog.sfz_path)
+		sync_settings()
 		carla().delete()
 
 

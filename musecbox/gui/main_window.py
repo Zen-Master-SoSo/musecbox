@@ -17,53 +17,49 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code, import-outside-toplevel, too-many-lines, broad-exception-caught
+#
 """
 Provides the main application window.
 """
 import logging, json
 from os import mkdir, chdir, getpid, linesep
-from os.path import join, dirname, basename, splitext, abspath, realpath, exists
+from pathlib import Path
 from tempfile import gettempdir
 from shutil import rmtree
 from functools import partial
 from itertools import chain
-from collections import namedtuple
 from signal import signal, SIGINT, SIGTERM
 from socket import socket, AF_UNIX, SOCK_DGRAM, SOL_SOCKET, SO_REUSEADDR
+
+# PyQt5 imports
+from PyQt5 import uic
+from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QThread, QPoint, QTimer,
+	QEvent, QVariant, pyqtProperty, QPropertyAnimation, QAbstractAnimation,
+	QFileSystemWatcher, QDir)
+from PyQt5.QtWidgets import (QWidget, QMainWindow, QMessageBox, QFileDialog,
+	QInputDialog, QMenu, QLabel, QAction, QActionGroup, QSizePolicy, QVBoxLayout,
+	QLayout, QApplication)
+from PyQt5.QtGui import QPainter, QColor, QBrush, QPalette, QIcon
+
 from qt_extras import SigBlock, ShutUpQT, DevilBox
 from qt_extras.list_layout import HListLayout, VListLayout
-from sfzen import SFZ, SAMPLES_ABSPATH
-from sfzen.cleaners.liquidsfz import clean as liquid_clean
+from sfzen import SAMPLES_ABSPATH
 from mscore import VoiceName
 from simple_carla import (Plugin, Parameter, CarlaPluginDialog,
 	ENGINE_TRANSPORT_MODE_DISABLED as TRANSPORT_DISABLED)
 
-# PyQt5 imports
-from PyQt5 import uic
-from PyQt5.QtCore import	Qt, pyqtSignal, pyqtSlot, QThread, QPoint, QTimer, QEvent, QVariant, \
-							pyqtProperty, QPropertyAnimation, QAbstractAnimation, QFileSystemWatcher, \
-							QDir
-from PyQt5.QtWidgets import QWidget, QMainWindow, QMessageBox, QFileDialog, QInputDialog, \
-							QMenu, QLabel, QAction, QActionGroup, QSizePolicy, QVBoxLayout, \
-							QLayout, QApplication
-from PyQt5.QtGui import		QPainter, QColor, QBrush, QPalette, QIcon
-
 # musecbox imports
-from musecbox import 		carla, set_main_window, \
-							recent_files, recent_plugins, \
-							setting, set_setting, sync_settings, \
-							styles, set_application_style, \
-							xdg_open, open_in_terminal, plugin_display_name, \
-							APPLICATION_NAME, APP_PATH, SOCKET_PATH, CARRIAGE_RETURN, \
-							SUPPORTED_FILE_TYPES, MUSESCORE_FILE_TYPES, RENDER_FILE_TYPE, \
-							PROJECT_OPTION_KEYS, DEFAULT_STYLE, KEY_STYLE, \
-							KEY_RECENT_PROJECT_DIR, KEY_RECENT_SCORE_DIR, \
-							KEY_SHOW_PORT_INPUTS, KEY_SHOW_INDICATORS, \
-							KEY_SHOW_PLUGIN_VOLUME, KEY_SHOW_BALANCE, \
-							KEY_SHOW_SHARED_PLUGINS, KEY_SHOW_TOOLBAR, KEY_SHOW_STATUSBAR, \
-							KEY_AUTO_CONNECT, KEY_AUTO_START, KEY_WATCH_FILES, KEY_VERTICAL_LAYOUT, \
-							KEY_BCWIDGET_LINES, KEY_COPY_SFZS, KEY_SAMPLES_MODE, KEY_CLEAN_SFZS, \
-							LAYOUT_COMPLETE_DELAY
+from musecbox import (carla, set_main_window, recent_files, recent_plugins,
+	setting, set_setting, sync_settings, styles, set_application_style, xdg_open,
+	open_in_terminal, plugin_display_name, APPLICATION_NAME, APP_PATH, SOCKET_PATH,
+	CARRIAGE_RETURN, SUPPORTED_FILE_TYPES, MUSESCORE_FILE_TYPES, RENDER_FILE_TYPE,
+	PROJECT_OPTION_KEYS, DEFAULT_STYLE, KEY_STYLE, KEY_RECENT_PROJECT_DIR,
+	KEY_RECENT_SCORE_DIR, KEY_SHOW_PORT_INPUTS, KEY_SHOW_INDICATORS,
+	KEY_SHOW_PLUGIN_VOLUME, KEY_SHOW_BALANCE, KEY_SHOW_SHARED_PLUGINS,
+	KEY_SHOW_TOOLBAR, KEY_SHOW_STATUSBAR, KEY_AUTO_CONNECT, KEY_AUTO_START,
+	KEY_WATCH_FILES, KEY_VERTICAL_LAYOUT, KEY_BCWIDGET_LINES, KEY_COPY_SFZS,
+	KEY_SAMPLES_MODE, KEY_CLEAN_SFZS, LAYOUT_COMPLETE_DELAY)
 from musecbox.gui.port_widget import PortWidget, HorizontalPortWidget, VerticalPortWidget
 from musecbox.gui.track_widget import TrackWidget
 from musecbox.gui.plugin_widgets import SharedPluginWidget
@@ -89,42 +85,42 @@ class MainWindow(QMainWindow):
 		super().__init__()
 		set_main_window(self)
 		self.startup_options = options
-		self.temp_dir = join(gettempdir(), f'musecbox-{getpid()}')
+		self.temp_dir = Path(gettempdir()) / f'musecbox-{getpid()}'
 		mkdir(self.temp_dir)
 		chdir(self.temp_dir)
 
-		self.project_filename = None
+		self.project_path = None
 		self.project_definition = None
-		self.source_score = None
+		self.source_score_path = None
 		self.dirty = False
 		self.project_loading = False
 		self.is_clearing = False
 		self.function_after_cleared = None
-		self.single_sfz_filename = None
+		self.single_sfz_path = None
 		self.file_system_watcher = None
-		self.wav_filename = None
+		self.wav_file_path = None
 		self.transport_mode = TRANSPORT_DISABLED
 		self.port_assignments = {}	# {midi_port:self.port_layout index}
 		self._cancel_action_dialog = None
 
-		if options.Filename and exists(options.Filename):
-			ext = splitext(options.Filename)[-1]
-			if ext == '.mbxp':
-				try:
-					with open(options.Filename, 'r') as fh:
-						self.project_definition = json.load(fh)
-				except json.JSONDecodeError as e:
-					logging.error(e)
-				else:
-					self.project_filename = abspath(options.Filename)
+		if options.Filename:
+			path = Path(options.Filename)
+			if path.exists():
+				if path.suffix.lower() == '.mbxp':
+					try:
+						self.project_definition = json.loads(path.read_text(encoding = 'utf-8'))
+					except json.JSONDecodeError as e:
+						logging.error(e)
+					else:
+						self.project_path = path
 
 		set_application_style()
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'main_window.ui'), self)
-		self.setWindowIcon(QIcon(join(APP_PATH, 'res', 'musecbox-icon.png')))
+			uic.loadUi(Path(__file__).parent.joinpath('main_window.ui'), self)
+		self.setWindowIcon(QIcon(str(APP_PATH / 'res' / 'musecbox-icon.png')))
 
 		self._setup_window_elements()
-		self.show_hide_window_elements()
+		self._show_hide_window_elements()
 		self._connect_actions()
 		self._setup_timers()
 		self._setup_socket_listener()
@@ -310,7 +306,7 @@ class MainWindow(QMainWindow):
 		self.dirty = False
 		self.update_ui()
 
-	def show_hide_window_elements(self):
+	def _show_hide_window_elements(self):
 		self.toolbar.setVisible(setting(KEY_SHOW_TOOLBAR, bool, True))
 		self.frm_balance.setVisible(setting(KEY_SHOW_BALANCE, bool, True))
 		self.scr_shared_plugins.setVisible(setting(KEY_SHOW_SHARED_PLUGINS, bool, True))
@@ -321,8 +317,8 @@ class MainWindow(QMainWindow):
 		has_track_plugins = has_tracks and any(track_widget.has_plugins() \
 			for track_widget in self.iterate_track_widgets())
 		has_shared_plugins = len(self.shared_plugin_layout) > 0
-		has_project = not self.project_filename is None
-		has_score = bool(self.source_score)
+		has_project = not self.project_path is None
+		has_score = bool(self.source_score_path)
 		self.action_save.setEnabled(self.dirty)
 		self.action_save_as.setEnabled(has_project)
 		self.action_revert.setEnabled(has_project)
@@ -335,7 +331,7 @@ class MainWindow(QMainWindow):
 		self.action_watch_files.setEnabled(has_tracks)
 		self.action_show_project_info.setEnabled(has_project)
 		self.action_show_score_info.setEnabled(has_score)
-		self.action_copy_sfzs.setEnabled(bool(self.sfz_copy_ops()))
+		self.action_copy_sfzs.setEnabled(bool(self.should_copy_sfzs()))
 		self.action_copy_sfz_paths.setEnabled(has_tracks)
 		self.action_clear_shared_plugins.setEnabled(has_shared_plugins)
 		self.action_mute_all_tracks.setEnabled(has_tracks)
@@ -346,9 +342,9 @@ class MainWindow(QMainWindow):
 		self.action_auto_connect_tracks.setChecked(setting(KEY_AUTO_CONNECT, bool))
 		if has_project:
 			if self.dirty:
-				self.setWindowTitle(f'* {self.project_filename} {APPLICATION_NAME}')
+				self.setWindowTitle(f'* {self.project_path} {APPLICATION_NAME}')
 			else:
-				self.setWindowTitle(f'{self.project_filename} {APPLICATION_NAME}')
+				self.setWindowTitle(f'{self.project_path} {APPLICATION_NAME}')
 		else:
 			self.setWindowTitle(f'{APPLICATION_NAME}')
 
@@ -400,18 +396,18 @@ class MainWindow(QMainWindow):
 			except Exception as e:
 				DevilBox(e)
 
-	def open_file(self, filename):
-		ext = splitext(filename)[-1]
+	def open_file(self, path):
+		ext = path.suffix.lower()
 		if ext in ('.mscz', '.mscx'):
-			self.when_clear(partial(self.import_score, filename))
+			self.when_clear(partial(self.import_score, path))
 		elif ext == '.mbxp':
-			self.when_clear(partial(self.load_project, filename))
+			self.when_clear(partial(self.load_project, path))
 		elif ext == '.mbxt':
-			self.when_clear(partial(self.import_track_setup, filename))
+			self.when_clear(partial(self.import_track_setup, path))
 		elif ext == '.sfz':
-			self.when_clear(partial(self.load_single_sfz, filename))
+			self.when_clear(partial(self.load_single_sfz, path))
 		else:
-			DevilBox('Unknown file format: ' + filename)
+			DevilBox(f'Unknown file format "{path}"')
 
 	# -----------------------------------------------------------------
 	# Project save / load functions:
@@ -451,9 +447,9 @@ class MainWindow(QMainWindow):
 			carla().remove_all_plugins()	# See: slot_last_plugin_removed
 
 	def clear_internal_state(self):
-		self.project_filename = None
-		self.source_score = None
-		self.wav_filename = None
+		self.project_path = None
+		self.source_score_path = None
+		self.wav_file_path = None
 		self.port_layout.clear()
 		self.shared_plugin_layout.clear()
 		self.balance_control_widget.clear()
@@ -466,12 +462,11 @@ class MainWindow(QMainWindow):
 
 	def load_project(self, filename):
 		from musecbox.dialogs.project_load_dialog import ProjectLoadDialog
-		project_abspath = abspath(filename)
-		logging.debug('Load project "%s"', project_abspath)
-		if exists(project_abspath):
+		project_path = Path(filename).resolve()
+		logging.debug('Load project "%s"', project_path)
+		if project_path.exists():
 			try:
-				with open(project_abspath, 'r') as fh:
-					self.project_definition = json.load(fh)
+				self.project_definition = json.loads(project_path.read_text(encoding = 'utf-8'))
 			except json.JSONDecodeError as e:
 				DevilBox(
 					f'<p>There was a problem decoding "{filename}"</p>' + \
@@ -479,19 +474,19 @@ class MainWindow(QMainWindow):
 				self.setWindowTitle(APPLICATION_NAME)
 			else:
 				self.enter_loading_state()
-				self.project_filename = project_abspath
-				self.source_score = self.project_definition['source_score']
+				self.project_path = project_path
+				self.source_score_path = Path(self.project_definition['source_score'])
 				set_application_style()
-				self.show_hide_window_elements()
+				self._show_hide_window_elements()
 				self.balance_control_widget.slot_set_lines(setting(KEY_BCWIDGET_LINES, int, 3))
 				if 'exported_wav_file' in self.project_definition:
-					self.wav_filename = self.project_definition['exported_wav_file']
+					self.wav_file_path = self.project_definition['exported_wav_file']
 				if ProjectLoadDialog(self, self.project_definition).exec():
-					recent_files().bump(self.project_filename)
-					set_setting(KEY_RECENT_PROJECT_DIR, self.project_dir())
+					recent_files().bump(self.project_path)
+					set_setting(KEY_RECENT_PROJECT_DIR, self.project_path.parent)
 					autostart = setting(KEY_AUTO_START)
 					if autostart and len(autostart):
-						set_setting(KEY_AUTO_START, self.project_filename)
+						set_setting(KEY_AUTO_START, self.project_path)
 					self.project_load_complete()
 		else:
 			recent_files().remove(filename)
@@ -523,8 +518,9 @@ class MainWindow(QMainWindow):
 		self.start_timers()
 		self.action_watch_files.setChecked(setting(KEY_WATCH_FILES, bool))
 		self.project_loading = False
-		tracks_missing_sfzs = [ track for track in self.iterate_track_widgets() \
-			if not exists(track.sfz_filename) ]
+		tracks_missing_sfzs = [ track
+			for track in self.iterate_track_widgets()
+			if not track.sfz_path.exists() ]
 		if tracks_missing_sfzs:
 			from musecbox.dialogs.missing_sfzs_dialog import MissingSFZsDialog
 			MissingSFZsDialog(self, tracks_missing_sfzs).show()
@@ -538,21 +534,20 @@ class MainWindow(QMainWindow):
 		"""
 		self.when_clear(partial(self.load_project, filename))
 
-	def import_score(self, filename):
+	def import_score(self, path):
 		from musecbox.dialogs.score_import_dialog import ScoreImportDialog
-		import_dialog = ScoreImportDialog(self, filename)
+		import_dialog = ScoreImportDialog(self, path)
 		if import_dialog.exec():
-			self.source_score = import_dialog.encoded_score()
-			set_setting(KEY_RECENT_SCORE_DIR, dirname(abspath(filename)))
+			self.source_score_path = path
+			set_setting(KEY_RECENT_SCORE_DIR, str(path.parent.resolve()))
 			self.load_from_track_setup(import_dialog.track_setup())
 
-	def import_track_setup(self, filename):
+	def import_track_setup(self, path):
 		try:
-			with open(filename, 'r') as fh:
-				setup = json.load(fh)
+			setup = json.loads(path.read_text(encoding = 'utf-8'))
 			self.load_from_track_setup(setup)
 		except json.JSONDecodeError:
-			DevilBox(f'There was a problem decoding "{filename}"')
+			DevilBox(f'There was a problem decoding "{path}"')
 
 	def load_from_track_setup(self, setup):
 		from musecbox.dialogs.score_load_dialog import ScoreLoadDialog
@@ -561,16 +556,16 @@ class MainWindow(QMainWindow):
 			self.project_load_complete()
 			self.slot_save_project_as()
 
-	def load_single_sfz(self, filename):
+	def load_single_sfz(self, path):
 		self.enter_loading_state()
-		self.single_sfz_filename = filename
+		self.single_sfz_path = path
 		self.add_port(1, on_ready_slot = self.single_port_ready)
 
 	@pyqtSlot(int)
 	def single_port_ready(self, port_number):
 		track_widget = self.port_widget(port_number).add_track(
-			VoiceName(basename(self.single_sfz_filename), None),
-			self.single_sfz_filename
+			VoiceName(self.single_sfz_path.stem, None),
+			self.single_sfz_path
 		)
 		track_widget.sig_ready.connect(self.single_track_ready, type = Qt.QueuedConnection)
 		track_widget.add_to_carla()
@@ -582,8 +577,9 @@ class MainWindow(QMainWindow):
 
 	def save_project(self):
 		try:
-			with open(self.project_filename, 'w') as fh:
-				json.dump(self.encode_saved_state(), fh, indent = "\t")
+			self.project_path.write_text(
+				json.dumps(self.encode_saved_state(), indent = "\t"),
+				encoding = 'utf-8')
 		except Exception as e:
 			DevilBox(e)
 		else:
@@ -591,8 +587,8 @@ class MainWindow(QMainWindow):
 
 	def encode_saved_state(self):
 		return {
-			"source_score"		: self.source_score,
-			"exported_wav_file"	: self.wav_filename,
+			"source_score"		: self.source_score_path,
+			"exported_wav_file"	: self.wav_file_path,
 			"options"			: { key:setting(key) \
 									for key in PROJECT_OPTION_KEYS },
 			"ports"				: [ port.encode_saved_state() \
@@ -602,25 +598,18 @@ class MainWindow(QMainWindow):
 			"bcwidget"			: self.balance_control_widget.encode_saved_state()
 		}
 
-	def sfz_copy_ops(self):
+	# -----------------------------------------------------------------
+	# SFZ Path functions:
+
+	def should_copy_sfzs(self):
 		"""
-		Returns a list of CopyOp (namedtuple) for all tracks whose SFZ does not reside
-		in the project SFZ directory.
+		Returns (bool) True if any track's SFZ does not reside in the project SFZ
+		directory. This function is used to determine whether to enable the "Copy SFZs"
+		action, and provide a list of operations for the the "copy_sfzs" method.
 		"""
-		if self.project_filename is None or not setting(KEY_COPY_SFZS, bool):
-			return []
-		sfz_dirname = self.sfz_dirname()
-		sfz_dir = realpath(self.sfz_dir())
-		CopyOp = namedtuple('CopyOp', ['track_widget', 'current_realpath', 'new_realpath', 'relpath'])
-		copy_ops = [
-			CopyOp(
-				track_widget,											# track_widget
-				realpath(track_widget.sfz_filename),					# current_realpath
-				join(sfz_dir, basename(track_widget.sfz_filename)),		# new_realpath
-				join(sfz_dirname, basename(track_widget.sfz_filename))	# relpath
-			) for track_widget in self.iterate_track_widgets()
-		]
-		return [ op for op in copy_ops if op.current_realpath != op.new_realpath ]
+		return self.project_path and setting(KEY_COPY_SFZS, bool) and any(
+			track_widget for track_widget in self.iterate_track_widgets()
+			if track_widget.has_outside_sfz())
 
 	def copy_sfzs(self):
 		"""
@@ -628,51 +617,41 @@ class MainWindow(QMainWindow):
 		Returns boolean True if any file was copied.
 		"""
 		sfz_copied = False
-		if copy_ops := self.sfz_copy_ops():
+		if self.should_copy_sfzs():
 			self.setCursor(Qt.WaitCursor)
 			samples_mode = setting(KEY_SAMPLES_MODE, int, SAMPLES_ABSPATH)
 			clean_sfzs = setting(KEY_CLEAN_SFZS, bool)
-			if not exists(self.sfz_dir()):
-				mkdir(self.sfz_dir())
-			for op in copy_ops:
-				try:
-					sfz_copy = SFZ(op.current_realpath)
-					if clean_sfzs:
-						liquid_clean(sfz_copy)
-					sfz_copy.save_as(op.new_realpath,
-						samples_mode = samples_mode, overwrite = True)
-					op.track_widget.load_sfz(op.new_realpath)
-				except Exception as err:
-					logging.exception(err)
-					QMessageBox.warning(self, "SFZ Copy failed",
-						f"""<p>There was an error when copying</p>
-						<p><b>{op.track_widget.sfz_filename}</b></p>
-						<p>to</p>
-						<p><b>{op.relpath}</b></p>
-						<p><b>{err}</b></p>""")
-				else:
+			self.project_sfz_path().mkdir(exist_ok = True)
+			for track_widget in self.iterate_track_widgets():
+				if track_widget.has_outside_sfz():
+					track_widget.copy_sfz_to_project(samples_mode, clean_sfzs)
 					sfz_copied = True
 			self.unsetCursor()
 		return sfz_copied
+
+	def project_sfz_path(self):
+		return self.project_path.parent / f'{self.project_path.stem}-SFZs' \
+			if self.project_path else None
 
 	def sfz_paths(self):
 		"""
 		Returns a list of (str) SFZ paths.
 		"""
-		return [ track_widget.sfz_filename \
+		return [ track_widget.sfz_path \
 			for track_widget in self.iterate_track_widgets() ]
 
-	def project_dir(self):
-		return dirname(realpath(self.project_filename)) if self.project_filename else None
+	def watch(self, path):
+		if self.file_system_watcher:
+			logging.debug('Watch: %s', path)
+			self.file_system_watcher.addPath(path)
 
-	def sfz_dirname(self):
-		if self.project_filename:
-			project_title, _ = splitext(basename(self.project_filename))
-			return f'{project_title}-SFZs'
-		return None
+	def unwatch(self, path):
+		if self.file_system_watcher:
+			logging.debug('Unwatch: %s', path)
+			self.file_system_watcher.removePath(path)
 
-	def sfz_dir(self):
-		return join(self.project_dir(), self.sfz_dirname()) if self.project_filename else None
+	# -----------------------------------------------------------------
+	# Option functions:
 
 	def option(self, key):
 		if self.project_definition and key in self.project_definition['options']:
@@ -687,7 +666,7 @@ class MainWindow(QMainWindow):
 		return False
 
 	# -----------------------------------------------------------------
-	# Operational funcs:
+	# Operational functions:
 
 	def track_widget_count(self):
 		"""
@@ -798,16 +777,6 @@ class MainWindow(QMainWindow):
 		"""
 		yield from self.shared_plugin_layout
 
-	def watch(self, path):
-		if self.file_system_watcher:
-			logging.debug('Watch: %s', path)
-			self.file_system_watcher.addPath(path)
-
-	def unwatch(self, path):
-		if self.file_system_watcher:
-			logging.debug('Unwatch: %s', path)
-			self.file_system_watcher.removePath(path)
-
 	def select_style(self, style):
 		set_setting(KEY_STYLE, style)
 		set_application_style()
@@ -858,22 +827,22 @@ class MainWindow(QMainWindow):
 			self.file_system_watcher = QFileSystemWatcher(self)
 			self.file_system_watcher.fileChanged.connect(self.slot_watched_file_changed)
 			for track_widget in self.iterate_track_widgets():
-				self.watch(track_widget.sfz_filename)
+				self.watch(track_widget.sfz_path)
 		else:
 			logging.debug('Deleting QFileSystemWatcher')
 			self.file_system_watcher = None
 
 	@pyqtSlot(str)
-	def slot_watched_file_changed(self, sfz_filename):
-		logging.debug('Watched file changed: %s', sfz_filename)
+	def slot_watched_file_changed(self, sfz_path):
+		logging.debug('Watched file changed: %s', sfz_path)
 		path_exists = False
 		for track_widget in self.iterate_track_widgets():
-			if track_widget.sfz_filename == sfz_filename:
+			if track_widget.sfz_path == sfz_path:
 				track_widget.synth.reload()
 				path_exists = True
 				break
 		if not path_exists:
-			self.unwatch(sfz_filename)
+			self.unwatch(sfz_path)
 
 	@pyqtSlot(bool)
 	def slot_show_toolbar(self, state):
@@ -932,7 +901,7 @@ class MainWindow(QMainWindow):
 
 	@pyqtSlot(bool)
 	def slot_set_autostart(self, state):
-		set_setting(KEY_AUTO_START, self.project_filename if state else '')
+		set_setting(KEY_AUTO_START, self.project_path if state else '')
 
 	@pyqtSlot()
 	def slot_connect_all_tracks(self):
@@ -1086,7 +1055,7 @@ class MainWindow(QMainWindow):
 		if dialog.exec():
 			voice_name = VoiceName(dialog.cmb_instrument.currentText(), dialog.cmb_voice.currentText())
 			self.port_widget(dialog.spn_port.value()).add_track(
-				voice_name, dialog.sfz_filename).add_to_carla()
+				voice_name, dialog.sfz_path).add_to_carla()
 
 	@pyqtSlot()
 	def slot_show_sfzdb(self):
@@ -1104,20 +1073,20 @@ class MainWindow(QMainWindow):
 		"""
 		Copy project path to clipboard
 		"""
-		QApplication.instance().clipboard().setText(self.project_filename)
+		QApplication.instance().clipboard().setText(self.project_path)
 
 	@pyqtSlot()
 	def slot_open_project_folder(self):
-		xdg_open(self.project_dir())
+		xdg_open(self.project_path())
 
 	@pyqtSlot()
 	def slot_open_in_terminal(self):
-		open_in_terminal(self.project_dir())
+		open_in_terminal(self.project_path())
 
 	@pyqtSlot()
 	def slot_show_score_info(self):
 		from musecbox.dialogs.score_info_dialog import ScoreInfoDialog
-		ScoreInfoDialog(self, self.source_score).exec()
+		ScoreInfoDialog(self, self.source_score_path).exec()
 
 	@pyqtSlot()
 	def slot_apply_to_score(self):
@@ -1128,14 +1097,16 @@ class MainWindow(QMainWindow):
 		from musecbox.dialogs.score_apply_dialog import ApplyScoreDialog
 		filenames, _ = QFileDialog.getOpenFileNames(self,
 			"Apply to a MuseScore3 score",
-			self.source_score['filename'] if self.source_score \
+			self.source_score_path if self.source_score_path \
 				else setting(KEY_RECENT_SCORE_DIR, str, QDir.homePath()),
 			MUSESCORE_FILE_TYPES
 		)
-		self.project_definition = self.encode_saved_state()
-		for filename in filenames:
-			ApplyScoreDialog(self, self.project_definition, filename).exec()
-			set_setting(KEY_RECENT_SCORE_DIR, dirname(abspath(filename)))
+		if filenames:
+			self.project_definition = self.encode_saved_state()
+			for filename in filenames:
+				ApplyScoreDialog(self, self.project_definition, Path(filename)).exec()
+			path = Path(filenames.pop())
+			set_setting(KEY_RECENT_SCORE_DIR, str(path.parent.resolve()))
 
 	@pyqtSlot()
 	def slot_recent_menu_show(self):
@@ -1203,7 +1174,7 @@ class MainWindow(QMainWindow):
 
 	@pyqtSlot()
 	def slot_save_project(self):
-		if self.project_filename is None:
+		if self.project_path is None:
 			self.slot_save_project_as()
 		else:
 			self.save_project()
@@ -1211,16 +1182,16 @@ class MainWindow(QMainWindow):
 	@pyqtSlot()
 	def slot_save_project_as(self):
 		from musecbox.dialogs.project_save_dialog import ProjectSaveDialog
-		filename = self.project_filename if self.project_filename \
-			else self.source_score['filename'] if self.source_score \
+		filename = self.project_path if self.project_path \
+			else self.source_score_path if self.source_score_path \
 			else None
 		dlg = ProjectSaveDialog(self, filename)
 		if dlg.exec():
 			set_setting(KEY_COPY_SFZS, dlg.copy_sfzs)
 			set_setting(KEY_CLEAN_SFZS, dlg.clean_sfzs)
 			set_setting(KEY_SAMPLES_MODE, dlg.samples_mode)
-			if self.project_filename != dlg.target_path:
-				self.project_filename = dlg.target_path
+			if self.project_path != dlg.target_path:
+				self.project_path = dlg.target_path
 				if dlg.copy_sfzs:
 					self.copy_sfzs()
 			self.save_project()
@@ -1253,7 +1224,7 @@ class MainWindow(QMainWindow):
 
 	@pyqtSlot()
 	def slot_revert(self):
-		self.when_clear(partial(self.load_project, self.project_filename))
+		self.when_clear(partial(self.load_project, self.project_path))
 
 	# -----------------------------------------------------------------
 	# Slots for GUI widgets
@@ -1308,19 +1279,18 @@ class MainWindow(QMainWindow):
 	@pyqtSlot()
 	def slot_record(self):
 		from musecbox.dialogs.record_dialog import RecordDialog
-		if self.wav_filename:
-			saveto = self.wav_filename
-		elif self.source_score:
-			title, _ = splitext(basename(self.source_score['filename']))
-			saveto = join(self.project_dir(), title + '.wav')
+		if self.wav_file_path:
+			save_path = Path(self.wav_file_path)
+		elif self.source_score_path:
+			save_path = self.project_path.parent / (self.source_score_path.stem + '.wav')
 		else:
-			path, _ = splitext(self.project_filename)
-			saveto = path + '.wav'
-		self.wav_filename, _ = QFileDialog.getSaveFileName(
-			self, "Save audio to ...", saveto, RENDER_FILE_TYPE)
-		if self.wav_filename:
-			logging.debug('Saving to %s', self.wav_filename)
-			RecordDialog(self, saveto).exec()
+			save_path = self.project_path.parent / (self.project_path.stem + '.wav')
+		filename, _ = QFileDialog.getSaveFileName(
+			self, "Save audio to ...", str(save_path), RENDER_FILE_TYPE)
+		if filename:
+			self.wav_file_path = Path(filename)
+			logging.debug('Save audio to %s', self.wav_file_path)
+			RecordDialog(self, self.wav_file_path).exec()
 
 	@pyqtSlot()
 	def slot_transport_start(self):
@@ -1468,7 +1438,7 @@ class SocketListener(QThread):
 
 	def __init__(self):
 		super().__init__()
-		if exists(SOCKET_PATH):
+		if Path(SOCKET_PATH).exists():
 			raise Exception("SOCKET_PATH already exists!")
 		self.socket = socket(AF_UNIX, SOCK_DGRAM)
 		self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -1497,7 +1467,7 @@ class LoadIndicator(QWidget):
 		self.label = QLabel(self)
 		self.label.setAlignment(Qt.AlignHCenter | Qt.AlignBaseline)
 		self.label.setText('0%')
-		self.bar = LoadIndicatorBar(self)
+		self.bar = LoadIndicatorBar(self)	# pylint: disable = disallowed-name
 		lo = QVBoxLayout()
 		lo.setSpacing(2)
 		lo.setContentsMargins(0,0,0,0)

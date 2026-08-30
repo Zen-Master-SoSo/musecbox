@@ -17,26 +17,24 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides a custom file dialog with added option for choosing samples_mode.
 """
 
-import logging
-from os.path import abspath, splitext
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 from functools import partial
-
-# PyQt5 imports
-from PyQt5.QtCore import	Qt, QDir, QCoreApplication, pyqtSlot
-from PyQt5.QtWidgets import QApplication, QFileDialog, QRadioButton, QCheckBox, QLabel, QGroupBox, QVBoxLayout
-
-from sfzen import	SAMPLES_ABSPATH, SAMPLES_RELPATH, SAMPLES_COPY, \
-					SAMPLES_SYMLINK, SAMPLES_HARDLINK
-
-from musecbox import setting, set_application_style, LOG_FORMAT, PROJECT_FILE_TYPE, \
-					KEY_COPY_SFZS, KEY_SAMPLES_MODE, KEY_CLEAN_SFZS, KEY_RECENT_PROJECT_DIR, \
-					T_SAMPLEMODE_ABSPATH, T_SAMPLEMODE_RELPATH, T_SAMPLEMODE_COPY, \
-					T_SAMPLEMODE_SYMLINK, T_SAMPLEMODE_HARDLINK, \
-					T_COPY_TO_LOCAL, T_CLEAN_SFZ
+from PyQt5.QtCore import Qt, QDir, QCoreApplication, pyqtSlot
+from PyQt5.QtWidgets import (QApplication, QFileDialog, QRadioButton,
+	QCheckBox, QLabel, QGroupBox, QVBoxLayout)
+from sfzen import SAMPLES_ABSPATH, SAMPLES_RELPATH, SAMPLES_COPY, SAMPLES_SYMLINK, SAMPLES_HARDLINK
+from musecbox import (setting, set_application_style, LOG_FORMAT,
+	PROJECT_FILE_TYPE, KEY_COPY_SFZS, KEY_SAMPLES_MODE, KEY_CLEAN_SFZS,
+	KEY_RECENT_PROJECT_DIR, T_SAMPLEMODE_ABSPATH, T_SAMPLEMODE_RELPATH,
+	T_SAMPLEMODE_COPY, T_SAMPLEMODE_SYMLINK, T_SAMPLEMODE_HARDLINK,
+	T_COPY_TO_LOCAL, T_CLEAN_SFZ)
 
 
 class ProjectSaveDialog(QFileDialog):
@@ -130,10 +128,7 @@ class ProjectSaveDialog(QFileDialog):
 		"""
 		selected_files = self.selectedFiles()
 		if selected_files:
-			self.target_path = abspath(
-				selected_files[0] \
-				if splitext(selected_files[0])[-1].lower() == '.mbxp' \
-				else selected_files[0] + '.mbxp')
+			self.target_path = Path(selected_files[0]).with_suffix('.mbxp')
 		self.copy_sfzs = bool(self.chk_copy.checkState())
 		self.clean_sfzs = self.copy_sfzs and bool(self.chk_clean.checkState())
 		self.samples_mode = self.samples_mode

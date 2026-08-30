@@ -20,12 +20,12 @@
 """
 Modifies the channel assignments in a MuseScore3 score to match a MusecBox project.
 """
-import logging
+import logging	 # pylint: disable = unused-import
 from collections import namedtuple
 from operator import attrgetter
 from datetime import datetime
 from shutil import copy2 as copy
-from os.path import splitext
+from pathlib import Path
 from mscore import Score, VoiceName
 from mscore.fuzzy import FuzzyVoice, FuzzyVoiceCandidate
 
@@ -38,6 +38,7 @@ class ScoreFixer:
 	def __init__(self, project_definition, mscore_filename):
 		self.project_definition = project_definition
 		self.score = Score(mscore_filename)
+		self.score_path = Path(mscore_filename)
 
 	def fix(self, *, ignore_extraneous = False, make_backup = False, fuzzy = False):
 		pairs = self.pairs(fuzzy = fuzzy)
@@ -57,9 +58,9 @@ class ScoreFixer:
 		Returns path to backup file to create in the same directory as the
 		mscore filename.
 		"""
-		path, ext = splitext(self.score.filename)
+		path = self.score_path.parent / self.score_path.stem
 		date_str = datetime.now().strftime('%Y-%m-%d-%H-%M')
-		return f'{path}-backup-{date_str}{ext}'
+		return f'{path}-backup-{date_str}{self.score_path.suffix}'
 
 	def project_tracks(self):
 		"""

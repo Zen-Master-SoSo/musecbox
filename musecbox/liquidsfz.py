@@ -20,7 +20,7 @@
 """
 Provides synth plugin used by TrackWidget and SFZPreviewer
 """
-import logging
+import logging	 # pylint: disable = unused-import
 from os import unlink
 from tempfile import mkstemp
 from PyQt5.QtCore import Qt, pyqtSignal
@@ -31,14 +31,12 @@ from musecbox import carla
 class LiquidSFZ(QtPlugin):
 	"""
 	Base class of TrackSynth and SFZPreviewer.
-	Pre-defined plugin.
-	Autoloads the SFZ file.
 	"""
 
 	sig_midi_active = pyqtSignal(bool)
 
-	def __init__(self, sfz_filename, *, saved_state = None):
-		self.sfz_filename = sfz_filename
+	def __init__(self, _sfz_path, *, saved_state = None):
+		self._sfz_path = _sfz_path
 		super().__init__({
 			'build'		: 2,
 			'type'		: 4,
@@ -48,17 +46,23 @@ class LiquidSFZ(QtPlugin):
 			'uniqueId'	: None
 		}, saved_state = saved_state)
 
+	@property
+	def sfz_path(self):
+		return self._sfz_path
+
 	def finalize_init(self):
 		self.sig_ready.connect(self.reload, type = Qt.QueuedConnection)
 
-	def load_sfz(self, sfz_filename):
-		self.sfz_filename = sfz_filename
-		self.reload()
+	def load_sfz(self, _sfz_path):
+		self._sfz_path = _sfz_path
+		self._load_sfz()
 
 	def reload(self):
-		logging.debug('Loading "%s"', self.sfz_filename)
+		self._load_sfz()
+
+	def _load_sfz(self):
 		_, tempfile = mkstemp(prefix = 'liquidsfz-', suffix = '.state')
-		with open(tempfile, 'w') as fob:
+		with open(tempfile, 'w', encoding = 'utf-8') as fob:
 			fob.write(self.state_xml())
 		carla().load_plugin_state(self.plugin_id, tempfile)
 		unlink(tempfile)
@@ -91,7 +95,7 @@ class LiquidSFZ(QtPlugin):
    <CustomData>
     <Type>http://lv2plug.in/ns/ext/atom#Path</Type>
     <Key>http://spectmorph.org/plugins/liquidsfz#sfzfile</Key>
-    <Value>{self.sfz_filename}</Value>
+    <Value>{self._sfz_path}</Value>
    </CustomData>
 
    <CustomData>

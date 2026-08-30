@@ -21,7 +21,7 @@
 Provides an integrated balanced control widget, which you can use to
 graphically locate instruments in the stereo space.
 """
-import logging
+import logging	 # pylint: disable = unused-import
 from math import floor
 from functools import partial
 from operator import attrgetter, itemgetter
@@ -29,13 +29,12 @@ from uuid import uuid4
 from qt_extras.autofit import autofit
 
 # PyQt5 imports
-from PyQt5.QtCore import	Qt, pyqtSlot, QRect, QEvent, QTimer
-from PyQt5.QtCore import	QPoint
-from PyQt5.QtGui import		QPainter, QPen, QPalette, QFontMetrics
-from PyQt5.QtWidgets import	QWidget, QLabel, QMenu, QAction
+from PyQt5.QtCore import Qt, pyqtSlot, QRect, QEvent, QTimer
+from PyQt5.QtCore import QPoint
+from PyQt5.QtGui import QPainter, QPen, QPalette, QFontMetrics
+from PyQt5.QtWidgets import QWidget, QLabel, QMenu, QAction
 
-from musecbox import		setting, set_setting, main_window, \
-							KEY_BCWIDGET_LINES, KEY_BCWIDGET_TRACKING
+from musecbox import setting, set_setting, main_window, KEY_BCWIDGET_LINES, KEY_BCWIDGET_TRACKING
 
 GRAB_PANNING		= 0		# What the user is grabbing.
 GRAB_LEFT_BALANCE	= 1		# If "can_pan", but not "can_balance",

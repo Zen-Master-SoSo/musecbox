@@ -17,12 +17,13 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code, import-outside-toplevel
+#
 """
 Provides a dialog used for importing MuseScore3 files
 """
-
-import logging
-from os.path import join, basename, dirname, abspath, splitext
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 from functools import partial, reduce
 from collections import defaultdict
 from operator import and_
@@ -30,19 +31,19 @@ from shutil import copy2 as copy
 from datetime import datetime
 
 # PyQt5 imports
-from PyQt5 import			uic
-from PyQt5.QtCore import	Qt, pyqtSignal, pyqtSlot, QTimer
-from PyQt5.QtGui import		QIcon
-from PyQt5.QtWidgets import QApplication, QDialog, QMessageBox, QInputDialog, \
-							QWidget, QSpinBox, QLabel, QAction, QStyle
+from PyQt5 import uic
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QTimer
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (QApplication, QDialog, QMessageBox, QInputDialog,
+	QWidget, QSpinBox, QLabel, QAction, QStyle)
 
 from qt_extras import SigBlock, ShutUpQT
 from qt_extras.list_layout import VListLayout
 from qt_extras.menu_button import QtMenuButton
-from mscore import Score, Part, Instrument, VoiceName
+from mscore import Score, VoiceName
 
-from musecbox import	set_application_style, APP_PATH, TEXT_NO_GROUP, TEXT_NEW_GROUP, \
-						LAYOUT_COMPLETE_DELAY, LOG_FORMAT
+from musecbox import (set_application_style,
+	APP_PATH, TEXT_NO_GROUP, TEXT_NEW_GROUP, LAYOUT_COMPLETE_DELAY, LOG_FORMAT)
 from musecbox.dialogs.sfz_file_dialog import SFZFileDialog
 from musecbox.dialogs.instrument_selection_dialog import InstrumentSelectionDialog
 from musecbox.sfzdb import SFZDatabase
@@ -54,25 +55,25 @@ class ScoreImportDialog(QDialog):
 	Allows the user to select which instruments to import, and which SFZ file to use.
 	"""
 
-	def __init__(self, parent, filename):
+	def __init__(self, parent, score_path):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'score_import_dialog.ui'), self)
-		self.filename = abspath(filename)
+			uic.loadUi(Path(__file__).parent.joinpath('score_import_dialog.ui'), self)
+		self.score_path = score_path
 		self.restore_geometry()
 		self.setFixedWidth(704)
 		self.finished.connect(self.save_geometry)
 
 		self.score_edited = False
-		path, ext = splitext(filename)
+		path = self.score_path.parent / self.score_path.stem
 		date_str = datetime.now().strftime('%Y-%m-%d-%H-%M')
-		self.backup_name = f'{path}-backup-{date_str}{ext}'
+		self.backup_name = f'{path}-backup-{date_str}{self.score_path.suffix}'
 
-		PartWidget.menu_icon = QIcon(join(APP_PATH, 'res', 'narrow-menu.svg'))
-		PartWidget.add_channel_icon = QIcon(join(APP_PATH, 'res', 'plus.svg'))
-		ChannelWidget.remove_icon = QIcon(join(APP_PATH, 'res', 'minus.svg'))
-		self.lock_icon = QIcon(join(APP_PATH, 'res', 'lock.svg'))
-		self.unlock_icon = QIcon(join(APP_PATH, 'res', 'unlock.svg'))
+		PartWidget.menu_icon = QIcon(str(APP_PATH / 'res' / 'narrow-menu.svg'))
+		PartWidget.add_channel_icon = QIcon(str(APP_PATH / 'res' / 'plus.svg'))
+		ChannelWidget.remove_icon = QIcon(str(APP_PATH / 'res' / 'minus.svg'))
+		self.lock_icon = QIcon(str(APP_PATH / 'res' / 'lock.svg'))
+		self.unlock_icon = QIcon(str(APP_PATH / 'res' / 'unlock.svg'))
 		self.b_may_modify.setIcon(self.lock_icon)
 		self.b_cancel.setIcon(QApplication.style().standardIcon(QStyle.SP_DialogCancelButton))
 		self.b_okay.setIcon(QApplication.style().standardIcon(QStyle.SP_DialogOkButton))
@@ -87,7 +88,7 @@ class ScoreImportDialog(QDialog):
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
 
 	def layout_complete(self):
-		self.score = EncodingScore(self.filename)
+		self.score = Score(self.score_path)
 
 		for part in self.score.parts():
 			part_widget = PartWidget(self, part)
@@ -153,7 +154,7 @@ class ScoreImportDialog(QDialog):
 				SFZDatabase().map_instrument(VoiceName(
 					part_widget.lbl_instrument_name.text(),
 					chan_widget.lbl_voice.text()
-				), chan_widget.sfz_filename)
+				), chan_widget.sfz_path)
 		self.accept()
 
 	@pyqtSlot(str)
@@ -194,7 +195,7 @@ class ScoreImportDialog(QDialog):
 			for part_widget in self.part_widgets:
 				instrument_name = part_widget.lbl_instrument_name.text()
 				for chan_widget in part_widget.channel_widgets:
-					chan_widget.set_sfz_filename(SFZDatabase().best_match(
+					chan_widget.set_sfz_path(SFZDatabase().best_match(
 						VoiceName(instrument_name, chan_widget.lbl_voice.text()),
 						group_name
 					).path)
@@ -203,9 +204,9 @@ class ScoreImportDialog(QDialog):
 
 	@pyqtSlot()
 	def slot_sfz_changed(self):
-		self.b_okay.setEnabled(not any(chan_widget.sfz_filename is None \
+		self.b_okay.setEnabled(not any(chan_widget.sfz_path is None \
 			for chan_widget in self.findChildren(ChannelWidget)))
-		self.b_auto_share.setEnabled(any(chan_widget.sfz_filename \
+		self.b_auto_share.setEnabled(any(chan_widget.sfz_path \
 			for chan_widget in self.findChildren(ChannelWidget)))
 
 	@pyqtSlot(int)
@@ -293,8 +294,8 @@ class ScoreImportDialog(QDialog):
 		"""
 		sfz_chan_widget_dict = defaultdict(list)
 		for chan_widget in self.findChildren(ChannelWidget):
-			if chan_widget.sfz_filename:
-				sfz_chan_widget_dict[chan_widget.sfz_filename].append(chan_widget)
+			if chan_widget.sfz_path:
+				sfz_chan_widget_dict[chan_widget.sfz_path].append(chan_widget)
 		for widget_list in sfz_chan_widget_dict.values():
 			for chan_widget in widget_list:
 				chan_widget.may_share_with = set(widget_list) - set([chan_widget])
@@ -314,12 +315,9 @@ class ScoreImportDialog(QDialog):
 				'midi_channel'	: chan_widget.spn_channel.value(),
 				'pan'			: chan_widget.pan,
 				'balance'		: chan_widget.balance,
-				'sfz'			: chan_widget.sfz_filename
+				'sfz'			: chan_widget.sfz_path
 			} for chan_widget in self.findChildren(ChannelWidget) \
-			if chan_widget.make() and chan_widget.sfz_filename ]
-
-	def encoded_score(self):
-		return self.score.encode_saved_state()
+			if chan_widget.make() and chan_widget.sfz_path ]
 
 
 class PartWidget(QWidget):
@@ -329,7 +327,7 @@ class PartWidget(QWidget):
 	def __init__(self, parent, score_part):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'score_import_part_widget.ui'), self)
+			uic.loadUi(Path(__file__).parent.joinpath('score_import_part_widget.ui'), self)
 		self.score_part = score_part
 		self.lbl_part_name.setText(self.score_part.name)
 		self.lbl_instrument_name.setText(self.score_part.instrument().name)
@@ -364,9 +362,9 @@ class PartWidget(QWidget):
 		"""
 		Returns a dict whose keys are SFZ path, and values are ChannelWidget objects
 		"""
-		return { chan_widget.sfz_filename:chan_widget \
+		return { chan_widget.sfz_path:chan_widget \
 			for chan_widget in self.channel_widgets \
-			if chan_widget.sfz_filename }
+			if chan_widget.sfz_path }
 
 	def fill_menu(self):
 		self.b_menu.clear()
@@ -509,8 +507,8 @@ class ChannelWidget(QWidget):
 	def __init__(self, parent, score_channel):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'score_import_channel_widget.ui'), self)
-		self.sfz_filename = None
+			uic.loadUi(Path(__file__).parent.joinpath('score_import_channel_widget.ui'), self)
+		self.sfz_path = None
 		self.score_channel = score_channel
 		self.lbl_voice.setText(score_channel.name)
 		self.original_midi_port = score_channel.midi_port
@@ -544,7 +542,7 @@ class ChannelWidget(QWidget):
 			self.lbl_voice.text()
 		))
 		if sfz_dialog.exec():
-			self.set_sfz_filename(sfz_dialog.sfz_filename)
+			self.set_sfz_path(sfz_dialog.sfz_path)
 
 	@pyqtSlot(int)
 	def slot_port_changed(self, value):
@@ -590,12 +588,12 @@ class ChannelWidget(QWidget):
 	def slot_delete_clicked(self):
 		self.sig_remove_channel.emit(self)	# TODO: You can use "sender()" instead
 
-	def set_sfz_filename(self, sfz_filename):
+	def set_sfz_path(self, sfz_path):
 		"""
 		Called from both slot_auto_fill and sfz_select_click.
 		"""
-		self.sfz_filename = sfz_filename
-		self.b_select_sfz.setText(basename(self.sfz_filename).replace('&', '&&'))
+		self.sfz_path = sfz_path
+		self.b_select_sfz.setText(self.sfz_path.name.replace('&', '&&'))
 		self.sig_sfz_changed.emit()
 
 	def shareable_part_widgets(self):
@@ -707,51 +705,12 @@ class ScoreOverwriteDialog(QMessageBox):
 		self.setDefaultButton(QMessageBox.Ok)
 
 
-class EncodingScore(Score):
-	"""
-	Encodes Score
-	Allows for compiling a list of part/instrument with complete instrument xml.
-	This allows the instrument definition to be copied to other scores.
-	"""
-
-	def encode_saved_state(self):
-		parts = EncodingPart.from_elements(self.findall('./Part'))
-		return {
-			'filename'	: self.filename,
-			'parts'		: [ part.encode_saved_state() for part in parts ]
-		}
-
-
-class EncodingPart(Part):
-	"""
-	Encodes Score.Part
-	"""
-
-	def encode_saved_state(self):
-		instrument = EncodingInstrument.from_element(self.find('./Instrument'))
-		return {
-			'name'			: self.name,
-			'instrument'	: instrument.encode_saved_state()
-		}
-
-
-class EncodingInstrument(Instrument):
-	"""
-	Encodes Score.Part.Instrument
-	"""
-
-	def encode_saved_state(self):
-		return {
-			'name'		: self.name,
-			'xml'		: self.concise_xml()
-		}
-
 
 if __name__ == "__main__":
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()
-	dialog = ScoreImportDialog(None, join(APP_PATH, 'res', 'musescore_score.mscx'))
+	dialog = ScoreImportDialog(None, APP_PATH / 'res' / 'musescore_score.mscx')
 	if dialog.exec_():
 		from pprint import pprint
 		pprint(dialog.track_setup())

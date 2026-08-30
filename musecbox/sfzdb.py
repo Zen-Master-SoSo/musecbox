@@ -21,15 +21,14 @@
 Provides a database of sfz files with which instruments may be grouped and matched to.
 """
 import logging, re
-from os import mkdir, remove
-from os.path import join, dirname, basename, splitext, isfile
+from pathlib import Path
 from time import time
-from functools import cached_property
+from functools import lru_cache
 from sqlite3 import connect
 from appdirs import user_config_dir
-from musecbox import VENDOR_NAME
 from mscore import CHANNEL_NAMES, DEFAULT_VOICE, VoiceName
 from mscore.fuzzy import FuzzyVoice, FuzzyVoiceCandidate
+from musecbox import VENDOR_NAME
 
 
 def single_spaced(s):
@@ -47,19 +46,17 @@ class SFZDatabase:
 		return cls.instance
 
 	@classmethod
-	def db_file(cls):
+	def db_path(cls):
 		"""
 		Returns the (default) path to the sqlite3 database in the user's config dir.
 		"""
-		try:
-			mkdir(join(user_config_dir(), VENDOR_NAME))
-		except FileExistsError:
-			pass
-		return join(user_config_dir(), VENDOR_NAME, 'musecbox-sfzs.db')
+		parent_path = Path(user_config_dir()) / VENDOR_NAME
+		parent_path.mkdir(exist_ok = True)
+		return parent_path / 'musecbox-sfzs.db'
 
 	def __init__(self):
 		if self.conn is None:
-			self.conn = connect(self.db_file())
+			self.conn = connect(self.db_path())
 			self.conn.execute('PRAGMA foreign_keys = ON')
 			if len(self.conn.execute('SELECT name FROM sqlite_master WHERE type="table"').fetchall()) == 0:
 				self._init_schema()
@@ -107,8 +104,8 @@ class SFZDatabase:
 		Deletes and recreates the database.
 		"""
 		self.conn.close()
-		remove(self.db_file())
-		self.conn = connect(self.db_file())
+		self.db_path().unlink()
+		self.conn = connect(self.db_path())
 		self._init_schema()
 
 	def clean(self):
@@ -119,21 +116,21 @@ class SFZDatabase:
 			SELECT path
 			FROM sfzs
 		""")
-		paths = [ tup[0] for tup in cursor.fetchall() if not isfile(tup[0]) ]
+		paths = [ tup[0] for tup in cursor.fetchall() if not Path(tup[0]).exists() ]
 		self.remove_sfzs(paths)
 
 	def insert_sfz(self, path):
 		"""
 		Inserts the given path.
 		"""
-		self.conn.execute('INSERT OR IGNORE INTO sfzs VALUES (?)', (path, ))
+		self.conn.execute('INSERT OR IGNORE INTO sfzs VALUES (?)', (str(path),))
 		self.conn.commit()
 
 	def insert_sfzs(self, paths):
 		"""
 		Inserts multiple SFZs, ignoring if already in DB
 		"""
-		data = [ (path,) for path in paths ]
+		data = [ (str(path),) for path in paths ]
 		self.conn.executemany('INSERT OR IGNORE INTO sfzs(path) VALUES(?)', data)
 		self.conn.commit()
 
@@ -144,7 +141,7 @@ class SFZDatabase:
 		self.conn.execute("""
 			DELETE FROM sfzs
 			WHERE path = ?
-		""", (path, ))
+		""", (str(path),))
 		self.conn.commit()
 
 	def remove_sfzs(self, paths):
@@ -160,7 +157,7 @@ class SFZDatabase:
 				PRIMARY KEY(path)
 			)
 		""")
-		data = [ (path,) for path in paths]
+		data = [ (str(path),) for path in paths]
 		self.conn.executemany('INSERT INTO selections(path) VALUES(?)', data)
 		self.conn.execute("""
 			DELETE FROM sfzs
@@ -215,7 +212,7 @@ class SFZDatabase:
 		cursor = self.conn.execute('SELECT DISTINCT(group_name) FROM group_members')
 		return [ result[0] for result in cursor.fetchall() ]
 
-	def map_instrument(self, voice_name: VoiceName, path: str):
+	def map_instrument(self, voice_name: VoiceName, path):
 		"""
 		Associates the given "voice_name" to the SFZ found at "path".
 		"""
@@ -223,7 +220,7 @@ class SFZDatabase:
 		self.conn.execute("""
 			INSERT OR REPLACE INTO instrument_mappings
 			VALUES (?, ?, ?, ?)
-		""", (path, voice_name.instrument_name, voice_name.voice or DEFAULT_VOICE, time()))
+		""", (str(path), voice_name.instrument_name, voice_name.voice or DEFAULT_VOICE, time()))
 		self.conn.commit()
 
 	def mappings(self, voice_name: VoiceName, group_name: str = None):
@@ -256,8 +253,8 @@ class SFZDatabase:
 			WHERE path = ?
 			ORDER BY date DESC
 		"""
-		return [ VoiceName(r[0], r[1]) \
-			for r in self.conn.execute(sql, (path,)).fetchall() ]
+		return [ VoiceName(r[0], r[1])
+			for r in self.conn.execute(sql, (str(path),)).fetchall() ]
 
 	def mapped_instrument_names(self):
 		"""
@@ -362,20 +359,8 @@ class SFZDatabase:
 class SFZRecord:
 
 	def __init__(self, path):
-		self.path = path
-		self.title = splitext(basename(self.path))[0]
-
-	@cached_property
-	def voice_name(self):
-		"""
-		Returns a VoiceName tuple interpreted from the file title
-		"""
-		instrument_name = re.sub(r'\W', ' ', self.title)
-		for voice in SFZDatabase().all_voices():
-			if re.search(voice, instrument_name, flags = re.I):
-				instrument_name = re.sub(voice, '', instrument_name, flags = re.I)
-				return VoiceName(single_spaced(instrument_name), voice)
-		return VoiceName(single_spaced(instrument_name), None)
+		self.path = Path(path)
+		self.title = self.path.stem
 
 	def mappings(self):
 		"""
@@ -386,12 +371,27 @@ class SFZRecord:
 	def __repr__(self):
 		return f'"{self.title}"'
 
-	@cached_property
+	@property
 	def dirname(self):
-		return basename(dirname(self.path))
+		return self.path.parent
+
+	@property
+	def voice_name(self):
+		return voice_from_string(self.title)
 
 	def encode_saved_state(self):
 		return self.path
+
+
+@lru_cache(maxsize = 512)
+def voice_from_string(string):
+	"""
+	Returns a VoiceName tuple interpreted from a string (i.e. file title).
+	"""
+	parts = re.split(r'\W', string.lower())
+	return VoiceName(' '.join(parts[:-1]), parts[-1]) \
+		if parts[-1] in SFZDatabase().all_voices() \
+		else VoiceName(' '.join(parts), None)
 
 
 

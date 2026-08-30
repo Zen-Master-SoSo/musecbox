@@ -17,6 +17,8 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Applies the port/channel assignments in a MusecBox project to a MuseScore3 score.
 """
@@ -27,7 +29,7 @@ from musecbox.score_fixer import ScoreFixer
 
 def main():
 	p = argparse.ArgumentParser()
-	p.add_argument('Project', type = str, nargs = 1,
+	p.add_argument('Project', type = str,
 		help = 'MusecBox project to use for port setup')
 	p.add_argument('Score', type = str, nargs = '+',
 		help = 'MuseScore score to apply port setup to')
@@ -41,12 +43,12 @@ def main():
 	logging.basicConfig(level = log_level, format = LOG_FORMAT)
 
 	try:
-		with open(options.Project[0], 'r') as fh:
+		with open(options.Project, 'r', encoding = 'utf-8') as fh:
 			project_def = json.load(fh)
 	except FileNotFoundError:
-		p.exit(f'"{options.Project[0]}" is not a file')
+		p.exit(f'"{options.Project}" is not a file')
 	except json.JSONDecodeError:
-		p.exit(f'There was an error decoding "{options.Project[0]}"')
+		p.exit(f'There was an error decoding "{options.Project}"')
 
 	for filename in options.Score:
 		print(filename)

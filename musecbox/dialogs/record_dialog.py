@@ -17,11 +17,14 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides a dialog which shows modal when recording.
 """
-import logging
-from os.path import join, dirname
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
+from time import sleep
 from qt_extras import DevilBox, ShutUpQT
 from simple_carla import Plugin, EngineInitFailure
 
@@ -47,7 +50,7 @@ class RecordDialog(QDialog):
 	def __init__(self, parent, filename):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'record_dialog.ui'), self)
+			uic.loadUi(Path(__file__).parent.joinpath('record_dialog.ui'), self)
 		self.lbl_filename.setText(filename)
 		self.timer = QTimer()
 		self.timer.setInterval(TIMER_MS)
@@ -112,6 +115,7 @@ class RecordDialog(QDialog):
 		self.accept()
 
 
+# pylint: disable = duplicate-code
 class TestApp(QApplication):
 
 	def __init__(self):
@@ -126,7 +130,7 @@ class TestApp(QApplication):
 			QTimer.singleShot(0, self.quit)	# Event loop hasn't started yet.
 
 	@pyqtSlot(int, int, int, int, float, str)
-	def slot_engine_started(*_):
+	def slot_engine_started(self, *_):
 		logging.debug('======= Engine started ======== ')
 		dialog = RecordDialog(None, '/save/to/filename.wav')
 		dialog.exec()

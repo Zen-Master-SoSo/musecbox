@@ -17,6 +17,8 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = global-statement, consider-using-with, import-outside-toplevel
+#
 """
 "MusecBox" is A GUI application designed to be an SFZ -based synth replacement
 for MuseScore3.
@@ -39,7 +41,7 @@ location of each instrument within the stereo plane.
 
 """
 import sys, logging, argparse, glob
-from os.path import join, dirname, basename, abspath, splitext, exists
+from pathlib import Path
 from os import linesep
 try:
 	from os import startfile
@@ -48,7 +50,6 @@ except ImportError:
 from platform import system
 from subprocess import Popen, run
 from tempfile import gettempdir as tempdir
-from traceback import print_tb
 
 # PyQt5 imports
 from PyQt5.QtCore import Qt, QSettings
@@ -56,32 +57,20 @@ from PyQt5.QtWidgets import QApplication, QWidget, QSplitter, QErrorMessage
 from PyQt5.QtGui import QFont
 
 from recent_items_list import RecentItemsList
-from simple_carla import (
-	PLUGIN_NONE,
-	PLUGIN_INTERNAL,
-	PLUGIN_LADSPA,
-	PLUGIN_DSSI,
-	PLUGIN_LV2,
-	PLUGIN_VST2,
-	PLUGIN_VST3,
-	PLUGIN_AU,
-	PLUGIN_DLS,
-	PLUGIN_GIG,
-	PLUGIN_SF2,
-	PLUGIN_SFZ,
-	PLUGIN_JACK,
-	PLUGIN_JSFX
-)
+from simple_carla import (PLUGIN_NONE, PLUGIN_INTERNAL, PLUGIN_LADSPA,
+	PLUGIN_DSSI, PLUGIN_LV2, PLUGIN_VST2, PLUGIN_VST3, PLUGIN_AU, PLUGIN_DLS,
+	PLUGIN_GIG, PLUGIN_SF2, PLUGIN_SFZ, PLUGIN_JACK, PLUGIN_JSFX)
 from simple_carla.qt import CarlaQt
 from qt_extras import DevilBox
 from xdg_soso import XDGSetup, XDGMime
+
 
 __version__ = "0.15.1"
 
 VENDOR_NAME				= 'ZenSoSo'
 APPLICATION_NAME		= 'MusecBox'
-APP_PATH				= dirname(abspath(__file__))
-SOCKET_PATH				= join(tempdir(), __package__ + '.socket')
+APP_PATH				= Path(__file__).parent.resolve()
+SOCKET_PATH				= Path(tempdir()) / 'musecbox.socket'
 CARRIAGE_RETURN			= linesep.encode()
 DEFAULT_STYLE			= 'system'
 LAYOUT_COMPLETE_DELAY	= 50
@@ -289,8 +278,9 @@ def styles():
 	global __STYLES
 	if __STYLES is None:
 		__STYLES = {
-			splitext(basename(path))[0] : path \
-			for path in glob.glob(join(APP_PATH, 'styles', '*.css'))
+			path.stem : path
+			for path in APP_PATH.joinpath('styles').iterdir()
+			if path.suffix == '.css'
 		}
 	return __STYLES
 
@@ -327,7 +317,7 @@ def open_in_terminal(path):
 		Popen('start', shell=True, cwd=path)
 	elif system() == "Darwin":
 		Popen('open -a Terminal .', shell=True, cwd=path)
-	elif exists('/etc/alternatives/x-terminal-emulator'):
+	elif Path('/etc/alternatives/x-terminal-emulator').exists():
 		Popen('/etc/alternatives/x-terminal-emulator', shell=True, cwd=path)
 	else:
 		for term in ['alacritty', 'contour', 'cool', 'deepin', 'extraterm', 'foot', 'fyne',
@@ -336,7 +326,7 @@ def open_in_terminal(path):
 					'remmina', 'rio', 'roxterm', 'st', 'tabby', 'terminator',
 					'terminology', 'termius', 'termux', 'tilda', 'tilix', 'urxvt', 'warp',
 					'wave', 'wezterm', 'windterm', 'xfce4', 'yakuake', 'xterm']:
-			res = run(['which', term], capture_output=True, text=True, cwd=path)
+			res = run(['which', term], check = False, capture_output=True, text=True, cwd=path)
 			if not res.returncode:
 				Popen(res.stdout, shell=True, cwd=path)
 				return
@@ -406,6 +396,9 @@ def unbold(widget):
 # XDGSetup class
 
 class MusecBoxSetup(XDGSetup):
+	"""
+	Project defintion used by install and uninstall options.
+	"""
 
 	def __init__(self):
 		super().__init__(__package__, APPLICATION_NAME)
@@ -414,8 +407,8 @@ class MusecBoxSetup(XDGSetup):
 			'designed to be tightly integrated with MuseScore.'
 		self.categories = ['AudioVideo', 'Audio']
 		self.keywords = ['Audio', 'Sound', 'jackd', 'lv2', 'MIDI', 'SFZ']
-		self.application_icon = join(APP_PATH, 'res', 'application_icon.svg')
-		self.file_icon = join(APP_PATH, 'res', 'file_icon.svg')
+		self.application_icon = APP_PATH.joinpath('res', 'application_icon.svg')
+		self.file_icon = APP_PATH.joinpath('res', 'file_icon.svg')
 		self.custom_mime_type = XDGMime('application/x-musecbox', '*.mbxp',
 			comment = 'MusecBox project', subclass_of = 'application/json')
 		self.append_mime_type(XDGMime('application/x-musecbox-tracks', '*.mbxt',

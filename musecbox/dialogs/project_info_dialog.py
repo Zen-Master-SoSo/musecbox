@@ -17,31 +17,34 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides a dialog which displays information about the current project,
 """
-import logging
+import logging	 # pylint: disable = unused-import
 from os import linesep
-from os.path import join, dirname, basename, abspath, splitext
+from pathlib import Path
 from qt_extras import ShutUpQT
 
 # PyQt5 imports
-from PyQt5 import			uic
-from PyQt5.QtCore import	Qt, pyqtSlot, QTimer, QDir
+from PyQt5 import uic
+from PyQt5.QtCore import Qt, pyqtSlot, QTimer, QDir
 from PyQt5.QtWidgets import QFileDialog, QDialog, QTableWidgetItem, QHeaderView
 
-from musecbox import		setting, set_setting, KEY_RECENT_EXPORT_DIR, TRACK_DEF_FILE_TYPE, \
-							LAYOUT_COMPLETE_DELAY
+from musecbox import (setting, set_setting, main_window,
+	KEY_RECENT_EXPORT_DIR, TRACK_DEF_FILE_TYPE, LAYOUT_COMPLETE_DELAY)
 
 
 class ProjectInfoDialog(QDialog):
 	"""
+	Just shows what ports, channels, and sfz are in this project.
 	"""
 
 	def __init__(self, parent):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'project_info_dialog.ui'), self)
+			uic.loadUi(str(Path(__file__).parent / 'project_info_dialog.ui'), self)
 		self.restore_geometry()
 		self.finished.connect(self.save_geometry)
 		self.b_export.clicked.connect(self.slot_export)
@@ -52,7 +55,7 @@ class ProjectInfoDialog(QDialog):
 		self.tbl.setColumnCount(len(headers))
 		self.tbl.setHorizontalHeaderLabels(headers)
 
-		tracks = [track_widget for track_widget in parent.iterate_track_widgets()]
+		tracks = [track_widget for track_widget in main_window().iterate_track_widgets()]
 		self.tbl.setRowCount(len(tracks))
 		center_flags = int(Qt.AlignHCenter | Qt.AlignVCenter)
 		for row, track_widget in enumerate(tracks):
@@ -64,7 +67,7 @@ class ProjectInfoDialog(QDialog):
 			self.tbl.setItem(row, 1, item)
 			self.tbl.setItem(row, 2, QTableWidgetItem(track_widget.moniker.replace('&', '&&')))
 			self.tbl.setItem(row, 3, QTableWidgetItem(str(track_widget.voice_name).replace('&', '&&')))
-			self.tbl.setItem(row, 4, QTableWidgetItem(track_widget.sfz_filename.replace('&', '&&')))
+			self.tbl.setItem(row, 4, QTableWidgetItem(track_widget.sfz_path.replace('&', '&&')))
 
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
 
@@ -77,27 +80,23 @@ class ProjectInfoDialog(QDialog):
 
 	@pyqtSlot()
 	def slot_export(self):
-		sugg_name = 'musecbox-project.tsv' \
-			if self.parent().project_filename is None \
-			else splitext(basename(self.parent().project_filename))[0] + '.tsv'
+		sugg_name = main_window().project_path.with_suffix('.tsv') \
+			if main_window().project_path else \
+			Path(setting(KEY_RECENT_EXPORT_DIR, str, QDir.homePath())) / 'musecbox-project.tsv'
 		filename, _ = QFileDialog.getSaveFileName(
-			self,
-			"Export project layout ...",
-			join(setting(KEY_RECENT_EXPORT_DIR, str, QDir.homePath()), sugg_name),
-			TRACK_DEF_FILE_TYPE
-		)
+			self, "Export project layout ...", sugg_name, TRACK_DEF_FILE_TYPE)
 		if filename:
-			set_setting(KEY_RECENT_EXPORT_DIR, abspath(dirname(filename)))
+			set_setting(KEY_RECENT_EXPORT_DIR, str(Path(filename).parent.resolve()))
 			tab = "\t"
 			with open(filename, 'w') as fh:
-				for track_widget in self.parent().iterate_track_widgets():
-					fh.write(tab.join([
+				for track_widget in main_window().iterate_track_widgets():
+					fh.write(tab.joinpath([
 						str(track_widget.port),
 						str(track_widget.channel),
 						track_widget.moniker,
 						track_widget.voice_name.instrument_name,
 						track_widget.voice_name.voice,
-						track_widget.sfz_filename
+						track_widget.sfz_path
 					]))
 					fh.write(linesep)
 

@@ -17,13 +17,15 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides a dialog which loads a project and displays its progress.
 """
-import logging
-from os.path import join, dirname
+import logging	 # pylint: disable = unused-import
 from time import time
 from functools import partial
+from pathlib import Path
 from simple_carla import AddPluginFailure
 from simple_carla.qt import Plugin
 from qt_extras import ShutUpQT, DevilBox
@@ -46,7 +48,7 @@ class ProjectLoadDialog(QDialog):
 	def __init__(self, parent, project_definition):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'project_load_dialog.ui'), self)
+			uic.loadUi(Path(__file__).parent.joinpath('project_load_dialog.ui'), self)
 		self.restore_geometry()
 		self.finished.connect(self.save_geometry)
 		self.rejected.connect(self.slot_rejected)
@@ -116,6 +118,7 @@ class ProjectLoadDialog(QDialog):
 			track_widget.add_to_carla()
 		except Exception as e:
 			DevilBox(e)
+			QTimer.singleShot(PLUGIN_READY_DELAY, self.start_next_step)
 
 	def restore_track_plugin(self, port, slot, saved_state):
 		plugin = self.parent().track_widget(port, slot).restore_plugin(saved_state)

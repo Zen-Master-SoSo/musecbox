@@ -17,6 +17,8 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code, too-many-nested-blocks
+#
 """
 Checks validity of a MusecBox project.
 Checks that all .sfz files exist and are readable. Optionally checks each SFZ
@@ -25,7 +27,7 @@ This script will return a non-zero value if any given project has problems.
 """
 import logging, argparse, sys, json
 from os import access, R_OK
-from os.path import dirname, abspath, join, exists
+from pathlib import Path
 from rich import print as rprint
 from sfzen import SFZ
 from musecbox import LOG_FORMAT
@@ -59,22 +61,23 @@ def main():
 
 	for filename in options.Filename:
 
-		if not options.quiet:
-			rprint(f'[bold black]{filename}[/bold black]', end="")
+		path = Path(filename)
 
-		if not exists(filename):
+		if not options.quiet:
+			rprint(f'[bold black]{path}[/bold black]', end="")
+
+		if not path.exists():
 			retval |= ERR_MISSING_PROJECT
 			if not options.quiet:
 				rprint(r' [red]\[missing project][/red]')
 			continue
-		if not access(filename, R_OK):
+		if not access(path, R_OK):
 			retval |= ERR_PROJECT_ACCESS
 			if not options.quiet:
 				rprint(r' [red]\[project not readable][/red]')
 			continue
 		try:
-			with open(filename, 'r') as fh:
-				project_definition = json.load(fh)
+			project_definition = json.loads(path.read_text(encoding = 'utf-8'))
 		except json.JSONDecodeError as e:
 			retval |= ERR_PROJECT_DECODE
 			if not options.quiet:
@@ -85,25 +88,26 @@ def main():
 
 		for portdef in project_definition["ports"]:
 			for trackdef in portdef["tracks"]:
-				sfz_abspath = abspath(join(dirname(filename), trackdef["sfz"]))
-				if not exists(sfz_abspath):
+				sfz_filename = trackdef["sfz"]
+				sfz_path = path.parent.joinpath(sfz_filename)
+				if not path.exists():
 					retval |= ERR_MISSING_SFZ
 					if not options.quiet:
-						rprint(fr'[black]{sfz_abspath}[/black] [red]\[missing SFZ][/red]')
+						rprint(fr'[black]{sfz_filename}[/black] [red]\[missing SFZ][/red]')
 					continue
-				if not access(sfz_abspath, R_OK):
+				if not access(path, R_OK):
 					retval |= ERR_SFZ_ACCESS
 					if not options.quiet:
-						rprint(fr'[black]{sfz_abspath}[/black] [red]\[SFZ not readable][/red]')
+						rprint(fr'[black]{sfz_filename}[/black] [red]\[SFZ not readable][/red]')
 					continue
-				sfz = SFZ(sfz_abspath)
+				sfz = SFZ(sfz_path)
 				if sfz.error:
 					retval |= ERR_SFZ_DECODE_ERR
 					if not options.quiet:
-						rprint(fr'[black]{sfz_abspath}[/black] [red]\[SFZ error: {sfz.error}][/red]')
+						rprint(fr'[black]{sfz_filename}[/black] [red]\[SFZ error: {sfz.error}][/red]')
 				if options.check_samples:
 					for sample in sfz.samples():
-						if not exists(sample.abspath):
+						if not sample.abspath.exists():
 							retval |= ERR_MISSING_SAMPLE
 							if not options.quiet:
 								rprint(fr'[black]{sample.abspath}[/black] [red]\[missing sample][/red]')

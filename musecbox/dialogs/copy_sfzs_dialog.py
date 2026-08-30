@@ -17,26 +17,23 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides a dialog used for importing MuseScore3 files
 """
 
-import logging
-from os.path import join, dirname
+import logging	 # pylint: disable = unused-import
 from functools import partial
+from pathlib import Path
 from qt_extras import ShutUpQT
-
-# PyQt5 imports
 from PyQt5 import uic
-from PyQt5.QtCore import	pyqtSlot
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QApplication, QDialog, QRadioButton, QVBoxLayout
-
-from sfzen import	SAMPLES_ABSPATH, SAMPLES_RELPATH, SAMPLES_COPY, \
-					SAMPLES_SYMLINK, SAMPLES_HARDLINK
-
-from musecbox import setting, set_application_style, KEY_CLEAN_SFZS, KEY_SAMPLES_MODE, \
-					T_SAMPLEMODE_ABSPATH, T_SAMPLEMODE_RELPATH, T_SAMPLEMODE_COPY, \
-					T_SAMPLEMODE_SYMLINK, T_SAMPLEMODE_HARDLINK, LOG_FORMAT
+from sfzen import SAMPLES_ABSPATH, SAMPLES_RELPATH, SAMPLES_COPY, SAMPLES_SYMLINK, SAMPLES_HARDLINK
+from musecbox import (setting, set_application_style, KEY_CLEAN_SFZS, KEY_SAMPLES_MODE,
+	T_SAMPLEMODE_ABSPATH, T_SAMPLEMODE_RELPATH, T_SAMPLEMODE_COPY, T_SAMPLEMODE_SYMLINK,
+	T_SAMPLEMODE_HARDLINK, LOG_FORMAT)
 
 
 class CopySFZsDialog(QDialog):
@@ -47,7 +44,7 @@ class CopySFZsDialog(QDialog):
 	def __init__(self, parent):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'copy_sfzs_dialog.ui'), self)
+			uic.loadUi(Path(__file__).parent.joinpath('copy_sfzs_dialog.ui'), self)
 		self.copy_sfzs = False
 		self.samples_mode = setting(KEY_SAMPLES_MODE, int, SAMPLES_ABSPATH)
 

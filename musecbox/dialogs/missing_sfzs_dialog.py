@@ -17,11 +17,13 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides MissingSFZsDialog.
 """
-import logging
-from os.path import dirname
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 from collections import defaultdict
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, \
@@ -29,11 +31,13 @@ from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, \
 from qt_extras.list_layout import VListLayout
 from musecbox import main_window, set_application_style, xdg_open, LOG_FORMAT
 from musecbox.dialogs.sfz_file_dialog import SFZFileDialog
+from musecbox.sfzdb import voice_from_string
 
 CHAR_OKAY = '✅'
 CHAR_MISSING = '❌'
-TEXT_IGNORE = 'Ignore missing'
-TEXT_CLOSE = 'Close'
+TEXT_IGNORE = 'Ignore missing and continue'
+TEXT_CLOSE = 'Close (all SFZs okay)'
+TEXT_SELECT = 'Find ...'
 
 
 class MissingSFZsDialog(QDialog):
@@ -46,17 +50,18 @@ class MissingSFZsDialog(QDialog):
 		self.tracks_missing_sfzs = tracks_missing_sfzs
 		dirs_parted = defaultdict(list)
 		for track_widget in tracks_missing_sfzs:
-			path = track_widget.sfz_filename
-			dirs_parted[dirname(path)].append(track_widget)
+			path = track_widget.sfz_path
+			dirs_parted[path.parent].append(track_widget)
 		lo = QVBoxLayout()
 		lo.setContentsMargins(18,12,18,20)
 		lo.setSpacing(10)
 		lbl = QLabel('<h3>Some SFZ files were not found:</h3>', self)
 		lo.addWidget(lbl)
-		self.dirs = VListLayout()
+		dirs = VListLayout()
+		dirs.setSpacing(10)
 		for dirpath, tracks in dirs_parted.items():
-			self.dirs.append(MissingDir(self, dirpath, tracks))
-		lo.addItem(self.dirs)
+			dirs.append(MissingDir(self, dirpath, tracks))
+		lo.addItem(dirs)
 		hlo = QHBoxLayout()
 		self.b_close = QPushButton(TEXT_IGNORE, self)
 		self.b_close.clicked.connect(self.close)
@@ -72,27 +77,34 @@ class MissingSFZsDialog(QDialog):
 
 	@pyqtSlot()
 	def slot_selected(self):
-		self.b_close.setText(
-			TEXT_IGNORE if any(widget.is_missing for widget in self.findChildren(MissingSFZ)) \
+		self.b_close.setText(TEXT_IGNORE
+			if any(widget.is_missing for widget in self.findChildren(MissingSFZ))
 			else TEXT_CLOSE)
-		main_window().set_dirty()
+		if main_window():
+			main_window().set_dirty()
 
 
 class MissingDir(QFrame):
+	"""
+	Frame which shows the missing files from a single directory.
+	Several of these are stacked to produce the full set.
+	"""
 
 	def __init__(self, parent, dirpath, tracks):
 		super().__init__(parent)
 		self.dirpath = dirpath
 		self.tracks = tracks
+		self.setFrameStyle(QFrame.Box)
 		lo = QVBoxLayout()
-		lo.setContentsMargins(0,5,0,10)
+		lo.setContentsMargins(10,3,10,10)
 		lo.setSpacing(0)
 		hlo = QHBoxLayout()
 		hlo.setSpacing(10)
-		hlo.addWidget(QLabel(f'From {dirpath}:', self))
-		btn = QPushButton('Open', self)
-		btn.clicked.connect(self.slot_open)
+		hlo.addWidget(QLabel(f'Files in {dirpath}:', self))
+		btn = QPushButton('Browse ...', self)
+		btn.clicked.connect(self.slot_browse)
 		hlo.addWidget(btn)
+		hlo.addStretch()
 		lo.addItem(hlo)
 		self.sfzs = VListLayout()
 		for track_widget in tracks:
@@ -101,7 +113,7 @@ class MissingDir(QFrame):
 		self.setLayout(lo)
 
 	@pyqtSlot()
-	def slot_open(self):
+	def slot_browse(self):
 		xdg_open(self.dirpath)
 
 
@@ -114,14 +126,14 @@ class MissingSFZ(QFrame):
 		self.track_widget = track_widget
 		self.is_missing = True
 		lo = QHBoxLayout()
-		lo.setContentsMargins(0,0,0,0)
+		lo.setContentsMargins(20,0,0,0)
 		lo.setSpacing(8)
 		self.lbl_icon = QLabel(CHAR_MISSING, self)
 		self.lbl_icon.setFixedWidth(18)
 		lo.addWidget(self.lbl_icon)
-		self.lbl_filename = QLabel(self.track_widget.sfz_filename, self)
+		self.lbl_filename = QLabel(str(self.track_widget.sfz_path), self)
 		lo.addWidget(self.lbl_filename)
-		btn = QPushButton('Select', self)
+		btn = QPushButton(TEXT_SELECT, self)
 		btn.clicked.connect(self.slot_select)
 		lo.addWidget(btn)
 		self.setLayout(lo)
@@ -130,35 +142,44 @@ class MissingSFZ(QFrame):
 	def slot_select(self):
 		sfz_dialog = SFZFileDialog(self, self.track_widget.voice_name)
 		if sfz_dialog.exec():
-			self.track_widget.load_sfz(sfz_dialog.sfz_filename)
-			self.lbl_filename.setText(self.track_widget.sfz_filename)
+			self.track_widget.load_sfz(sfz_dialog.sfz_path)
+			self.lbl_filename.setText(str(self.track_widget.sfz_path))
 			self.lbl_icon.setText(CHAR_OKAY)
 			self.is_missing = False
 			self.sig_selected.emit()
 
 
+class FakeTrack:
+
+	def __init__(self, filename):
+		self.sfz_path = Path(filename)
+		self.voice_name = voice_from_string(self.sfz_path.stem)
+
+	def load_sfz(self, filename):
+		self.sfz_path = Path(filename)
+
+
 if __name__ == "__main__":
 	from collections import namedtuple
-	FakeSynth = namedtuple('Synth', ['sfz_filename'])
-	FakeTrack = namedtuple('Track', ['synth'])
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()
+	PATH = '/mnt/data-drive/docs/sfz/Sonatina/'
 	dialog = MissingSFZsDialog(None, [
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Brass-Notation/Trumpets-Sustain.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Cello-Solo-Looped.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Piccolo-Solo-Sustain.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Violas-Staccato.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Flute-Solo-2-Sustain-Non-Vibrato.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Clarinet-Solo.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Celli-Staccato.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/All-Strings-Col-Legno.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Organ/Great-Principal-4Ft.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Viola-Solo-Sustain.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Flute-Solo-1-Looped.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Strings-Notation/Violin-Solo-2-Harmonics-Non-Vibrato.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Brass-Notation/Bass-Trombone-Solo-Staccato.sfz')),
-		FakeTrack(FakeSynth('/mnt/data-drive/docs/sfz/Sonatina/Woodwinds-Notation/Contrabassoon-Solo-Looped.sfz')),
+		FakeTrack(f'{PATH}Brass-Notation/Trumpets-Sustain.sfz'),
+		FakeTrack(f'{PATH}Strings-Notation/Cello-Solo-Looped.sfz'),
+		FakeTrack(f'{PATH}Woodwinds-Notation/Piccolo-Solo-Sustain.sfz'),
+		FakeTrack(f'{PATH}Strings-Notation/Violas-Staccato.sfz'),
+		FakeTrack(f'{PATH}Woodwinds-Notation/Flute-Solo-2-Sustain-Non-Vibrato.sfz'),
+		FakeTrack(f'{PATH}Woodwinds-Notation/Clarinet-Solo.sfz'),
+		FakeTrack(f'{PATH}Strings-Notation/Celli-Staccato.sfz'),
+		FakeTrack(f'{PATH}Strings-Notation/All-Strings-Col-Legno.sfz'),
+		FakeTrack(f'{PATH}Organ/Great-Principal-4Ft.sfz'),
+		FakeTrack(f'{PATH}Strings-Notation/Viola-Solo-Sustain.sfz'),
+		FakeTrack(f'{PATH}Woodwinds-Notation/Flute-Solo-1-Looped.sfz'),
+		FakeTrack(f'{PATH}Strings-Notation/Violin-Solo-2-Harmonics-Non-Vibrato.sfz'),
+		FakeTrack(f'{PATH}Brass-Notation/Bass-Trombone-Solo-Staccato.sfz'),
+		FakeTrack(f'{PATH}Woodwinds-Notation/Contrabassoon-Solo-Looped.sfz')
 	])
 	dialog.exec_()
 

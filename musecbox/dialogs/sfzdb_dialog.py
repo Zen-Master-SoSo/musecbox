@@ -17,11 +17,13 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides a database of SFZ files which may be organized by groups.
 """
-import logging
-from os.path import join, dirname
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 from qt_extras import ShutUpQT
 
 from PyQt5 import uic
@@ -38,7 +40,7 @@ class SFZMaintDialog(QDialog):
 	def __init__(self):
 		super().__init__()
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'sfzdb_dialog.ui'), self)
+			uic.loadUi(Path(__file__).parent.joinpath('sfzdb_dialog.ui'), self)
 		self.restore_geometry()
 		self.finished.connect(self.save_geometry)
 		self.lst_groups.currentItemChanged.connect(self.slot_group_item_changed)

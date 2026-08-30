@@ -17,12 +17,14 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides a dialog which displays information about a MuseScore3 project,
 including MIDI channel numbers and ports.
 """
-import logging
-from os.path import join, dirname
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 from mscore import Score
 from qt_extras import ShutUpQT
 
@@ -36,14 +38,14 @@ from musecbox import APP_PATH, set_application_style, LAYOUT_COMPLETE_DELAY, LOG
 
 class ScoreInfoDialog(QDialog):
 
-	def __init__(self, parent, source_score):
+	def __init__(self, parent, source_score_path):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'score_info_dialog.ui'), self)
+			uic.loadUi(Path(__file__).parent.joinpath('score_info_dialog.ui'), self)
 
 		self.resize(100, 100)
 		self.tbl.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-		self.score = Score(source_score['filename'])
+		self.score = Score(source_score_path)
 		self.lbl_score.setText(self.score.filename)
 
 		headers = ["MIDI Port", "MIDI Channel", "Part", "Instrument", "Channel"]
@@ -89,7 +91,7 @@ if __name__ == "__main__":
 	logging.basicConfig(level = logging.DEBUG, format = LOG_FORMAT)
 	app = QApplication([])
 	set_application_style()
-	dialog = ScoreInfoDialog(None, {'filename':join(APP_PATH, 'res', 'musescore_score.mscx')})
+	dialog = ScoreInfoDialog(None, APP_PATH / 'res' / 'musescore_score.mscx')
 	dialog.exec_()
 
 

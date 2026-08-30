@@ -20,22 +20,19 @@
 """
 Provides a synth used for previewing SFZ files in SFZFileDialog.
 """
-from os.path import join
 from PyQt5.QtCore import Qt, pyqtSlot
-from musecbox import	carla, setting, set_setting, APP_PATH, \
-						KEY_PREVIEW_FILES, KEY_PREVIEWER_MIDI_SRC, KEY_PREVIEWER_AUDIO_TGT
+from musecbox import (carla, setting, set_setting, APP_PATH,
+	KEY_PREVIEW_FILES, KEY_PREVIEWER_MIDI_SRC, KEY_PREVIEWER_AUDIO_TGT)
 from musecbox.liquidsfz import LiquidSFZ
 
 
 class SFZPreviewer(LiquidSFZ):
 	"""
-	A Synth which automatically attaches to the first physical MIDI input port, and
-	the first physical audio output ports, which is used for generating a preview
-	of SFZ files when selecting.
+	A Synth which is used for generating a preview of SFZ files when selecting.
 	"""
 
 	def __init__(self):
-		super().__init__(join(APP_PATH, 'res', 'empty.sfz'))
+		super().__init__(APP_PATH / 'res' / 'empty.sfz')
 		self._midi_src = None
 		self._audio_tgt = None
 		self.sig_ready.connect(self.slot_auto_connect, type = Qt.QueuedConnection)

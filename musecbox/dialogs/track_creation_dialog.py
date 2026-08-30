@@ -17,11 +17,13 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides a dialog used for defining the track properties when adding a new track.
 """
-import logging
-from os.path import join, basename, dirname, splitext
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 from qt_extras import ShutUpQT
 
 # PyQt5 imports
@@ -40,10 +42,10 @@ class TrackCreationDialog(QDialog):
 	def __init__(self, parent):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'track_creation_dialog.ui'), self)
+			uic.loadUi(Path(__file__).parent.joinpath('track_creation_dialog.ui'), self)
 		self.restore_geometry()
 		self.finished.connect(self.save_geometry)
-		self.sfz_filename = None
+		self.sfz_path = None
 		db = SFZDatabase()
 		self.cmb_instrument.addItem('')
 		self.cmb_instrument.addItems(db.mapped_instrument_names())
@@ -65,8 +67,8 @@ class TrackCreationDialog(QDialog):
 		voice_name = VoiceName(self.cmb_instrument.currentText(), self.cmb_voice.currentText())
 		sfz_dialog = SFZFileDialog(self, voice_name)
 		if sfz_dialog.exec():
-			self.sfz_filename = sfz_dialog.sfz_filename
-			self.b_sfz.setText(splitext(basename(self.sfz_filename))[0])
+			self.sfz_path = sfz_dialog.sfz_path
+			self.b_sfz.setText(self.sfz_path.stem)
 			self.b_sfz.setDefault(False)
 			self.buttons.button(QDialogButtonBox.Ok).setEnabled(True)
 			self.buttons.button(QDialogButtonBox.Ok).setDefault(True)
@@ -80,7 +82,7 @@ if __name__ == "__main__":
 	if dialog.exec():
 		print(f'{dialog.cmb_instrument.currentText()} ({dialog.cmb_voice.currentText()})')
 		print(f'Port: {dialog.spn_port.value():d}')
-		print(f'SFZ: {dialog.sfz_filename}')
+		print(f'SFZ: {dialog.sfz_path}')
 
 
 #  end musecbox/dialogs/track_creation_dialog.py

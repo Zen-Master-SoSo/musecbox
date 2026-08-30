@@ -18,13 +18,13 @@
 #  MA 02110-1301, USA.
 #
 """
-Provides CopySFZPathsDialog.
+Provides CopySFZPathsDialog - copy sfz paths to the clipboard.
 """
-import logging
-from PyQt5.QtCore import	Qt, pyqtSlot, QSize
-from PyQt5.QtWidgets import	QApplication, QDialog, QHBoxLayout, QVBoxLayout, QSizePolicy, \
-							QLabel, QPushButton, QSpacerItem
-from PyQt5.QtGui import		QIcon
+import logging	 # pylint: disable = unused-import
+from PyQt5.QtCore import Qt, pyqtSlot, QSize
+from PyQt5.QtWidgets import (QApplication, QDialog, QHBoxLayout, QVBoxLayout, QSizePolicy,
+	QLabel, QPushButton, QSpacerItem)
+from PyQt5.QtGui import QIcon
 from musecbox import set_application_style, LOG_FORMAT
 
 
@@ -32,7 +32,8 @@ class CopySFZPathsDialog(QDialog):
 
 	def __init__(self, parent, text):
 		"""
-		A popup window which displays text and copies it to the clipboard.
+		A popup window which displays the sfz paths used in the project and allows the
+		user to copy these paths to the clipboard.
 		"""
 		super().__init__(parent)
 		self.restore_geometry()

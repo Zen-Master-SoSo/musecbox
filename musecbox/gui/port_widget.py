@@ -20,8 +20,8 @@
 """
 Provides both horizontal and vertical port widgets.
 """
-import logging
-from os.path import join, dirname
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 from functools import partial
 from qt_extras import ShutUpQT, SigBlock
 from qt_extras.autofit import autofit
@@ -37,16 +37,9 @@ from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QVariant, QPoint
 from PyQt5.QtGui import QPalette, QIcon, QMouseEvent
 from PyQt5.QtWidgets import QFrame, QAction, QMenu, QMessageBox, QLayout
 
-from musecbox import (
-	carla,
-	main_window,
-	setting,
-	APP_PATH,
-	TEXT_NO_CONN,
-	TEXT_MULTI_CONN,
-	KEY_AUTO_CONNECT,
-	KEY_SHOW_PORT_INPUTS
-)
+# musecbox imports
+from musecbox import (carla, main_window, setting, APP_PATH,
+	TEXT_NO_CONN, TEXT_MULTI_CONN, KEY_AUTO_CONNECT, KEY_SHOW_PORT_INPUTS )
 from musecbox.gui.track_widget import TrackWidget, HorizontalTrackWidget, VerticalTrackWidget
 from musecbox.dialogs.track_creation_dialog import TrackCreationDialog
 
@@ -59,7 +52,7 @@ class PortWidget(QFrame):
 	def __init__(self, parent, port, *, saved_state = None):
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), self.ui), self)
+			uic.loadUi(Path(__file__).parent.joinpath(self.ui), self)
 		self.port = port
 		self.source_port_names = [] if saved_state is None \
 			else saved_state["source_port_names"] if "source_port_names" in saved_state \
@@ -192,13 +185,13 @@ class PortWidget(QFrame):
 		"""
 		return list(self.midi_input_port().connected_ports())
 
-	def add_track(self, voice_name, sfz_filename, *, moniker = None):
+	def add_track(self, voice_name, sfz_path, *, moniker = None):
 		"""
 		Adds a track as a gui element, but does not add to Carla.
 		"""
 		main_window().set_dirty()
 		return self._construct_track(len(self.track_layout),
-			voice_name, sfz_filename, moniker = moniker)
+			voice_name, sfz_path, moniker = moniker)
 
 	def restore_track(self, saved_state):
 		"""
@@ -212,13 +205,12 @@ class PortWidget(QFrame):
 			saved_state = saved_state
 		)
 
-	def _append_track(self, track_widget):
+	def _construct_track(self, slot, voice_name, sfz_path, **kwargs):
 		"""
-		Connects signals for a new track and appends to track layout.
-
-		Called from a Horizonal or Vertical port widget instance, the track_widget will be
-		the appropriate class for this port widget.
+		Constructs a new TrackWidget of the appropriate type (vertical, horizontal),
+		connects its signals, and appends it to track layout.
 		"""
+		track_widget = self._track_class(self, self.port, slot, voice_name, sfz_path, **kwargs)
 		track_widget.sig_channel_set.connect(self.slot_channel_set)
 		track_widget.sig_cleared.connect(self.slot_track_cleared)
 		self.track_layout.append(track_widget)
@@ -375,7 +367,7 @@ class PortWidget(QFrame):
 		dialog.spn_port.setEnabled(False)
 		if dialog.exec():
 			voice_name = VoiceName(dialog.cmb_instrument.currentText(), dialog.cmb_voice.currentText())
-			self.add_track(voice_name, dialog.sfz_filename).add_to_carla()
+			self.add_track(voice_name, dialog.sfz_path).add_to_carla()
 
 	@pyqtSlot()
 	def slot_remove_all_tracks(self):
@@ -402,10 +394,11 @@ class HorizontalPortWidget(PortWidget):
 
 	def __init__(self, parent, port, *, saved_state = None):
 		super().__init__(parent, port, saved_state = saved_state)
+		self._track_class = HorizontalTrackWidget
 		self.lbl_port.setText(f'Port {self.port}')
 		autofit(self.input_select_widget)
-		self.icon_collapse = QIcon(join(APP_PATH, 'res', 'collapse.svg'))
-		self.icon_expand = QIcon(join(APP_PATH, 'res', 'expand.svg'))
+		self.icon_collapse = QIcon(str(APP_PATH / 'res' / 'collapse.svg'))
+		self.icon_expand = QIcon(str(APP_PATH / 'res' / 'expand.svg'))
 		self.b_collapse.setIcon(self.icon_collapse)
 		self.b_collapse.clicked.connect(self.slot_collapse_click)
 		# Setup track_layout
@@ -416,10 +409,6 @@ class HorizontalPortWidget(PortWidget):
 		self.frm_tracks.setLayout(self.track_layout)
 		# expand / collapse based on saved state:
 		self.implement_collapse(self.is_collapsed)
-
-	def _construct_track(self, slot, voice_name, sfz_filename, **kwargs):
-		return self._append_track(HorizontalTrackWidget(
-			self, self.port, slot, voice_name, sfz_filename, **kwargs))
 
 	@pyqtSlot(TrackWidget)
 	def slot_move_track_previous(self, track_widget):
@@ -451,7 +440,7 @@ class HorizontalPortWidget(PortWidget):
 		ports = self.input_connections()
 		self.input_select_widget.setText(TEXT_MULTI_CONN % len(ports) if len(ports) > 1 \
 			else ports[0].jack_name() if ports else TEXT_NO_CONN)
-		self.input_select_widget.setToolTip("\n".join([
+		self.input_select_widget.setToolTip('\n'.join([
 			patchbay_port.jack_name() for patchbay_port in ports ])
 			if ports else TEXT_NO_CONN)
 
@@ -465,6 +454,7 @@ class VerticalPortWidget(PortWidget):
 
 	def __init__(self, parent, port, *, saved_state = None):
 		super().__init__(parent, port, saved_state = saved_state)
+		self._track_class = VerticalTrackWidget
 		self.lbl_port.setText(str(self.port))
 		self.track_layout = GListLayout(8, VERTICAL_FLOW)
 		self.track_layout.setContentsMargins(0,0,0,0)
@@ -473,13 +463,9 @@ class VerticalPortWidget(PortWidget):
 		self.frm_tracks.setLayout(self.track_layout)
 		self.implement_collapse(self.is_collapsed)
 
-	def _construct_track(self, slot, voice_name, sfz_filename, **kwargs):
-		return self._append_track(VerticalTrackWidget(
-			self, self.port, slot, voice_name, sfz_filename, **kwargs))
-
 	def update_input_connection_ui(self):
 		ports = self.input_connections()
-		text = "\n".join([ patchbay_port.jack_name() for patchbay_port in ports ]) \
+		text = '\n'.join([ patchbay_port.jack_name() for patchbay_port in ports ]) \
 			if ports else TEXT_NO_CONN
 		self.lbl_port.setToolTip(text)
 		self.input_select_widget.setToolTip(text)

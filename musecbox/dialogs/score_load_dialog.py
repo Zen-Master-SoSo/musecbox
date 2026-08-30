@@ -17,16 +17,18 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Class used for loading track setup contructed from MuseScore3 file.
 """
-from os.path import join, dirname
+from pathlib import Path
 from mscore import VoiceName
 from qt_extras import ShutUpQT, DevilBox
 
 # PyQt5 imports
-from PyQt5 import			uic
-from PyQt5.QtCore import	pyqtSlot, QTimer
+from PyQt5 import uic
+from PyQt5.QtCore import pyqtSlot, QTimer
 from PyQt5.QtWidgets import QDialog
 
 from musecbox import LAYOUT_COMPLETE_DELAY
@@ -46,7 +48,7 @@ class ScoreLoadDialog(QDialog):
 		"""
 		super().__init__(parent)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), 'project_load_dialog.ui'), self)
+			uic.loadUi(Path(__file__).parent.joinpath('project_load_dialog.ui'), self)
 		self.restore_geometry()
 		self.finished.connect(self.save_geometry)
 		self.rejected.connect(self.slot_rejected)

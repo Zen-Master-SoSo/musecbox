@@ -17,12 +17,14 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = import-outside-toplevel
+#
 """
 musecbox hosts multiple LiquidSFZ instances for real-time music generation.
 """
 import sys, logging, argparse
 from os import environ, unlink
-from os.path import abspath, expanduser
+from pathlib import Path
 from socket import socket, AF_UNIX, SOCK_DGRAM, error as sock_error
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication
@@ -30,7 +32,7 @@ from PyQt5.QtGui import QGuiApplication
 from qt_extras import DevilBox, exceptions_hook
 from xdg_soso import is_xdg
 from simple_carla import EngineInitFailure
-from musecbox import carla, MusecBoxSetup, SOCKET_PATH, CARRIAGE_RETURN, LOG_FORMAT
+from musecbox import MusecBoxSetup, SOCKET_PATH, CARRIAGE_RETURN, LOG_FORMAT
 from musecbox.gui.main_window import MainWindow
 
 
@@ -67,6 +69,7 @@ menu.""")
 	parser.add_argument('--verbose', '-v', action = 'store_true',
 		help = 'Show more detailed debug information')
 	options = parser.parse_args()
+	given_path = Path(options.Filename) if options.Filename else None
 
 	# Setup logging
 	if 'TERM' in environ:
@@ -74,7 +77,7 @@ menu.""")
 		log_file = options.log_file
 	else:
 		log_level = logging.DEBUG
-		log_file = expanduser('~/musecbox.log')
+		log_file = Path('~/musecbox.log').expanduser()
 	if log_file:
 		logging.basicConfig(filename = log_file, filemode = 'w',
 			level = log_level, format = LOG_FORMAT)
@@ -108,8 +111,8 @@ menu.""")
 			logging.error('%s: %s', e.__class__.__name__, str(e))
 			return 1
 		else:
-			sock.sendall(bytes(abspath(options.Filename) \
-				if options.Filename else '???', 'utf-8') + CARRIAGE_RETURN)
+			sock.sendall(bytes(given_path.resolve() if given_path
+				else '???', 'utf-8') + CARRIAGE_RETURN)
 			sock.close()
 			return 4
 		# Delete previous SOCKET_PATH hanging around
@@ -143,7 +146,6 @@ menu.""")
  to restart your computer for changes written to "/etc/security/limits.d/" to
  take effect.
 """)
-				pass
 
 		application = QApplication([])
 		sys.excepthook = exceptions_hook

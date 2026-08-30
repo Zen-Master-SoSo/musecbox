@@ -17,6 +17,8 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Allows you to create a track setup (JSON -encoded array of settings)
 from a MuseScore3 score, using the same graphical interface available from the

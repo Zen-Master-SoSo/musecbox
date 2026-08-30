@@ -13,462 +13,292 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,5,1">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0,0">
    <property name="spacing">
-    <number>6</number>
-   </property>
-   <property name="leftMargin">
-    <number>12</number>
+    <number>9</number>
    </property>
    <property name="topMargin">
-    <number>8</number>
-   </property>
-   <property name="rightMargin">
-    <number>12</number>
-   </property>
-   <property name="bottomMargin">
-    <number>16</number>
+    <number>7</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="top_lo">
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_6">
-       <item>
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Current:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
+    <layout class="QGridLayout" name="gridcurr" columnstretch="4,5">
+     <property name="verticalSpacing">
+      <number>3</number>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="lbl1">
+       <property name="text">
+        <string>Current instrument:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
      </item>
-     <item>
-      <widget class="QFrame" name="frm_current">
-       <property name="frameShape">
-        <enum>QFrame::Panel</enum>
+     <item row="0" column="1">
+      <widget class="QLabel" name="lbl_old_instrument_name">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
-       <property name="frameShadow">
-        <enum>QFrame::Sunken</enum>
+       <property name="text">
+        <string>Violin</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>channels:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="lbl_old_channels">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>arco, marcato, pizzicato</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="handleWidth">
+      <number>9</number>
+     </property>
+     <widget class="QTabWidget" name="tool_box">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_score">
+       <attribute name="title">
+        <string>Scores</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_8">
         <property name="spacing">
-         <number>3</number>
+         <number>0</number>
         </property>
         <property name="leftMargin">
-         <number>3</number>
+         <number>0</number>
         </property>
         <property name="topMargin">
-         <number>3</number>
+         <number>0</number>
         </property>
         <property name="rightMargin">
-         <number>3</number>
+         <number>0</number>
         </property>
         <property name="bottomMargin">
-         <number>3</number>
+         <number>0</number>
         </property>
         <item>
-         <widget class="QLabel" name="lbl_old_instrument_name">
-          <property name="font">
-           <font>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Violin</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QListWidget" name="lst_old_channels">
+         <widget class="QTreeView" name="tree_scores">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+           <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>64</height>
-           </size>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
-          </property>
-          <property name="editTriggers">
-           <set>QAbstractItemView::NoEditTriggers</set>
-          </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::NoSelection</enum>
           </property>
          </widget>
         </item>
        </layout>
       </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QWidget" name="tab_inst">
+       <attribute name="title">
+        <string>Instruments</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <layout class="QHBoxLayout" name="group_lo">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Group:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cmb_group"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="genre_lo">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Genre:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cmb_genre"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>113</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QVBoxLayout" name="right_lo">
+       <property name="spacing">
+        <number>2</number>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
+       <item>
+        <widget class="QLabel" name="lbl3">
+         <property name="text">
+          <string>Instruments:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="inst_list_lo">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QListWidget" name="lst_instruments"/>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="search_lo">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>4</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="lbl_search_icon">
+             <property name="minimumSize">
+              <size>
+               <width>20</width>
+               <height>24</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="ed_mscore_search"/>
+           </item>
+           <item>
+            <widget class="QPushButton" name="b_search">
+             <property name="maximumSize">
+              <size>
+               <width>28</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string notr="true"/>
+             </property>
+             <property name="icon">
+              <iconset theme="edit-clear">
+               <normaloff>../../../../../../../../../.designer/backup</normaloff>../../../../../../../../../.designer/backup</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,100">
-     <property name="spacing">
-      <number>4</number>
+    <layout class="QGridLayout" name="gridrepl" columnstretch="4,5">
+     <property name="bottomMargin">
+      <number>8</number>
      </property>
-     <property name="topMargin">
-      <number>4</number>
+     <property name="verticalSpacing">
+      <number>3</number>
      </property>
-     <item>
-      <widget class="QLabel" name="label_9">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lbl4">
        <property name="text">
-        <string>Copy source:</string>
+        <string>Replace with:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QSplitter" name="splitter">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+     <item row="0" column="1">
+      <widget class="QLabel" name="lbl_new_instrument_name">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
-       <property name="handleWidth">
-        <number>10</number>
+       <property name="text">
+        <string>[nothing selected]</string>
        </property>
-       <widget class="QFrame" name="frm_copy_src">
-        <property name="frameShape">
-         <enum>QFrame::Panel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Sunken</enum>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QToolBox" name="tool_box">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="currentIndex">
-            <number>0</number>
-           </property>
-           <property name="tabSpacing">
-            <number>2</number>
-           </property>
-           <widget class="QWidget" name="page_copy">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>202</width>
-              <height>270</height>
-             </rect>
-            </property>
-            <attribute name="label">
-             <string>Another score</string>
-            </attribute>
-            <layout class="QVBoxLayout" name="verticalLayout_8">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QTreeView" name="tree_scores">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="page_mscore">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>202</width>
-              <height>273</height>
-             </rect>
-            </property>
-            <attribute name="label">
-             <string>MuseScore instrument</string>
-            </attribute>
-            <layout class="QVBoxLayout" name="verticalLayout_2">
-             <property name="spacing">
-              <number>4</number>
-             </property>
-             <property name="leftMargin">
-              <number>4</number>
-             </property>
-             <property name="topMargin">
-              <number>4</number>
-             </property>
-             <property name="rightMargin">
-              <number>4</number>
-             </property>
-             <property name="bottomMargin">
-              <number>4</number>
-             </property>
-             <item>
-              <layout class="QHBoxLayout" name="group_lo">
-               <item>
-                <widget class="QLabel" name="label">
-                 <property name="text">
-                  <string>Group:</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="cmb_group"/>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="genre_lo">
-               <item>
-                <widget class="QLabel" name="label_2">
-                 <property name="text">
-                  <string>Genre:</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="cmb_genre"/>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>113</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </widget>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="">
-        <layout class="QVBoxLayout" name="mid_right_lo" stretch="50,10">
-         <property name="spacing">
-          <number>10</number>
-         </property>
-         <item>
-          <layout class="QVBoxLayout" name="inst_avail_lo">
-           <property name="spacing">
-            <number>2</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string>Instruments available:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="inst_list_lo">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QListWidget" name="lst_instruments"/>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="search_lo">
-               <property name="spacing">
-                <number>0</number>
-               </property>
-               <property name="leftMargin">
-                <number>4</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="lbl_search_icon">
-                 <property name="minimumSize">
-                  <size>
-                   <width>20</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="ed_mscore_search"/>
-               </item>
-               <item>
-                <widget class="QPushButton" name="b_search">
-                 <property name="maximumSize">
-                  <size>
-                   <width>28</width>
-                   <height>16777215</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string notr="true"/>
-                 </property>
-                 <property name="icon">
-                  <iconset theme="edit-clear">
-                   <normaloff>../../../../../../../../../.designer/backup</normaloff>../../../../../../../../../.designer/backup</iconset>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="selected_lo">
-           <property name="spacing">
-            <number>2</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="label_8">
-             <property name="text">
-              <string>Selected:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QFrame" name="frm_selected">
-             <property name="frameShape">
-              <enum>QFrame::Panel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
-             </property>
-             <property name="lineWidth">
-              <number>1</number>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_3">
-              <property name="spacing">
-               <number>3</number>
-              </property>
-              <property name="leftMargin">
-               <number>3</number>
-              </property>
-              <property name="topMargin">
-               <number>3</number>
-              </property>
-              <property name="rightMargin">
-               <number>3</number>
-              </property>
-              <property name="bottomMargin">
-               <number>3</number>
-              </property>
-              <item>
-               <widget class="QLabel" name="lbl_new_instrument_name">
-                <property name="font">
-                 <font>
-                  <weight>75</weight>
-                  <bold>true</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Violin</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-                <property name="wordWrap">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QListWidget" name="lst_new_channels">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>64</height>
-                 </size>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::NoFrame</enum>
-                </property>
-                <property name="editTriggers">
-                 <set>QAbstractItemView::NoEditTriggers</set>
-                </property>
-                <property name="selectionMode">
-                 <enum>QAbstractItemView::NoSelection</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>channels:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="lbl_new_channels">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>[nothing selected]</string>
+       </property>
       </widget>
      </item>
     </layout>

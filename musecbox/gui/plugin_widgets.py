@@ -17,11 +17,13 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides base class for widgets which abstract audio plugins.
 """
-import logging
-from os.path import join, dirname
+import logging	 # pylint: disable = unused-import
+from pathlib import Path
 from math import floor
 from operator import attrgetter
 from itertools import chain
@@ -33,13 +35,13 @@ from simple_carla.qt import AbstractQtPlugin
 
 # PyQt5 imports
 from PyQt5 import uic
-from PyQt5.QtCore import	Qt, pyqtSignal, pyqtSlot, QEvent, QVariant, \
-							QPoint, QRect, pyqtProperty, QPropertyAnimation
-from PyQt5.QtGui import		QPainter, QColor, QBrush, QPen, QPalette, \
-							QPixmap, QIcon, QFontMetrics
-from PyQt5.QtWidgets import QWidget, QDialog, QInputDialog, QLabel, QFrame, QTabWidget, \
-							QProgressBar, QHBoxLayout, QVBoxLayout, QGridLayout, \
-							QAction, QSizePolicy
+from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QEvent, QVariant, QPoint,
+	QRect, pyqtProperty, QPropertyAnimation)
+from PyQt5.QtGui import (QPainter, QColor, QBrush, QPen, QPalette, QPixmap,
+	QIcon, QFontMetrics)
+from PyQt5.QtWidgets import (QWidget, QDialog, QInputDialog, QLabel, QFrame,
+	QTabWidget, QProgressBar, QHBoxLayout, QVBoxLayout, QGridLayout, QAction,
+	QSizePolicy)
 
 from musecbox import carla, main_window, APP_PATH, TEXT_NO_CONN, TEXT_MULTI_CONN
 from musecbox.dialogs.generic_plugin_dialog import PluginDialog
@@ -51,6 +53,10 @@ from musecbox.gui.balance_control_widget import (GRAB_CENTER,
 # Base class for all visible plugins, Track and Shared:
 
 class PluginWidget(AbstractQtPlugin, QFrame):
+	"""
+	QtPlugin residing in a QFrame.
+	This is the base class of track and shared plugin widgets.
+	"""
 
 	sig_ready						= pyqtSignal(Plugin)
 	sig_removed 					= pyqtSignal(Plugin)
@@ -72,7 +78,7 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 		QFrame.__init__(self, parent)
 		AbstractQtPlugin.__init__(self, plugin_def, saved_state = saved_state)
 		with ShutUpQT():
-			uic.loadUi(join(dirname(__file__), self.ui), self)
+			uic.loadUi(Path(__file__).parent.joinpath(self.ui), self)
 
 		self.sig_ready.connect(self.slot_self_ready, type = Qt.QueuedConnection)
 
@@ -271,11 +277,14 @@ class PluginWidget(AbstractQtPlugin, QFrame):
 # Per- track plugins
 
 class TrackPluginWidget(PluginWidget):
+	"""
+	Abract base class of QFrame / Plugin widgets (both horizontal and vertical)
+	"""
 
 	def __init__(self, parent, plugin_def, *, saved_state = None):
 		super().__init__(parent, plugin_def, saved_state = saved_state)
-		self.icon_collapse = QIcon(join(APP_PATH, 'res', self.icon_collapse_svg))
-		self.icon_expand = QIcon(join(APP_PATH, 'res', self.icon_expand_svg))
+		self.icon_collapse = QIcon(str(APP_PATH / 'res' / self.icon_collapse_svg))
+		self.icon_expand = QIcon(str(APP_PATH / 'res' / self.icon_expand_svg))
 		self.b_rollup.toggled.connect(self.slot_rollup)
 		self.b_rollup.setIcon(self.icon_collapse)
 
@@ -291,6 +300,10 @@ class TrackPluginWidget(PluginWidget):
 
 
 class HorizontalTrackPluginWidget(TrackPluginWidget):
+	"""
+	Track plugin widget used when the layout is horizontal (every track is
+	like a vertical pillar)
+	"""
 
 	ui					= 'horizontal_track_plugin_widget.ui'
 	fixed_width			= 112
@@ -313,6 +326,10 @@ class HorizontalTrackPluginWidget(TrackPluginWidget):
 
 
 class VerticalTrackPluginWidget(TrackPluginWidget):
+	"""
+	Track plugin widget used when the layout is vertical (a compressed view,
+	arranging tracks as thin rows split into two columns).
+	"""
 
 	ui					= 'vertical_track_plugin_widget.ui'
 	fixed_width			= None
@@ -338,6 +355,9 @@ class VerticalTrackPluginWidget(TrackPluginWidget):
 # Shared plugins
 
 class SharedPluginWidget(PluginWidget):
+	"""
+	Plugin widget which exists in the "shared" space, which any track can send its output to.
+	"""
 
 	ui = 'shared_plugin_widget.ui'
 	fixed_height		= 152
@@ -506,6 +526,10 @@ class AudioIndicator(ActivityIndicator):
 # Small balance control for plugin widgets:
 
 class SmallBalanceControl(QWidget):
+	"""
+	Small balance control for plugin widgets. Appear similar to a progress bar, but
+	both ends can be grabbed and horizontally.
+	"""
 
 	PAN_WIDTH = 2
 	zero_line_pen = None
@@ -742,7 +766,7 @@ class PeakMeter(QWidget):
 		self.setFixedHeight(self.fixed_height)
 		self.setFixedWidth(self.fixed_width)
 		self.meter_bg = QPixmap(30, 125)
-		self.meter_bg.load(join(APP_PATH, 'res', 'meter.png'))
+		self.meter_bg.load(str(APP_PATH / 'res' / 'meter.png'))
 
 
 class MonoPeakMeter(PeakMeter):
@@ -879,6 +903,9 @@ class StereoPeakMeter(PeakMeter):
 # Plugin info dialog
 
 class PluginInfoDialog(QDialog):
+	"""
+	Trivial popup which displays info about a given plugin.
+	"""
 
 	ov_fields = [
 		('Moniker', 'moniker'),
@@ -933,6 +960,9 @@ class PluginInfoDialog(QDialog):
 
 
 class InfoDialogTab(QFrame):
+	"""
+	Tab used by PluginInfoDialog class.
+	"""
 
 	def __init__(self, parent, inspected_element, fields):
 		super().__init__(parent)

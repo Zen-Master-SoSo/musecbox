@@ -17,6 +17,8 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#  pylint: disable = duplicate-code
+#
 """
 Provides a generic dialogue with which plugin parameters can be changed.
 """
@@ -28,8 +30,8 @@ from qt_extras.list_button import QtListButton
 # PyQt5 imports
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QTimer, QVariant
 from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QDialog, QWidget, QSizePolicy, QHBoxLayout, QVBoxLayout, QFormLayout, \
-							QFrame, QLabel, QCheckBox, QSlider, QShortcut
+from PyQt5.QtWidgets import (QDialog, QWidget, QSizePolicy, QHBoxLayout,
+	QVBoxLayout, QFormLayout, QFrame, QLabel, QCheckBox, QSlider, QShortcut)
 
 from musecbox import main_window, set_application_style, LAYOUT_COMPLETE_DELAY
 
@@ -83,6 +85,7 @@ class PluginDialog(QDialog):
 	def finished_event(self, _):
 		self.close()
 
+	# pylint: disable-next = invalid-name
 	def closeEvent(self, _):
 		self.sig_closed.emit()
 
@@ -251,12 +254,12 @@ class ParamWidgetSlider(QWidget):
 		self.slider.valueChanged.connect(self.slider_value_changed)
 
 	def internal_value_changed(self, value):
-		if value is None or self.param.min is None:
-			from traceback import print_stack
-			print_stack()
-		else:
-			with SigBlock(self):
-				self.slider.setValue(round((value - self.param.min) * self._scaling))
+		if value is None:
+			raise RuntimeError('Internal value is None')
+		if self.param.min is None:
+			raise RuntimeError('Parameter minimum is None')
+		with SigBlock(self):
+			self.slider.setValue(round((value - self.param.min) * self._scaling))
 
 	@pyqtSlot(int)
 	def slider_value_changed(self, value):
