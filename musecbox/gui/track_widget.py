@@ -42,7 +42,7 @@ from PyQt5.QtWidgets import (QApplication, QMessageBox, QInputDialog, QFrame,
 	QHBoxLayout, QAction, QMenu, QGraphicsColorizeEffect)
 
 # musecbox imports
-from musecbox import (carla, main_window, recent_plugins, setting, xdg_open,
+from musecbox import (carla, main_window, recent_plugins, bump_recent_plugin, setting, xdg_open,
 	plugin_display_name, TEXT_NO_CONN, TEXT_MULTI_CONN, KEY_SHOW_INDICATORS,
 	KEY_SHOW_PLUGIN_VOLUME, KEY_AUTO_CONNECT)
 from musecbox.gui.plugin_widgets import (TrackPluginWidget, VerticalTrackPluginWidget,
@@ -457,7 +457,7 @@ class TrackWidget(QFrame):
 			logging.error(e)
 			DevilBox(e)
 		else:
-			recent_plugins().bump(plugin_def)
+			bump_recent_plugin(plugin_def)
 			self._append_plugin(plugin)
 			plugin.add_to_carla()
 			main_window().set_dirty()
@@ -550,7 +550,7 @@ class TrackWidget(QFrame):
 			main_window().watch(path)
 		self.synth.load_sfz(path)
 
-	def to_abspath(self, sfz_path: Path):
+	def to_abspath(self, sfz_path):
 		"""
 		Return the real absolute path to the given path.
 

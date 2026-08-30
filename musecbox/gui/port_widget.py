@@ -200,7 +200,7 @@ class PortWidget(QFrame):
 		return self._construct_track(
 			saved_state["slot"],
 			VoiceName(saved_state["instrument_name"], saved_state["voice"]),
-			saved_state["sfz"],
+			Path(saved_state["sfz"]),
 			moniker = saved_state["moniker"],
 			saved_state = saved_state
 		)

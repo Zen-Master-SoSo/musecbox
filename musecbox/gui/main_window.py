@@ -50,7 +50,7 @@ from simple_carla import (Plugin, Parameter, CarlaPluginDialog,
 	ENGINE_TRANSPORT_MODE_DISABLED as TRANSPORT_DISABLED)
 
 # musecbox imports
-from musecbox import (carla, set_main_window, recent_files, recent_plugins,
+from musecbox import (carla, set_main_window, recent_files, recent_plugins, bump_recent_plugin,
 	setting, set_setting, sync_settings, styles, set_application_style, xdg_open,
 	open_in_terminal, plugin_display_name, APPLICATION_NAME, APP_PATH, SOCKET_PATH,
 	CARRIAGE_RETURN, SUPPORTED_FILE_TYPES, MUSESCORE_FILE_TYPES, RENDER_FILE_TYPE,
@@ -396,7 +396,8 @@ class MainWindow(QMainWindow):
 			except Exception as e:
 				DevilBox(e)
 
-	def open_file(self, path):
+	def open_file(self, filename):
+		path = Path(filename)
 		ext = path.suffix.lower()
 		if ext in ('.mscz', '.mscx'):
 			self.when_clear(partial(self.import_score, path))
@@ -475,7 +476,11 @@ class MainWindow(QMainWindow):
 			else:
 				self.enter_loading_state()
 				self.project_path = project_path
-				self.source_score_path = Path(self.project_definition['source_score'])
+				if self.project_definition['source_score']:
+					self.source_score_path = Path(
+						self.project_definition['source_score']['filename']
+						if isinstance(self.project_definition['source_score'], dict)
+						else self.project_definition['source_score'])
 				set_application_style()
 				self._show_hide_window_elements()
 				self.balance_control_widget.slot_set_lines(setting(KEY_BCWIDGET_LINES, int, 3))
@@ -483,7 +488,7 @@ class MainWindow(QMainWindow):
 					self.wav_file_path = self.project_definition['exported_wav_file']
 				if ProjectLoadDialog(self, self.project_definition).exec():
 					recent_files().bump(self.project_path)
-					set_setting(KEY_RECENT_PROJECT_DIR, self.project_path.parent)
+					set_setting(KEY_RECENT_PROJECT_DIR, str(self.project_path.parent))
 					autostart = setting(KEY_AUTO_START)
 					if autostart and len(autostart):
 						set_setting(KEY_AUTO_START, self.project_path)
@@ -576,24 +581,18 @@ class MainWindow(QMainWindow):
 		self.project_load_complete()
 
 	def save_project(self):
-		try:
-			self.project_path.write_text(
-				json.dumps(self.encode_saved_state(), indent = "\t"),
-				encoding = 'utf-8')
-		except Exception as e:
-			DevilBox(e)
-		else:
-			self.clear_dirty()
+		self.project_path.write_text(
+			json.dumps(self.encode_saved_state(), indent = "\t"),
+			encoding = 'utf-8')
+		self.clear_dirty()
 
 	def encode_saved_state(self):
 		return {
-			"source_score"		: self.source_score_path,
-			"exported_wav_file"	: self.wav_file_path,
-			"options"			: { key:setting(key) \
-									for key in PROJECT_OPTION_KEYS },
-			"ports"				: [ port.encode_saved_state() \
-									for port in self.port_layout ],
-			"shared_plugins"	: [ plugin.encode_saved_state() \
+			"source_score"		: str(self.source_score_path),
+			"exported_wav_file"	: str(self.wav_file_path),
+			"options"			: { key:setting(key) for key in PROJECT_OPTION_KEYS },
+			"ports"				: [ port.encode_saved_state() for port in self.port_layout ],
+			"shared_plugins"	: [ plugin.encode_saved_state()
 									for plugin in self.shared_plugin_layout ],
 			"bcwidget"			: self.balance_control_widget.encode_saved_state()
 		}
@@ -643,12 +642,12 @@ class MainWindow(QMainWindow):
 	def watch(self, path):
 		if self.file_system_watcher:
 			logging.debug('Watch: %s', path)
-			self.file_system_watcher.addPath(path)
+			self.file_system_watcher.addPath(str(path))
 
 	def unwatch(self, path):
 		if self.file_system_watcher:
 			logging.debug('Unwatch: %s', path)
-			self.file_system_watcher.removePath(path)
+			self.file_system_watcher.removePath(str(path))
 
 	# -----------------------------------------------------------------
 	# Option functions:
@@ -730,7 +729,7 @@ class MainWindow(QMainWindow):
 		port_widget.remove_self()
 
 	def add_shared_plugin_widget(self, plugin_def):
-		recent_plugins().bump(plugin_def)
+		bump_recent_plugin(plugin_def)
 		try:
 			plugin_widget = SharedPluginWidget(self, plugin_def)
 		except Exception as e:
@@ -1112,7 +1111,7 @@ class MainWindow(QMainWindow):
 	def slot_recent_menu_show(self):
 		self.menu_open_recent.clear()
 		for filename in recent_files():
-			action = QAction(filename, self)
+			action = QAction(str(filename), self)
 			action.triggered.connect(partial(self.load_recent, filename))
 			self.menu_open_recent.addAction(action)
 
@@ -1438,11 +1437,11 @@ class SocketListener(QThread):
 
 	def __init__(self):
 		super().__init__()
-		if Path(SOCKET_PATH).exists():
+		if SOCKET_PATH.exists():
 			raise Exception("SOCKET_PATH already exists!")
 		self.socket = socket(AF_UNIX, SOCK_DGRAM)
 		self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-		self.socket.bind(SOCKET_PATH)
+		self.socket.bind(str(SOCKET_PATH))
 
 	def run(self):
 		read_buffer = bytearray()

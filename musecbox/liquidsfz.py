@@ -82,6 +82,8 @@ class LiquidSFZ(QtPlugin):
 
   <Data>
    <Active>{active}</Active>
+   <Balance-Left>{self._balance_left:.7f}</Balance-Left>
+   <Balance-Right>{self._balance_right:.7f}</Balance-Right>
    <ControlChannel>{control_channel}</ControlChannel>
    <Options>0x{self.optionsEnabled:x}</Options>
 

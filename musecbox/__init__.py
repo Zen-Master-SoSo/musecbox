@@ -59,7 +59,7 @@ from PyQt5.QtGui import QFont
 from recent_items_list import RecentItemsList
 from simple_carla import (PLUGIN_NONE, PLUGIN_INTERNAL, PLUGIN_LADSPA,
 	PLUGIN_DSSI, PLUGIN_LV2, PLUGIN_VST2, PLUGIN_VST3, PLUGIN_AU, PLUGIN_DLS,
-	PLUGIN_GIG, PLUGIN_SF2, PLUGIN_SFZ, PLUGIN_JACK, PLUGIN_JSFX)
+	PLUGIN_GIG, PLUGIN_SF2, PLUGIN_SFZ, PLUGIN_JACK, PLUGIN_JSFX, PLUGIN_ESSENTIALS)
 from simple_carla.qt import CarlaQt
 from qt_extras import DevilBox
 from xdg_soso import XDGSetup, XDGMime
@@ -77,7 +77,7 @@ LAYOUT_COMPLETE_DELAY	= 50
 LOG_FORMAT				= '[%(filename)24s:%(lineno)4d] %(levelname)-8s %(message)s'
 
 # -------------------------------------------------------------------
-# Plugin type lookup dict (see str
+# Plugin type lookup dict (see plugin_display_name)
 
 PLUGIN_TYPE_STRINGS = {
 	PLUGIN_INTERNAL: 'Internal',
@@ -150,8 +150,6 @@ PROJECT_OPTION_KEYS = [
 	KEY_COPY_SFZS,
 	KEY_SAMPLES_MODE,
 	KEY_CLEAN_SFZS,
-	KEY_RECENT_PLUGINS,
-	KEY_RECENT_PROJECT_DIR,
 	KEY_RECENT_SCORE_DIR,
 	KEY_RECENT_EXPORT_DIR,
 	KEY_SFZ_DIR,
@@ -234,6 +232,9 @@ def recent_plugins():
 		__RECENT_PLUGINS = RecentItemsList(setting(KEY_RECENT_PLUGINS, list, []))
 		__RECENT_PLUGINS.on_change(sync)
 	return __RECENT_PLUGINS
+
+def bump_recent_plugin(plugin_def):
+	recent_plugins().bump({ k:plugin_def[k] for k in PLUGIN_ESSENTIALS })
 
 def recent_files():
 	global __RECENT_FILES

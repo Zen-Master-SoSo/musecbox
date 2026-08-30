@@ -23,7 +23,7 @@
 musecbox hosts multiple LiquidSFZ instances for real-time music generation.
 """
 import sys, logging, argparse
-from os import environ, unlink
+from os import environ
 from pathlib import Path
 from socket import socket, AF_UNIX, SOCK_DGRAM, error as sock_error
 from PyQt5.QtCore import Qt
@@ -102,9 +102,9 @@ menu.""")
 		# Connect to running instance:
 		sock = socket(AF_UNIX, SOCK_DGRAM)
 		try:
-			sock.connect(SOCKET_PATH)
+			sock.connect(str(SOCKET_PATH))
 		except ConnectionRefusedError:
-			unlink(SOCKET_PATH)
+			SOCKET_PATH.unlink()
 		except FileNotFoundError:
 			pass
 		except sock_error as e:
@@ -117,7 +117,7 @@ menu.""")
 			return 4
 		# Delete previous SOCKET_PATH hanging around
 		try:
-			unlink(SOCKET_PATH)
+			SOCKET_PATH.unlink()
 		except FileNotFoundError:
 			pass
 
@@ -158,7 +158,7 @@ menu.""")
 			return 1
 		main_window.show()
 		return_value = application.exec()
-		unlink(SOCKET_PATH)
+		SOCKET_PATH.unlink()
 		return return_value
 
 
