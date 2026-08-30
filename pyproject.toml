@@ -6,15 +6,15 @@ license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"]
 dynamic = ["version", "description"]
 dependencies = [
-	"PyQt5",
 	"appdirs",
+	"mscore3 >= 1.18.1",
+	"PyQt5",
+	"recent_items_list >= 1.2.2",
 	"rich",
-	"simple_carla >= 2.9.0",
-	"mscore3 >= 1.17.2",
-	"sfzen >= 2.3.1",
-	"recent_items_list >= 1.1.2",
-	"soso_qt_extras >= 1.10.0",
-	"xdg_soso >= 1.3.0"
+	"sfzen >= 2.6.0",
+	"simple_carla >= 3.0.0",
+	"soso_qt_extras >= 1.14.3",
+	"xdg_soso >= 1.3.1"
 ]
 
 [project.urls]
