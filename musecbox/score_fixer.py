@@ -35,10 +35,10 @@ VoicePairing = namedtuple('VoicePairing', ['track', 'channel'])
 
 class ScoreFixer:
 
-	def __init__(self, project_definition, mscore_filename):
+	def __init__(self, project_definition, score_path):
 		self.project_definition = project_definition
-		self.score = Score(mscore_filename)
-		self.score_path = Path(mscore_filename)
+		self.score = Score(score_path)
+		self.score_path = Path(score_path)
 
 	def fix(self, *, ignore_extraneous = False, make_backup = False, fuzzy = False):
 		pairs = self.pairs(fuzzy = fuzzy)

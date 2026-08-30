@@ -38,15 +38,15 @@ from musecbox import APP_PATH, set_application_style, LAYOUT_COMPLETE_DELAY, LOG
 
 class ScoreInfoDialog(QDialog):
 
-	def __init__(self, parent, source_score_path):
+	def __init__(self, parent, score_path):
 		super().__init__(parent)
 		with ShutUpQT():
 			uic.loadUi(Path(__file__).parent.joinpath('score_info_dialog.ui'), self)
 
 		self.resize(100, 100)
 		self.tbl.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-		self.score = Score(source_score_path)
-		self.lbl_score.setText(self.score.filename)
+		self.score = Score(score_path)
+		self.lbl_score.setText(score_path.name)
 
 		headers = ["MIDI Port", "MIDI Channel", "Part", "Instrument", "Channel"]
 		self.tbl.setColumnCount(len(headers))

@@ -6,27 +6,36 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>806</width>
-    <height>298</height>
+    <width>839</width>
+    <height>511</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>SFZ Database</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,0">
+   <property name="spacing">
+    <number>10</number>
+   </property>
+   <property name="leftMargin">
+    <number>12</number>
+   </property>
+   <property name="rightMargin">
+    <number>12</number>
+   </property>
+   <property name="bottomMargin">
+    <number>16</number>
+   </property>
    <item>
     <widget class="QSplitter" name="splitter_1">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="handleWidth">
-      <number>6</number>
+      <number>10</number>
      </property>
      <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="lo_group">
-       <property name="spacing">
-        <number>1</number>
-       </property>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <widget class="QLabel" name="lbl_group">
          <property name="sizePolicy">
@@ -44,43 +53,43 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="lst_groups">
-         <property name="autoScroll">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="lo_group_search">
+        <layout class="QVBoxLayout" name="verticalLayout">
          <property name="spacing">
-          <number>0</number>
+          <number>1</number>
          </property>
          <item>
-          <widget class="QLineEdit" name="txt_group_search">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>3</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+          <widget class="QListWidget" name="lst_groups">
+           <property name="autoScroll">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="b_group_search">
-           <property name="maximumSize">
-            <size>
-             <width>28</width>
-             <height>16777215</height>
-            </size>
+          <layout class="QHBoxLayout" name="lo_group_search">
+           <property name="spacing">
+            <number>0</number>
            </property>
-           <property name="text">
-            <string notr="true"/>
-           </property>
-           <property name="icon">
-            <iconset theme="edit-clear">
-             <normaloff>../../../../../../.designer/backup</normaloff>../../../../../../.designer/backup</iconset>
-           </property>
-          </widget>
+           <item>
+            <widget class="QLineEdit" name="txt_group_search"/>
+           </item>
+           <item>
+            <widget class="QPushButton" name="b_group_search">
+             <property name="maximumSize">
+              <size>
+               <width>28</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string notr="true"/>
+             </property>
+             <property name="icon">
+              <iconset theme="edit-clear">
+               <normaloff>../../../../../../.designer/backup</normaloff>../../../../../../.designer/backup</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
@@ -91,13 +100,10 @@
        <enum>Qt::Horizontal</enum>
       </property>
       <property name="handleWidth">
-       <number>6</number>
+       <number>10</number>
       </property>
       <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="lo_sfz">
-        <property name="spacing">
-         <number>1</number>
-        </property>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
          <widget class="QLabel" name="lbl_sfzs">
           <property name="sizePolicy">
@@ -115,56 +121,53 @@
          </widget>
         </item>
         <item>
-         <widget class="QListWidget" name="lst_sfzs">
-          <property name="autoScroll">
-           <bool>false</bool>
-          </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::ExtendedSelection</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="lo_sfz_search">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
           <property name="spacing">
-           <number>0</number>
+           <number>1</number>
           </property>
           <item>
-           <widget class="QLineEdit" name="txt_sfz_search">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>3</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           <widget class="QListWidget" name="lst_sfzs">
+            <property name="autoScroll">
+             <bool>false</bool>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::ExtendedSelection</enum>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="b_sfz_search">
-            <property name="maximumSize">
-             <size>
-              <width>28</width>
-              <height>16777215</height>
-             </size>
+           <layout class="QHBoxLayout" name="lo_sfz_search">
+            <property name="spacing">
+             <number>0</number>
             </property>
-            <property name="text">
-             <string notr="true"/>
-            </property>
-            <property name="icon">
-             <iconset theme="edit-clear">
-              <normaloff>../../../../../../.designer/backup</normaloff>../../../../../../.designer/backup</iconset>
-            </property>
-           </widget>
+            <item>
+             <widget class="QLineEdit" name="txt_sfz_search"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="b_sfz_search">
+              <property name="maximumSize">
+               <size>
+                <width>28</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string notr="true"/>
+              </property>
+              <property name="icon">
+               <iconset theme="edit-clear">
+                <normaloff>../../../../../../.designer/backup</normaloff>../../../../../../.designer/backup</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
        </layout>
       </widget>
       <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="lo_instrument">
-        <property name="spacing">
-         <number>1</number>
-        </property>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
          <widget class="QLabel" name="lbl_instruments">
           <property name="sizePolicy">
@@ -182,46 +185,46 @@
          </widget>
         </item>
         <item>
-         <widget class="QListWidget" name="lst_mappings">
-          <property name="autoScroll">
-           <bool>false</bool>
-          </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::ExtendedSelection</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="lo_instrument_search">
+         <layout class="QVBoxLayout" name="verticalLayout_3">
           <property name="spacing">
-           <number>0</number>
+           <number>1</number>
           </property>
           <item>
-           <widget class="QLineEdit" name="txt_instrument_search">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>3</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           <widget class="QListWidget" name="lst_mappings">
+            <property name="autoScroll">
+             <bool>false</bool>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::ExtendedSelection</enum>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="b_instrument_search">
-            <property name="maximumSize">
-             <size>
-              <width>28</width>
-              <height>16777215</height>
-             </size>
+           <layout class="QHBoxLayout" name="lo_instrument_search">
+            <property name="spacing">
+             <number>0</number>
             </property>
-            <property name="text">
-             <string notr="true"/>
-            </property>
-            <property name="icon">
-             <iconset theme="edit-clear">
-              <normaloff>../../../../../../.designer/backup</normaloff>../../../../../../.designer/backup</iconset>
-            </property>
-           </widget>
+            <item>
+             <widget class="QLineEdit" name="txt_instrument_search"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="b_instrument_search">
+              <property name="maximumSize">
+               <size>
+                <width>28</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string notr="true"/>
+              </property>
+              <property name="icon">
+               <iconset theme="edit-clear">
+                <normaloff>../../../../../../.designer/backup</normaloff>../../../../../../.designer/backup</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -231,20 +234,48 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="lbl_status">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Number of SFZs</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="lbl_status">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Number of SFZs</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="buttons">
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Ok</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttons</sender>
+   <signal>clicked(QAbstractButton*)</signal>
+   <receiver>sfzdb</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>794</x>
+     <y>486</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>760</x>
+     <y>501</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

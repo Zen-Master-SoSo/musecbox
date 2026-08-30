@@ -81,7 +81,6 @@ class InstrumentSelectionDialog(QDialog):
 		self.file_model.setNameFilters(['*.mscz', '*.mscx'])
 		self.file_model.setRootPath(QDir.rootPath())
 		root_path = Path(setting(KEY_SCORES_DIR, str, QDir.rootPath())).resolve()
-		logging.debug('root_path: %s', root_path)
 		self.tree_scores.setModel(self.file_model)
 		self.tree_scores.setRootIndex(self.file_model.index(str(root_path)))
 		self.tree_scores.hideColumn(1)
@@ -89,7 +88,6 @@ class InstrumentSelectionDialog(QDialog):
 		self.tree_scores.hideColumn(3)
 		self.tree_scores.selectionModel().currentChanged.connect(self.slot_file_current_changed)
 		self.current_dirpath = Path(setting(KEY_RECENT_INST_DIR, str, QDir.homePath()))
-		logging.debug('current_directory: %s', self.current_dirpath)
 		index = self.file_model.index(str(self.current_dirpath))
 		self.tree_scores.setCurrentIndex(index)
 

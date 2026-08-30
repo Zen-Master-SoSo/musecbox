@@ -53,7 +53,7 @@ class MissingSFZsDialog(QDialog):
 			path = track_widget.sfz_path
 			dirs_parted[path.parent].append(track_widget)
 		lo = QVBoxLayout()
-		lo.setContentsMargins(18,12,18,20)
+		lo.setContentsMargins(18,12,18,24)
 		lo.setSpacing(10)
 		lbl = QLabel('<h3>Some SFZ files were not found:</h3>', self)
 		lo.addWidget(lbl)
@@ -65,9 +65,8 @@ class MissingSFZsDialog(QDialog):
 		hlo = QHBoxLayout()
 		self.b_close = QPushButton(TEXT_IGNORE, self)
 		self.b_close.clicked.connect(self.close)
-		hlo.addSpacing(20)
+		hlo.addStretch()
 		hlo.addWidget(self.b_close)
-		hlo.addSpacing(20)
 		lo.addItem(hlo)
 		self.setLayout(lo)
 		for btn in self.findChildren(QPushButton):

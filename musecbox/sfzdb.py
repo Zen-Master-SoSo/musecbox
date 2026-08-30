@@ -194,8 +194,10 @@ class SFZDatabase:
 		SFZs need not have been added to the database, as they will be added.
 		"""
 		self.insert_sfzs(paths)
-		self.conn.executemany('INSERT OR IGNORE INTO group_members(group_name, path) VALUES(?,?)',
-			[ (group_name, path) for path in paths ])
+		self.conn.executemany("""
+			INSERT OR IGNORE INTO group_members(group_name, path)
+			VALUES(?,?)
+		""", [ (group_name, str(path)) for path in paths ])
 		self.conn.commit()
 
 	def remove_group(self, group_name: str):
@@ -288,7 +290,7 @@ class SFZDatabase:
 		)))
 		return voices
 
-	def forget_mapping(self, voice_name: VoiceName, path: str):
+	def forget_mapping(self, voice_name: VoiceName, path):
 		"""
 		Deletes the association between the given "voice_name" and the SFZ found at the
 		given "path".
@@ -302,7 +304,7 @@ class SFZDatabase:
 			self.conn.execute("""
 				DELETE FROM instrument_mappings
 				WHERE instrument_name=? AND voice=? AND path=?
-			""", (voice_name.instrument_name, voice_name.voice, path))
+			""", (voice_name.instrument_name, voice_name.voice, str(path)))
 		self.conn.commit()
 
 	def sfzs(self, group_name: str = None) -> list:
@@ -351,7 +353,8 @@ class SFZDatabase:
 		for sfz in sfzs:
 			(unmapped, mapped)[sfz.path in previously_mapped].append(sfz)
 		mapped.sort(key = lambda rec: previously_mapped.index(rec.path))
-		candidates = [ FuzzyVoiceCandidate(sfz.voice_name, index) for index, sfz in enumerate(unmapped) ]
+		candidates = [ FuzzyVoiceCandidate(sfz.voice_name, index)
+			for index, sfz in enumerate(unmapped) ]
 		results = FuzzyVoice(ref).score_candidates(candidates)
 		return mapped, [ unmapped[result.candidate.index] for result in results ]
 
@@ -364,7 +367,7 @@ class SFZRecord:
 
 	def mappings(self):
 		"""
-		Returns a list VoiceName mapped to this SFZ
+		Returns a list of VoiceName mapped to this SFZ
 		"""
 		return SFZDatabase().path_mappings(self.path)
 

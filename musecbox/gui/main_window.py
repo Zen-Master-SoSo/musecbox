@@ -1104,7 +1104,7 @@ class MainWindow(QMainWindow):
 		if filenames:
 			self.project_definition = self.encode_saved_state()
 			for filename in filenames:
-				ApplyScoreDialog(self, self.project_definition, Path(filename)).exec()
+				ApplyScoreDialog(self, self.project_definition, filename).exec()
 			path = Path(filenames.pop())
 			set_setting(KEY_RECENT_SCORE_DIR, str(path.parent.resolve()))
 

@@ -23,6 +23,7 @@
 Applies the port/channel assignments in a MusecBox project to a MuseScore3 score.
 """
 import logging, argparse, sys, json
+from pathlib import Path
 from musecbox import LOG_FORMAT
 from musecbox.score_fixer import ScoreFixer
 
@@ -52,7 +53,7 @@ def main():
 
 	for filename in options.Score:
 		print(filename)
-		fixer = ScoreFixer(project_def, filename)
+		fixer = ScoreFixer(project_def, Path(filename))
 		try:
 			fixer.fix()
 		except Exception as e:

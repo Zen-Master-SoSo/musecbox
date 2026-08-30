@@ -67,7 +67,7 @@ class ApplyScoreDialog(QDialog):
 		self.resize(100, 100)
 		self.tbl.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 		self.fixer = ScoreFixer(project_definition, mscore_filename)
-		self.lbl_score.setText(self.fixer.score.filename)
+		self.lbl_score.setText(str(mscore_filename))
 
 		self.headers = ["Project track", "Port", "Channel", "Score channel", "MIDI Port", "MIDI Channel"]
 

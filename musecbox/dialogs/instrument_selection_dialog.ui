@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>594</width>
-    <height>507</height>
+    <width>598</width>
+    <height>543</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,6 +22,9 @@
    </property>
    <item>
     <layout class="QGridLayout" name="gridcurr" columnstretch="4,5">
+     <property name="bottomMargin">
+      <number>5</number>
+     </property>
      <property name="verticalSpacing">
       <number>3</number>
      </property>
@@ -246,6 +249,9 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridrepl" columnstretch="4,5">
+     <property name="topMargin">
+      <number>5</number>
+     </property>
      <property name="bottomMargin">
       <number>8</number>
      </property>

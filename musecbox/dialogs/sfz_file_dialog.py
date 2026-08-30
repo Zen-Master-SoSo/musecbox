@@ -250,11 +250,9 @@ class SFZFileDialog(QDialog):
 	@pyqtSlot(QPoint)
 	def slot_directory_context_menu(self, position):
 		menu = QMenu(self)
-		index = self.tree_directories.rootIndex()
-		path = Path(self.directory_model.filePath(index))
 		set_root_action = menu.addAction('Set as directory root')
 		up_level_action = menu.addAction('Up to parent directory')
-		up_level_action.setEnabled(str(path) != QDir.rootPath())
+		up_level_action.setEnabled(str(self.sfz_root_path) != QDir.rootPath())
 		collapse_action = menu.addAction('Collapse All')
 		menu.addSeparator()	# ---------------------
 		group_menu = menu.addMenu('Add all to group:')
@@ -269,7 +267,7 @@ class SFZFileDialog(QDialog):
 				if group_name := self.show_add_group():
 					self.assign_dir_to_group(group_name)
 			elif action is set_root_action:
-				self.sfz_root_path = path
+				self.sfz_root_path = self.current_path
 			elif action is up_level_action:
 				self.sfz_root_path = self.sfz_root_path.parent
 			else:

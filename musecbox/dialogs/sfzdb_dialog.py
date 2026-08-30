@@ -79,7 +79,7 @@ class SFZMaintDialog(QDialog):
 		for sfz_record in self.db.sfzs(
 			None if group_name == TEXT_NO_GROUP else group_name):
 			sfz_list_item = QListWidgetItem(self.lst_sfzs)
-			sfz_list_item.setText(sfz_record.path)
+			sfz_list_item.setText(str(sfz_record.path))
 			if sfz_record.mappings():
 				bold(sfz_list_item)
 			sfz_list_item.setData(Qt.UserRole, sfz_record)
