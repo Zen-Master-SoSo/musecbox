@@ -92,7 +92,7 @@ class ScoreLoadDialog(QDialog):
 		moniker = f"{setup['part']} ({setup['voice']})"
 		track_widget = port_widget.add_track(
 			VoiceName(setup['instrument'], setup['voice']),
-			setup['sfz']
+			Path(setup['sfz'])
 		)
 		track_widget.sig_ready.connect(self.slot_track_ready)
 		try:

@@ -25,6 +25,7 @@ from a MuseScore3 score, using the same graphical interface available from the
 MusecBox application.
 """
 import logging, argparse, sys, json
+from pathlib import Path
 from PyQt5.QtWidgets import QApplication
 from musecbox import set_application_style, LOG_FORMAT
 from musecbox.dialogs.score_import_dialog import ScoreImportDialog
@@ -41,12 +42,12 @@ def main():
 	logging.basicConfig(level = log_level, format = LOG_FORMAT)
 	_ = QApplication([])
 	set_application_style()
-	dialog = ScoreImportDialog(None, options.Filename[0])
+	dialog = ScoreImportDialog(None, Path(options.Filename[0]))
 	if dialog.exec():
 		json.dump(dialog.track_setup(), sys.stdout, indent = "\t")
 		print()
 
 if __name__ == '__main__':
-	main()
+	sys.exit(main() or 0)
 
 #  musecbox/scripts/mb_track_setup.py

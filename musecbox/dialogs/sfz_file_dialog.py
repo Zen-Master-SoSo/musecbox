@@ -64,9 +64,6 @@ class SFZFileDialog(QDialog):
 		self.restore_geometry()
 		self.finished.connect(self.save_geometry)
 		self.accepted.connect(self.slot_accepted)
-		self.previewer = previewer()
-		if self.previewer:
-			self.finished.connect(previewer().deactivate)
 		self.setModal(True)
 
 		self.voice_name = voice_name
@@ -102,37 +99,31 @@ class SFZFileDialog(QDialog):
 		self.b_clear_search.clicked.connect(self.slot_clear_search_clicked)
 
 		# Setup input select button:
-		if self.previewer:
-			self.b_input = QtListButton(self, fill_callback = SFZPreviewer.midi_sources)
-			self.b_input.setText(setting(KEY_PREVIEWER_MIDI_SRC, str, TEXT_NO_CONN))
-			self.b_input.sig_item_selected.connect(self.slot_input_selected)
-			self.input_layout.replaceWidget(self.input_select_placeholder, self.b_input)
+		self.b_input = QtListButton(self, fill_callback = SFZPreviewer.midi_sources)
+		self.b_input.setText(setting(KEY_PREVIEWER_MIDI_SRC, str, TEXT_NO_CONN))
+		self.b_input.sig_item_selected.connect(self.slot_input_selected)
+		self.input_layout.replaceWidget(self.input_select_placeholder, self.b_input)
 		self.input_select_placeholder.setVisible(False)
 		self.input_select_placeholder.deleteLater()
 		del self.input_select_placeholder
 
 		# Setup output select button:
-		if self.previewer:
-			self.b_output = QtListButton(self, fill_callback = SFZPreviewer.audio_targets)
-			self.b_output.setText(setting(KEY_PREVIEWER_AUDIO_TGT, str, TEXT_NO_CONN))
-			self.b_output.sig_item_selected.connect(self.slot_output_client_selected)
-			self.output_layout.replaceWidget(self.b_output_placeholder, self.b_output)
+		self.b_output = QtListButton(self, fill_callback = SFZPreviewer.audio_targets)
+		self.b_output.setText(setting(KEY_PREVIEWER_AUDIO_TGT, str, TEXT_NO_CONN))
+		self.b_output.sig_item_selected.connect(self.slot_output_client_selected)
+		self.output_layout.replaceWidget(self.b_output_placeholder, self.b_output)
 		self.b_output_placeholder.setVisible(False)
 		self.b_output_placeholder.deleteLater()
 		del self.b_output_placeholder
 
+		self.chk_live_preview.setChecked(setting(KEY_PREVIEW_FILES, bool))
+		self.chk_live_preview.stateChanged.connect(self.slot_chk_preview_state)
+		self.previewer = previewer()
 		if self.previewer:
-			self.chk_live_preview.stateChanged.connect(self.slot_chk_preview_state)
-			enable = setting(KEY_PREVIEW_FILES, bool)
-			self.chk_live_preview.setChecked(enable)
-			self.frm_preview_settings.setEnabled(enable)
+			self.finished.connect(previewer().deactivate)
 		else:
-			self.chk_live_preview.setVisible(False)
-			self.chk_live_preview.deleteLater()
-			del self.chk_live_preview
-			self.frm_preview_settings.setVisible(False)
-			self.frm_preview_settings.deleteLater()
-			del self.frm_preview_settings
+			self.chk_live_preview.setEnabled(False)
+			self.frm_preview_settings.setEnabled(False)
 
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
 
@@ -202,7 +193,7 @@ class SFZFileDialog(QDialog):
 			and current.data(Qt.UserRole).path.exists()
 		self.buttons.button(QDialogButtonBox.Ok).setEnabled(ok)
 		self.sfz_path = current.data(Qt.UserRole).path if ok else None
-		if ok and self.previewer:
+		if ok and self.previewer is not None and setting(KEY_PREVIEW_FILES, bool):
 			self.previewer.load_sfz(self.sfz_path)
 
 	# -------------------------------------------------

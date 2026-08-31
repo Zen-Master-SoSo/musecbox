@@ -309,8 +309,8 @@ class ScoreImportDialog(QDialog):
 				'midi_channel'	: chan_widget.spn_channel.value(),
 				'pan'			: chan_widget.pan,
 				'balance'		: chan_widget.balance,
-				'sfz'			: chan_widget.sfz_path
-			} for chan_widget in self.findChildren(ChannelWidget) \
+				'sfz'			: str(chan_widget.sfz_path)
+			} for chan_widget in self.findChildren(ChannelWidget)
 			if chan_widget.make() and chan_widget.sfz_path ]
 
 
@@ -356,8 +356,8 @@ class PartWidget(QWidget):
 		"""
 		Returns a dict whose keys are SFZ path, and values are ChannelWidget objects
 		"""
-		return { chan_widget.sfz_path:chan_widget \
-			for chan_widget in self.channel_widgets \
+		return { chan_widget.sfz_path:chan_widget
+			for chan_widget in self.channel_widgets
 			if chan_widget.sfz_path }
 
 	def fill_menu(self):
