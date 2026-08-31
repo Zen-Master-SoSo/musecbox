@@ -196,6 +196,7 @@ class MainWindow(QMainWindow):
 
 	def _connect_actions(self):
 		# File menu
+		self.menu_file.aboutToShow.connect(self.slot_file_menu_show)
 		self.action_new.triggered.connect(self.slot_new)
 		self.action_open.triggered.connect(self.slot_open_file)
 		self.menu_open_recent.aboutToShow.connect(self.slot_recent_menu_show)
@@ -207,9 +208,10 @@ class MainWindow(QMainWindow):
 		self.action_open_project_folder.triggered.connect(self.slot_open_project_folder)
 		self.action_open_in_terminal.triggered.connect(self.slot_open_in_terminal)
 		self.action_apply_to_score.triggered.connect(self.slot_apply_to_score)
-		self.action_close.triggered.connect(self.close)
+		self.action_close.triggered.connect(self.slot_new)
 
 		# Edit menu
+		self.menu_edit.aboutToShow.connect(self.slot_edit_menu_show)
 		self.action_add_port.triggered.connect(self.slot_add_port)
 		self.action_add_track.triggered.connect(self.slot_add_track)
 		self.action_add_shared_plugin.triggered.connect(self.slot_add_shared_plugin)
@@ -249,6 +251,7 @@ class MainWindow(QMainWindow):
 		self.action_vertical_layout.toggled.connect(self.slot_vertical_layout)
 
 		# SFZ menu
+		self.menu_sfz.aboutToShow.connect(self.slot_sfz_menu_show)
 		self.action_watch_files.toggled.connect(self.slot_watch_files)
 		self.action_copy_sfzs.triggered.connect(self.slot_copy_sfzs)
 		self.action_copy_sfz_paths.triggered.connect(self.slot_copy_sfz_paths)
@@ -317,29 +320,13 @@ class MainWindow(QMainWindow):
 		has_track_plugins = has_tracks and any(track_widget.has_plugins() \
 			for track_widget in self.iterate_track_widgets())
 		has_shared_plugins = len(self.shared_plugin_layout) > 0
-		has_project = not self.project_path is None
+		has_project = bool(self.project_path)
 		has_score = bool(self.source_score_path)
 		self.action_save.setEnabled(self.dirty)
 		self.action_save_as.setEnabled(has_project)
 		self.action_revert.setEnabled(has_project)
-		self.action_close.setEnabled(has_project)
-		self.action_auto_start.setEnabled(has_project)
-		self.action_copy_project_path.setEnabled(has_project)
 		self.action_open_project_folder.setEnabled(has_project)
-		self.action_open_in_terminal.setEnabled(has_project)
-		self.action_apply_to_score.setEnabled(has_project)
-		self.action_watch_files.setEnabled(has_tracks)
-		self.action_show_project_info.setEnabled(has_project)
-		self.action_show_score_info.setEnabled(has_score)
-		self.action_copy_sfzs.setEnabled(bool(self.should_copy_sfzs()))
 		self.action_copy_sfz_paths.setEnabled(has_tracks)
-		self.action_clear_shared_plugins.setEnabled(has_shared_plugins)
-		self.action_mute_all_tracks.setEnabled(has_tracks)
-		self.action_unmute_all_tracks.setEnabled(has_tracks)
-		self.action_connect_all_tracks.setEnabled(has_tracks)
-		self.action_clear_track_plugins.setEnabled(has_track_plugins)
-		self.action_show_connections.setEnabled(has_tracks)
-		self.action_auto_connect_tracks.setChecked(setting(KEY_AUTO_CONNECT, bool))
 		if has_project:
 			if self.dirty:
 				self.setWindowTitle(f'* {self.project_path} {APPLICATION_NAME}')
@@ -484,7 +471,8 @@ class MainWindow(QMainWindow):
 				set_application_style()
 				self._show_hide_window_elements()
 				self.balance_control_widget.slot_set_lines(setting(KEY_BCWIDGET_LINES, int, 3))
-				if 'exported_wav_file' in self.project_definition:
+				if 'exported_wav_file' in self.project_definition \
+					and self.project_definition['exported_wav_file']:
 					self.wav_file_path = Path(self.project_definition['exported_wav_file'])
 				if ProjectLoadDialog(self, self.project_definition).exec():
 					recent_files().bump(self.project_path)
@@ -925,12 +913,12 @@ class MainWindow(QMainWindow):
 	@pyqtSlot()
 	def slot_collapse_all_ports(self):
 		for port_widget in self.port_layout:
-			port_widget.implement_collapse(True)
+			port_widget.collapse(True)
 
 	@pyqtSlot()
 	def slot_expand_all_ports(self):
 		for port_widget in self.port_layout:
-			port_widget.implement_collapse(False)
+			port_widget.collapse(False)
 
 	@pyqtSlot()
 	def slot_rollup_all_plugins(self):
@@ -955,59 +943,6 @@ class MainWindow(QMainWindow):
 	def slot_unmute_all_tracks(self):
 		for track_widget in self.iterate_track_widgets():
 			track_widget.unmute()
-
-	@pyqtSlot(QPoint)
-	def slot_shared_plugins_context_menu(self, position):
-		menu = QMenu()
-		clicked_plugin_widget = self.scr_shared_plugins.viewport().childAt(position)
-		if clicked_plugin_widget is not None:
-			while not isinstance(clicked_plugin_widget, Plugin) \
-				and clicked_plugin_widget.parent() is not None:
-				clicked_plugin_widget = clicked_plugin_widget.parent()
-			if isinstance(clicked_plugin_widget, Plugin):
-				if clicked_plugin_widget.has_custom_ui:
-					action = QAction('Prefer generic interface', self)
-					action.setCheckable(True)
-					action.setChecked(clicked_plugin_widget.prefer_generic_dialog)
-					action.setEnabled(clicked_plugin_widget.has_custom_ui)
-					action.triggered.connect(clicked_plugin_widget.slot_prefer_generic)
-					menu.addAction(action)
-					if not clicked_plugin_widget.prefer_generic_dialog:
-						action = QAction('Open generic interface', self)
-						action.triggered.connect(clicked_plugin_widget.slot_show_generic_dialog)
-						menu.addAction(action)
-					menu.addSeparator()	# ---------------------
-				action = QAction('Spread balance full stereo', self)
-				action.triggered.connect(clicked_plugin_widget.go_full_stereo)
-				action.setEnabled(clicked_plugin_widget.can_balance)
-				menu.addAction(action)
-				action = QAction('Center stereo panning', self)
-				action.triggered.connect(clicked_plugin_widget.center_panning)
-				action.setEnabled(clicked_plugin_widget.can_pan)
-				menu.addAction(action)
-				menu.addSeparator()	# ---------------------
-				action = QAction(f'Show "{clicked_plugin_widget.original_plugin_name}" info', self)
-				action.triggered.connect(clicked_plugin_widget.slot_show_info_dialog)
-				menu.addAction(action)
-				action = QAction(f'Rename "{clicked_plugin_widget.moniker}"', self)
-				action.triggered.connect(clicked_plugin_widget.slot_rename)
-				menu.addAction(action)
-				menu.addSeparator()	# ---------------------
-				action = QAction(f'Remove "{clicked_plugin_widget.moniker}"', self)
-				action.triggered.connect(partial(self.remove_shared_plugin, clicked_plugin_widget))
-				menu.addAction(action)
-		menu.addAction(self.action_add_shared_plugin)
-		if len(self.shared_plugin_layout) > 0:
-			menu.addAction(self.action_clear_shared_plugins)
-		if len(recent_plugins()) > 0:
-			menu.addSeparator()	# ---------------------
-			for plugin_def in recent_plugins():
-				action = QAction(f'Add {plugin_display_name(plugin_def)}', self)
-				action.triggered.connect(partial(self.add_shared_plugin_widget, plugin_def))
-				menu.addAction(action)
-		menu.addSeparator()	# ---------------------
-		menu.addAction(self.action_show_shared_plugins)
-		menu.exec(self.scr_shared_plugins.mapToGlobal(position))
 
 	@pyqtSlot()
 	def slot_clear_shared_plugins(self):
@@ -1069,6 +1004,12 @@ class MainWindow(QMainWindow):
 		ProjectInfoDialog(self).exec()
 
 	@pyqtSlot()
+	def slot_show_score_info(self):
+		from musecbox.dialogs.score_info_dialog import ScoreInfoDialog
+		logging.debug(self.source_score_path)
+		ScoreInfoDialog(self, self.source_score_path).exec()
+
+	@pyqtSlot()
 	def slot_copy_project_path(self):
 		"""
 		Copy project path to clipboard
@@ -1082,11 +1023,6 @@ class MainWindow(QMainWindow):
 	@pyqtSlot()
 	def slot_open_in_terminal(self):
 		open_in_terminal(self.project_path())
-
-	@pyqtSlot()
-	def slot_show_score_info(self):
-		from musecbox.dialogs.score_info_dialog import ScoreInfoDialog
-		ScoreInfoDialog(self, self.source_score_path).exec()
 
 	@pyqtSlot()
 	def slot_apply_to_score(self):
@@ -1108,6 +1044,18 @@ class MainWindow(QMainWindow):
 			path = Path(filenames.pop())
 			set_setting(KEY_RECENT_SCORE_DIR, str(path.parent.resolve()))
 
+	# -----------------------------------------------------------------
+	# Slots which handle menu "aboutToShow" signals
+
+	@pyqtSlot()
+	def slot_file_menu_show(self):
+		has_project = bool(self.project_path)
+		self.action_close.setEnabled(has_project)
+		self.action_auto_start.setEnabled(has_project)
+		self.action_copy_project_path.setEnabled(has_project)
+		self.action_open_in_terminal.setEnabled(has_project)
+		self.action_apply_to_score.setEnabled(has_project)
+
 	@pyqtSlot()
 	def slot_recent_menu_show(self):
 		self.menu_open_recent.clear()
@@ -1117,21 +1065,36 @@ class MainWindow(QMainWindow):
 			self.menu_open_recent.addAction(action)
 
 	@pyqtSlot()
+	def slot_edit_menu_show(self):
+		has_tracks = any(track_widget for track_widget in self.iterate_track_widgets())
+		has_track_plugins = has_tracks and any(track_widget.has_plugins() \
+			for track_widget in self.iterate_track_widgets())
+		has_shared_plugins = len(self.shared_plugin_layout) > 0
+		self.action_mute_all_tracks.setEnabled(has_tracks)
+		self.action_unmute_all_tracks.setEnabled(has_tracks)
+		self.action_connect_all_tracks.setEnabled(has_tracks)
+		self.action_clear_track_plugins.setEnabled(has_track_plugins)
+		self.action_clear_shared_plugins.setEnabled(has_shared_plugins)
+		with SigBlock(self.action_auto_connect_tracks):
+			self.action_auto_connect_tracks.setChecked(setting(KEY_AUTO_CONNECT, bool))
+
+	@pyqtSlot()
 	def slot_view_menu_show(self):
+		has_project = bool(self.project_path)
+		has_score = self.source_score_path and self.source_score_path.exists()
 		has_ports = len(self.port_layout) > 0
 		has_tracks = self.track_widget_count() > 0
-		self.action_collapse_all_ports.setEnabled(
-			has_ports and \
+		self.action_collapse_all_ports.setEnabled(has_ports and
 			not all(port.is_collapsed for port in self.port_layout))
-		self.action_expand_all_ports.setEnabled(
-			has_ports and \
+		self.action_expand_all_ports.setEnabled(has_ports and
 			any(port.is_collapsed for port in self.port_layout))
-		self.action_rollup_all_plugins.setEnabled(
-			has_tracks and \
+		self.action_rollup_all_plugins.setEnabled(has_tracks and
 			not all(plugin.is_rolled_up() for plugin in self.iterate_track_plugin_widgets()))
-		self.action_unroll_all_plugins.setEnabled(
-			has_tracks and \
+		self.action_unroll_all_plugins.setEnabled(has_tracks and
 			any(plugin.is_rolled_up() for plugin in self.iterate_track_plugin_widgets()))
+		self.action_show_project_info.setEnabled(has_project)
+		self.action_show_score_info.setEnabled(has_score)
+		self.action_show_connections.setEnabled(has_tracks)
 		with SigBlock(
 			self.action_show_toolbar,
 			self.action_show_port_inputs,
@@ -1156,6 +1119,12 @@ class MainWindow(QMainWindow):
 			if action.text() == current_style:
 				action.setChecked(True)
 				break
+
+	@pyqtSlot()
+	def slot_sfz_menu_show(self):
+		has_tracks = self.track_widget_count() > 0
+		self.action_copy_sfzs.setEnabled(bool(self.should_copy_sfzs()))
+		self.action_watch_files.setEnabled(has_tracks)
 
 	@pyqtSlot()
 	def slot_new(self):
@@ -1255,8 +1224,11 @@ class MainWindow(QMainWindow):
 			else:
 				menu.addAction(self.action_add_track)
 		menu.addAction(self.action_add_port)
-		# Update expand / collapse ports:
-		self.slot_view_menu_show()
+		has_ports = len(self.port_layout) > 0
+		self.action_collapse_all_ports.setEnabled(has_ports and \
+			not all(port.is_collapsed for port in self.port_layout))
+		self.action_expand_all_ports.setEnabled(has_ports and \
+			any(port.is_collapsed for port in self.port_layout))
 		menu.addAction(self.action_collapse_all_ports)
 		menu.addAction(self.action_expand_all_ports)
 		if len(self.port_layout) > 0:
@@ -1264,6 +1236,59 @@ class MainWindow(QMainWindow):
 			action.triggered.connect(self.slot_remove_all_ports)
 			menu.addAction(action)
 		menu.exec(self.frm_ports.mapToGlobal(position))
+
+	@pyqtSlot(QPoint)
+	def slot_shared_plugins_context_menu(self, position):
+		menu = QMenu()
+		clicked_plugin_widget = self.scr_shared_plugins.viewport().childAt(position)
+		if clicked_plugin_widget is not None:
+			while not isinstance(clicked_plugin_widget, Plugin) \
+				and clicked_plugin_widget.parent() is not None:
+				clicked_plugin_widget = clicked_plugin_widget.parent()
+			if isinstance(clicked_plugin_widget, Plugin):
+				if clicked_plugin_widget.has_custom_ui:
+					action = QAction('Prefer generic interface', self)
+					action.setCheckable(True)
+					action.setChecked(clicked_plugin_widget.prefer_generic_dialog)
+					action.setEnabled(clicked_plugin_widget.has_custom_ui)
+					action.triggered.connect(clicked_plugin_widget.slot_prefer_generic)
+					menu.addAction(action)
+					if not clicked_plugin_widget.prefer_generic_dialog:
+						action = QAction('Open generic interface', self)
+						action.triggered.connect(clicked_plugin_widget.slot_show_generic_dialog)
+						menu.addAction(action)
+					menu.addSeparator()	# ---------------------
+				action = QAction('Spread balance full stereo', self)
+				action.triggered.connect(clicked_plugin_widget.go_full_stereo)
+				action.setEnabled(clicked_plugin_widget.can_balance)
+				menu.addAction(action)
+				action = QAction('Center stereo panning', self)
+				action.triggered.connect(clicked_plugin_widget.center_panning)
+				action.setEnabled(clicked_plugin_widget.can_pan)
+				menu.addAction(action)
+				menu.addSeparator()	# ---------------------
+				action = QAction(f'Show "{clicked_plugin_widget.original_plugin_name}" info', self)
+				action.triggered.connect(clicked_plugin_widget.slot_show_info_dialog)
+				menu.addAction(action)
+				action = QAction(f'Rename "{clicked_plugin_widget.moniker}"', self)
+				action.triggered.connect(clicked_plugin_widget.slot_rename)
+				menu.addAction(action)
+				menu.addSeparator()	# ---------------------
+				action = QAction(f'Remove "{clicked_plugin_widget.moniker}"', self)
+				action.triggered.connect(partial(self.remove_shared_plugin, clicked_plugin_widget))
+				menu.addAction(action)
+		menu.addAction(self.action_add_shared_plugin)
+		if len(self.shared_plugin_layout) > 0:
+			menu.addAction(self.action_clear_shared_plugins)
+		if len(recent_plugins()) > 0:
+			menu.addSeparator()	# ---------------------
+			for plugin_def in recent_plugins():
+				action = QAction(f'Add {plugin_display_name(plugin_def)}', self)
+				action.triggered.connect(partial(self.add_shared_plugin_widget, plugin_def))
+				menu.addAction(action)
+		menu.addSeparator()	# ---------------------
+		menu.addAction(self.action_show_shared_plugins)
+		menu.exec(self.scr_shared_plugins.mapToGlobal(position))
 
 	@pyqtSlot()
 	def slot_remove_all_ports(self):

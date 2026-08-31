@@ -58,9 +58,8 @@ class PortWidget(QFrame):
 			else saved_state["source_port_names"] if "source_port_names" in saved_state \
 			else []
 		self.setObjectName(f'port{port}')	# allow for styling per port number using style sheets
-
-		self.is_collapsed = False if saved_state is None \
-			else "collapsed" in saved_state and saved_state["collapsed"]
+		self.is_removing = False
+		self.is_collapsed = None
 
 		# Create channel splitter
 		self.channel_splitter = MIDISplitter(saved_state = None \
@@ -70,8 +69,6 @@ class PortWidget(QFrame):
 			(self.channel_splitter.sig_connection_change, self.slot_splitter_connection_change)
 		]: src.connect(tgt, type = Qt.QueuedConnection)
 		self.channel_ports = None
-
-		self.is_removing = False
 
 		# Setup plugin menu
 		self.frm_tracks.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -89,8 +86,13 @@ class PortWidget(QFrame):
 
 		# Show/hide self.input_select_widget:
 		self.show_input(setting(KEY_SHOW_PORT_INPUTS, bool, True))
-
 		self.lbl_port.mouseDoubleClickEvent = self.slot_port_lbl_dblclk
+
+		# expand / collapse based on saved state:
+		self.icon_collapse = QIcon(str(APP_PATH / 'res' / 'collapse.svg'))
+		self.icon_expand = QIcon(str(APP_PATH / 'res' / 'expand.svg'))
+		self.collapse(False if saved_state is None \
+			else "collapsed" in saved_state and saved_state["collapsed"])
 
 	def add_to_carla(self):
 		self.channel_splitter.add_to_carla()
@@ -278,10 +280,9 @@ class PortWidget(QFrame):
 	def show_input(self, state):
 		self.input_select_widget.setVisible(state)
 
-	def implement_collapse(self, checked):
+	def collapse(self, checked):
 		self.is_collapsed = bool(checked)
-		for track_widget in self.track_layout:
-			track_widget.setVisible(not checked)
+		self.frm_tracks.setVisible(not self.is_collapsed)
 		main_window().set_dirty()
 
 	@pyqtSlot(TrackWidget)
@@ -379,7 +380,7 @@ class PortWidget(QFrame):
 
 	@pyqtSlot(QMouseEvent)
 	def slot_port_lbl_dblclk(self, _):
-		self.implement_collapse(not self.is_collapsed)
+		self.collapse(not self.is_collapsed)
 
 	def color(self):
 		return self.lbl_port.palette().color(QPalette.Background)
@@ -397,9 +398,6 @@ class HorizontalPortWidget(PortWidget):
 		self._track_class = HorizontalTrackWidget
 		self.lbl_port.setText(f'Port {self.port}')
 		autofit(self.input_select_widget)
-		self.icon_collapse = QIcon(str(APP_PATH / 'res' / 'collapse.svg'))
-		self.icon_expand = QIcon(str(APP_PATH / 'res' / 'expand.svg'))
-		self.b_collapse.setIcon(self.icon_collapse)
 		self.b_collapse.clicked.connect(self.slot_collapse_click)
 		# Setup track_layout
 		self.track_layout = HListLayout(end_space = 10)
@@ -407,8 +405,6 @@ class HorizontalPortWidget(PortWidget):
 		self.track_layout.setSpacing(0)
 		self.track_layout.setSizeConstraint(QLayout.SetNoConstraint)
 		self.frm_tracks.setLayout(self.track_layout)
-		# expand / collapse based on saved state:
-		self.implement_collapse(self.is_collapsed)
 
 	@pyqtSlot(TrackWidget)
 	def slot_move_track_previous(self, track_widget):
@@ -428,13 +424,13 @@ class HorizontalPortWidget(PortWidget):
 	@pyqtSlot(bool)
 	def slot_collapse_click(self, checked):
 		if self.is_collapsed != checked:
-			self.implement_collapse(checked)
+			self.collapse(checked)
 
-	def implement_collapse(self, checked):
-		super().implement_collapse(checked)
-		self.b_collapse.setIcon(self.icon_expand if checked else self.icon_collapse)
+	def collapse(self, checked):
+		super().collapse(checked)
+		self.b_collapse.setIcon(self.icon_expand if self.is_collapsed else self.icon_collapse)
 		with SigBlock(self.b_collapse):
-			self.b_collapse.setChecked(checked)
+			self.b_collapse.setChecked(self.is_collapsed)
 
 	def update_input_connection_ui(self):
 		ports = self.input_connections()
@@ -456,12 +452,12 @@ class VerticalPortWidget(PortWidget):
 		super().__init__(parent, port, saved_state = saved_state)
 		self._track_class = VerticalTrackWidget
 		self.lbl_port.setText(str(self.port))
+		self.input_select_widget.setFixedWidth(23)
 		self.track_layout = GListLayout(8, VERTICAL_FLOW)
 		self.track_layout.setContentsMargins(0,0,0,0)
 		self.track_layout.setSpacing(0)
 		self.track_layout.setSizeConstraint(QLayout.SetNoConstraint)
 		self.frm_tracks.setLayout(self.track_layout)
-		self.implement_collapse(self.is_collapsed)
 
 	def update_input_connection_ui(self):
 		ports = self.input_connections()

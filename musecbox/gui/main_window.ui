@@ -328,7 +328,7 @@
     <addaction name="action_reload_style"/>
     <addaction name="action_vertical_layout"/>
    </widget>
-   <widget class="QMenu" name="menuSF_Z">
+   <widget class="QMenu" name="menu_sfz">
     <property name="title">
      <string>SF&amp;Zs</string>
     </property>
@@ -341,7 +341,7 @@
    <addaction name="menu_file"/>
    <addaction name="menu_edit"/>
    <addaction name="menu_view"/>
-   <addaction name="menuSF_Z"/>
+   <addaction name="menu_sfz"/>
   </widget>
   <widget class="QToolBar" name="toolbar">
    <property name="windowTitle">
@@ -785,7 +785,7 @@
   </action>
   <action name="action_show_connections">
    <property name="icon">
-    <iconset theme="preferences-system-network">
+    <iconset>
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">

@@ -49,11 +49,10 @@ class ProjectInfoDialog(QDialog):
 		self.finished.connect(self.save_geometry)
 		self.b_export.clicked.connect(self.slot_export)
 
-		self.tbl.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-
 		headers = ["MIDI Port", "MIDI Channel", "Moniker", "Voice", "SFZ"]
 		self.tbl.setColumnCount(len(headers))
 		self.tbl.setHorizontalHeaderLabels(headers)
+		self.tbl.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
 		tracks = [track_widget for track_widget in main_window().iterate_track_widgets()]
 		self.tbl.setRowCount(len(tracks))
@@ -67,7 +66,7 @@ class ProjectInfoDialog(QDialog):
 			self.tbl.setItem(row, 1, item)
 			self.tbl.setItem(row, 2, QTableWidgetItem(track_widget.moniker.replace('&', '&&')))
 			self.tbl.setItem(row, 3, QTableWidgetItem(str(track_widget.voice_name).replace('&', '&&')))
-			self.tbl.setItem(row, 4, QTableWidgetItem(track_widget.sfz_path.replace('&', '&&')))
+			self.tbl.setItem(row, 4, QTableWidgetItem(str(track_widget.sfz_path).replace('&', '&&')))
 
 		QTimer.singleShot(LAYOUT_COMPLETE_DELAY, self.layout_complete)
 
@@ -84,21 +83,22 @@ class ProjectInfoDialog(QDialog):
 			if main_window().project_path else \
 			Path(setting(KEY_RECENT_EXPORT_DIR, str, QDir.homePath())) / 'musecbox-project.tsv'
 		filename, _ = QFileDialog.getSaveFileName(
-			self, "Export project layout ...", sugg_name, TRACK_DEF_FILE_TYPE)
+			self, "Export project layout ...", str(sugg_name), TRACK_DEF_FILE_TYPE)
 		if filename:
 			set_setting(KEY_RECENT_EXPORT_DIR, str(Path(filename).parent.resolve()))
 			tab = "\t"
 			with open(filename, 'w') as fh:
 				for track_widget in main_window().iterate_track_widgets():
-					fh.write(tab.joinpath([
+					fh.write(tab.join([
 						str(track_widget.port),
 						str(track_widget.channel),
 						track_widget.moniker,
 						track_widget.voice_name.instrument_name,
 						track_widget.voice_name.voice,
-						track_widget.sfz_path
+						str(track_widget.sfz_path)
 					]))
 					fh.write(linesep)
+		self.close()
 
 
 #  end musecbox/dialogs/score_import_dialog.py
