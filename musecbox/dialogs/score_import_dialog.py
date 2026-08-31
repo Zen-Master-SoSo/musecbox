@@ -148,13 +148,6 @@ class ScoreImportDialog(QDialog):
 						break
 				else:
 					break
-		# Save mappings for when autofilled sfzs are accepted:
-		for part_widget in self.part_widgets:
-			for chan_widget in part_widget.channel_widgets:
-				SFZDatabase().map_instrument(VoiceName(
-					part_widget.lbl_instrument_name.text(),
-					chan_widget.lbl_voice.text()
-				), chan_widget.sfz_path)
 		self.accept()
 
 	@pyqtSlot(str)
@@ -199,6 +192,7 @@ class ScoreImportDialog(QDialog):
 						VoiceName(instrument_name, chan_widget.lbl_voice.text()),
 						group_name
 					).path)
+					QApplication.processEvents()
 		self.unsetCursor()
 		self.slot_sfz_changed()
 

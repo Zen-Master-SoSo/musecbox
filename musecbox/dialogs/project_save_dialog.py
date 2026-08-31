@@ -42,7 +42,7 @@ class ProjectSaveDialog(QFileDialog):
 	Custom file dialog with added option for choosing samples_mode.
 	"""
 
-	def __init__(self, parent, filename):
+	def __init__(self, parent, path):
 		QCoreApplication.setAttribute(Qt.AA_DontUseNativeDialogs)
 		super().__init__(parent)
 		self.target_path = None
@@ -56,7 +56,7 @@ class ProjectSaveDialog(QFileDialog):
 		self.setWindowTitle("Save MusecBox Project")
 		self.setMinimumSize(677, 533)
 
-		self.setDirectory(filename or setting(KEY_RECENT_PROJECT_DIR, str, QDir.homePath()))
+		self.setDirectory(str(path) or setting(KEY_RECENT_PROJECT_DIR, str, QDir.homePath()))
 		self.setFileMode(QFileDialog.AnyFile)
 		self.setNameFilter(PROJECT_FILE_TYPE)
 		self.setViewMode(QFileDialog.List)

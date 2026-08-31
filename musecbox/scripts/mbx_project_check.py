@@ -46,9 +46,8 @@ ERR_MISSING_PLUGIN	= 0b100000000
 def main():
 	p = argparse.ArgumentParser()
 	p.add_argument('Filename', type = str, nargs = '+', help = 'MusecBox project to check')
-	p.add_argument("--check-samples", "-s", action = "store_true")
 	p.add_argument("--quiet", "-q", action = "store_true",
-		help = "Do not print anything to the console")
+		help = "Do not print anything to the console - just return a value")
 	p.add_argument("--verbose", "-v", action = "store_true",
 		help = "Show more detailed debug information")
 	p.epilog = __doc__
@@ -105,17 +104,16 @@ def main():
 					retval |= ERR_SFZ_DECODE_ERR
 					if not options.quiet:
 						rprint(fr'[black]{sfz_filename}[/black] [red]\[SFZ error: {sfz.error}][/red]')
-				if options.check_samples:
-					for sample in sfz.samples():
-						if not sample.abspath.exists():
-							retval |= ERR_MISSING_SAMPLE
-							if not options.quiet:
-								rprint(fr'[black]{sample.abspath}[/black] [red]\[missing sample][/red]')
-							continue
-						if not access(sample.abspath, R_OK):
-							retval |= ERR_SAMPLE_ACCESS
-							if not options.quiet:
-								rprint(fr'[black]{sample.abspath}[/black] [red]\[sample not readable][/red]')
+				for sample in sfz.samples():
+					if not sample.abspath.exists():
+						retval |= ERR_MISSING_SAMPLE
+						if not options.quiet:
+							rprint(fr'[black]{sample.path}[/black] [red]\[missing sample][/red]')
+						continue
+					if not access(sample.abspath, R_OK):
+						retval |= ERR_SAMPLE_ACCESS
+						if not options.quiet:
+							rprint(fr'[black]{sample.path}[/black] [red]\[sample not readable][/red]')
 
 		if not options.quiet and len(options.Filename) > 1:
 			print()

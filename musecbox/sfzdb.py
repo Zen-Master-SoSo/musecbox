@@ -31,16 +31,12 @@ from mscore.fuzzy import FuzzyVoice, FuzzyVoiceCandidate
 from musecbox import VENDOR_NAME
 
 
-def single_spaced(s):
-	return re.sub(r'\s+', ' ', s).strip()
-
-
 class SFZDatabase:
 
 	instance = None		# Enforce singleton
 	conn = None
 
-	def __new__(cls):
+	def __new__(cls, path = None):
 		if cls.instance is None:
 			cls.instance = super().__new__(cls)
 		return cls.instance
@@ -54,9 +50,9 @@ class SFZDatabase:
 		parent_path.mkdir(exist_ok = True)
 		return parent_path / 'musecbox-sfzs.db'
 
-	def __init__(self):
+	def __init__(self, path = None):
 		if self.conn is None:
-			self.conn = connect(self.db_path())
+			self.conn = connect(path or self.db_path())
 			self.conn.execute('PRAGMA foreign_keys = ON')
 			if len(self.conn.execute('SELECT name FROM sqlite_master WHERE type="table"').fetchall()) == 0:
 				self._init_schema()
@@ -169,7 +165,7 @@ class SFZDatabase:
 
 	def paths(self, group_name):
 		"""
-		Returns list of paths
+		Returns list of Path objects
 		If group_name is None, returns all
 		"""
 		if group_name is None:
@@ -186,7 +182,7 @@ class SFZDatabase:
 				WHERE group_name=?
 				ORDER BY path
 			""", (group_name, ))
-		return [ result[0] for result in cursor.fetchall() ]
+		return [ Path(result[0]) for result in cursor.fetchall() ]
 
 	def assign_group(self, group_name: str, paths: list):
 		"""
@@ -227,7 +223,8 @@ class SFZDatabase:
 
 	def mappings(self, voice_name: VoiceName, group_name: str = None):
 		"""
-		Returns list of (str) SFZ path associated with the given "voice_name".
+		Returns list of Path mapped to the given "voice_name".
+		Returned list is sorted by order of date added, newest first.
 		"""
 		wheres = ['instrument_name = ?']
 		parms = [voice_name.instrument_name]
@@ -243,7 +240,7 @@ class SFZDatabase:
 			' JOIN '.join(tables) + \
 			' WHERE ' + ' AND '.join(wheres) + \
 			' ORDER BY date DESC'
-		return [ tup[0] for tup in self.conn.execute(sql, tuple(parms)).fetchall() ]
+		return [ SFZRecord(tup[0]) for tup in self.conn.execute(sql, tuple(parms)).fetchall() ]
 
 	def path_mappings(self, path):
 		"""
@@ -334,28 +331,31 @@ class SFZDatabase:
 		self.insert_sfzs(paths)
 		return [ SFZRecord(path) for path in paths ]
 
-	def best_match(self, ref: VoiceName, group_name: str = None):
-		mapped, unmapped = self.ranked_sfzs(ref, self.sfzs(group_name), group_name)
+	def best_match(self, voice_name: VoiceName, group_name: str = None):
+		mapped, unmapped = self.rank_sfzs(voice_name, self.sfzs(group_name), group_name)
 		return mapped[0] if mapped else unmapped[0]
 
-	def ranked_sfzs(self, ref, sfzs, group_name = None):
+	def rank_sfzs(self, voice_name, sfzs, group_name = None):
 		"""
 		Returns two lists of SFZRecord objects.
 		The first list is of SFZs which have been mapped to the given VoiceName,
 		the second list is scored and sorted by mscore.fuzzy
 		"""
-		assert isinstance(ref, VoiceName)
+		assert isinstance(voice_name, VoiceName)
 		assert isinstance(sfzs, list)
-		if sfzs:
-			assert isinstance(sfzs[0], SFZRecord)
-		previously_mapped = self.mappings(ref, group_name)
+		if len(sfzs) == 0:
+			return [], []
+		assert isinstance(sfzs[0], SFZRecord)
+		previously_mapped = self.mappings(voice_name, group_name)
+		if len(previously_mapped):
+			assert isinstance(previously_mapped[0], SFZRecord)
 		unmapped, mapped = [], []
-		for sfz in sfzs:
-			(unmapped, mapped)[sfz.path in previously_mapped].append(sfz)
-		mapped.sort(key = lambda rec: previously_mapped.index(rec.path))
+		for rec in sfzs:
+			(unmapped, mapped)[rec in previously_mapped].append(rec)
+		mapped.sort(key = lambda rec: previously_mapped.index(rec))
 		candidates = [ FuzzyVoiceCandidate(sfz.voice_name, index)
 			for index, sfz in enumerate(unmapped) ]
-		results = FuzzyVoice(ref).score_candidates(candidates)
+		results = FuzzyVoice(voice_name).score_candidates(candidates)
 		return mapped, [ unmapped[result.candidate.index] for result in results ]
 
 
@@ -364,6 +364,9 @@ class SFZRecord:
 	def __init__(self, path):
 		self.path = Path(path)
 		self.title = self.path.stem
+
+	def __eq__(self, other):
+		return self.path == other.path
 
 	def mappings(self):
 		"""

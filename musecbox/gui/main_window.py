@@ -485,7 +485,7 @@ class MainWindow(QMainWindow):
 				self._show_hide_window_elements()
 				self.balance_control_widget.slot_set_lines(setting(KEY_BCWIDGET_LINES, int, 3))
 				if 'exported_wav_file' in self.project_definition:
-					self.wav_file_path = self.project_definition['exported_wav_file']
+					self.wav_file_path = Path(self.project_definition['exported_wav_file'])
 				if ProjectLoadDialog(self, self.project_definition).exec():
 					recent_files().bump(self.project_path)
 					set_setting(KEY_RECENT_PROJECT_DIR, str(self.project_path.parent))
@@ -584,6 +584,7 @@ class MainWindow(QMainWindow):
 		self.project_path.write_text(
 			json.dumps(self.encode_saved_state(), indent = "\t"),
 			encoding = 'utf-8')
+		recent_files().bump(self.project_path)
 		self.clear_dirty()
 
 	def encode_saved_state(self):
@@ -1279,7 +1280,7 @@ class MainWindow(QMainWindow):
 	def slot_record(self):
 		from musecbox.dialogs.record_dialog import RecordDialog
 		if self.wav_file_path:
-			save_path = Path(self.wav_file_path)
+			save_path = self.wav_file_path
 		elif self.source_score_path:
 			save_path = self.project_path.parent / (self.source_score_path.stem + '.wav')
 		else:

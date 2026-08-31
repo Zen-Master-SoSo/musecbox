@@ -347,7 +347,7 @@ class SFZFileDialog(QDialog):
 	def fill_sfz_list(self, sfzs, group_name):
 		self.lst_sfzs.clear()
 		if self.voice_name:
-			mapped, unmapped = self.db.ranked_sfzs(self.voice_name, sfzs, group_name = group_name)
+			mapped, unmapped = self.db.rank_sfzs(self.voice_name, sfzs, group_name = group_name)
 			for sfz in mapped:
 				self._append_sfz(sfz, True)
 			for sfz in unmapped:
