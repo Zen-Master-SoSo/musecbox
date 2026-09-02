@@ -111,8 +111,8 @@ menu.""")
 			logging.error('%s: %s', e.__class__.__name__, str(e))
 			return 1
 		else:
-			sock.sendall(bytes(given_path.resolve() if given_path
-				else '???', 'utf-8') + CARRIAGE_RETURN)
+			s = str(given_path.resolve()) if given_path else '???'
+			sock.sendall(bytes(s, 'utf-8') + CARRIAGE_RETURN)
 			sock.close()
 			return 4
 		# Delete previous SOCKET_PATH hanging around
